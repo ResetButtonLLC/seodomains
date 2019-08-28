@@ -8,7 +8,7 @@ class Domains extends Model {
 
     public $timestamps = false;
     protected $fillable = [
-        'id', 'url', 'name', 'placement_price', 'writing_price', 'region', 'theme', 'google_index', 'links', 'language', 'traffic', 'source'
+        'id', 'url', 'name', 'placement_price', 'writing_price', 'region', 'theme', 'google_index', 'links', 'language', 'traffic', 'source', 'created_at'
     ];
 
 }

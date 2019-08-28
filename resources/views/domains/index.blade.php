@@ -6,72 +6,108 @@
 <section class="container">
     <div class="row">
         <h1>Seo Domains</h1>
-        <table class="table table-striped">
+        <table class="table">
             <thead>
                 <tr>
+                    <th>№</th>
                     <th>Url</th>
-                    <th>Miralinks</th>
-                    <th>Sape</th>
-                    <th>Rotapost</th>
-                    <th>Gogetlinks</th>
+                    <th>Биржа</th>
+                    <th>Цена размещения</th>
+                    <th>Цена размещения с написанием</th>
+                    <th>Тематика</th>
+                    <th>Регион</th>
+                    <th>Индекс страниц Google</th>
+                    <th>Трафик</th>
+                    <th>Дата добавления в биржу</th>
+                    <th>Кол-во размещаемых ссылок</th>
+                    <th>Язык</th>
                 </tr>
             </thead>
             <tbody>
                 @foreach ($data as $key => $value)
                 <tr>
-                    <td>{{$key}}</td>
-                    <td>
-                        @if($value['miralinks'])
-                        <i>Название: </i> {{$value['miralinks']->name}}<br>
-                        <i>Цена: </i> {{$value['miralinks']->placement_price}}<br>
-                        <i>Цена написания: </i> {{$value['miralinks']->writing_price}}<br>
-                        <i>Регион: </i> {{$value['miralinks']->region}}<br>
-                        <i>Тема: </i> {{$value['miralinks']->theme}}<br>
-                        <i>Индекс Google: </i> {{$value['miralinks']->google_index}}<br>
-                        <i>Ссылок: </i> {{$value['miralinks']->links}}<br>
-                        <i>Язык: </i> {{$value['miralinks']->language}}<br>
-                        <i>Траффик: </i> {{$value['miralinks']->traffic}}
-                        @endif
-                    </td>
-                    <td>
-                        @if($value['sape'])
-                        <i>Название: </i> {{$value['sape']->name}}<br>
-                        <i>Цена: </i> {{$value['sape']->placement_price}}<br>
-                        <i>Цена написания: </i> {{$value['sape']->writing_price}}<br>
-                        <i>Регион: </i> {{$value['sape']->region}}<br>
-                        <i>Тема: </i> {{$value['sape']->theme}}<br>
-                        <i>Индекс Google: </i> {{$value['sape']->google_index}}<br>
-                        <i>Ссылок: </i> {{$value['sape']->links}}<br>
-                        <i>Язык: </i> {{$value['sape']->language}}<br>
-                        <i>Траффик: </i> {{$value['sape']->traffic}}
-                        @endif
-                    </td>
-                    <td>
-                        @if($value['rotapost'])
-                        <i>Название: </i> {{$value['rotapost']->name}}<br>
-                        <i>Цена: </i> {{$value['rotapost']->placement_price}}<br>
-                        <i>Цена написания: </i> {{$value['rotapost']->writing_price}}<br>
-                        <i>Регион: </i> {{$value['rotapost']->region}}<br>
-                        <i>Тема: </i> {{$value['rotapost']->theme}}<br>
-                        <i>Индекс Google: </i> {{$value['rotapost']->google_index}}<br>
-                        <i>Ссылок: </i> {{$value['rotapost']->links}}<br>
-                        <i>Язык: </i> {{$value['rotapost']->language}}<br>
-                        <i>Траффик: </i> {{$value['rotapost']->traffic}}
-                        @endif
-                    </td>
-                    <td>
-                        @if($value['gogetlinks'])
-                        <i>Название: </i> {{$value['gogetlinks']->name}}<br>
-                        <i>Цена: </i> {{$value['gogetlinks']->placement_price}}<br>
-                        <i>Цена написания: </i> {{$value['gogetlinks']->writing_price}}<br>
-                        <i>Регион: </i> {{$value['gogetlinks']->region}}<br>
-                        <i>Тема: </i> {{$value['gogetlinks']->theme}}<br>
-                        <i>Индекс Google: </i> {{$value['gogetlinks']->google_index}}<br>
-                        <i>Ссылок: </i> {{$value['gogetlinks']->links}}<br>
-                        <i>Язык: </i> {{$value['gogetlinks']->language}}<br>
-                        <i>Траффик: </i> {{$value['gogetlinks']->traffic}}
-                        @endif
-                    </td>
+                    <td rowspan="4">{{ $loop->iteration }}</td>
+                    <td rowspan="4">{{$key}}</td>
+                    <td>Miralinks</td>
+                    @if($value['miralinks'])
+                    <td>{{$value['miralinks']->placement_price}}</td>
+                    <td>{{$value['miralinks']->writing_price}}</td>
+                    <td>{{$value['miralinks']->theme}}</td>
+                    <td>{{$value['miralinks']->region}}</td>
+                    <td>{{$value['miralinks']->google_index}}</td>
+                    <td>{{$value['miralinks']->traffic}}</td>
+                    <td>{{$value['miralinks']->created_at}}</td>
+                    @else
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    @endif
+                    <td rowspan="4" class="text-center">{{$value['links']}}</td>
+                    <td rowspan="4" class="text-center">{{$value['lang']}}</td>
+                </tr>
+                <tr>
+                    <td>Sape</td>
+                    @if($value['sape'])
+                    <td>{{$value['sape']->placement_price}}</td>
+                    <td>{{$value['sape']->writing_price}}</td>
+                    <td>{{$value['sape']->theme}}</td>
+                    <td>{{$value['sape']->region}}</td>
+                    <td>{{$value['sape']->google_index}}</td>
+                    <td>{{$value['sape']->traffic}}</td>
+                    <td>{{$value['sape']->created_at}}</td>
+                    @else
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    @endif
+                </tr>
+                <tr>
+                    <td>Rotapost</td>
+                    @if($value['rotapost'])
+                    <td>{{$value['rotapost']->placement_price}}</td>
+                    <td>{{$value['rotapost']->writing_price}}</td>
+                    <td>{{$value['rotapost']->theme}}</td>
+                    <td>{{$value['rotapost']->region}}</td>
+                    <td>{{$value['rotapost']->google_index}}</td>
+                    <td>{{$value['rotapost']->traffic}}</td>
+                    <td>{{$value['rotapost']->created_at}}</td>
+                    @else
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    @endif
+                </tr>
+                <tr>
+                    <td>Gogetlinks</td>
+                    @if($value['gogetlinks'])
+                    <td>{{$value['gogetlinks']->placement_price}}</td>
+                    <td>{{$value['gogetlinks']->writing_price}}</td>
+                    <td>{{$value['gogetlinks']->theme}}</td>
+                    <td>{{$value['gogetlinks']->region}}</td>
+                    <td>{{$value['gogetlinks']->google_index}}</td>
+                    <td>{{$value['gogetlinks']->traffic}}</td>
+                    <td>{{$value['gogetlinks']->created_at}}</td>
+                    @else
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    @endif
                 </tr>
                 @endforeach
             </tbody>
