@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Domains extends Model {
 
-    public $timestamps = false;
+    public $timestamps = ['created_at'];
     protected $fillable = [
         'id', 'url', 'name', 'placement_price', 'writing_price', 'region', 'theme', 'google_index', 'links', 'language', 'traffic', 'source', 'created_at'
     ];

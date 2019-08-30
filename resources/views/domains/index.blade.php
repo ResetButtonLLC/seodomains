@@ -3,41 +3,82 @@
 
 
 @section('content')
-<section class="container">
+<section class="container-fluid">
     <div class="row">
         <h1>Seo Domains</h1>
+        <div class="col-md-12">
+            {!! Form::open(array('method' => 'GET', 'route' => ['domains'], 'class' => 'form form-row')) !!}
+            <div class="control-group col-md-2">
+                {!! Form::label('resource[miralinks]', 'Miralinks', [ 'class' => 'control-label' ]) !!}
+                <div class="controls">
+                    {!! Form::checkbox('resource[miralinks]', 'value', ['class' => 'form-control']) !!}
+                </div>
+            </div>
+            <div class="control-group col-md-2">
+                {!! Form::label('resource[sape]', 'Sape', [ 'class' => 'control-label' ]) !!}
+                <div class="controls">
+                    {!! Form::checkbox('resource[sape]', 'value', ['class' => 'form-control']) !!}
+                </div>
+            </div>
+            <div class="control-group col-md-2">
+                {!! Form::label('resource[rotapost]', 'Rotapost', [ 'class' => 'control-label' ]) !!}
+                <div class="controls">
+                    {!! Form::checkbox('resource[rotapost]', 'value', ['class' => 'form-control']) !!}
+                </div>
+            </div>
+            <div class="control-group col-md-2">
+                {!! Form::label('resource[gogetlinks]', 'Gogetlinks', [ 'class' => 'control-label' ]) !!}
+                <div class="controls">
+                    {!! Form::checkbox('resource[gogetlinks]', 'value', ['class' => 'form-control']) !!}
+                </div>
+            </div>
+            <div class="col-md-2">{!! Form::text('theme', null, ['class' => 'form-control', 'placeholder' => 'Тематика']); !!}</div>
+            <div class="col-md-2"> {!! Form::submit('Поиск', array('class'=>'btn btn-primary')) !!}</div>
+
+            {!! Form::close() !!}
+        </div>
         <table class="table">
             <thead>
                 <tr>
                     <th>№</th>
                     <th>Url</th>
-                    <th>Биржа</th>
-                    <th>Цена размещения</th>
+                    <th>Цены</th>
                     <th>Цена размещения с написанием</th>
                     <th>Тематика</th>
+                    <th>Описание</th>
                     <th>Регион</th>
                     <th>Индекс страниц Google</th>
-                    <th>Трафик</th>
-                    <th>Дата добавления в биржу</th>
-                    <th>Кол-во размещаемых ссылок</th>
+                    <th>DR (ahrefs)</th>
+                    <th>Вх/Исх домены (ahrefs)</th>
+                    <th>DA (Moz)</th>
+                    <th>MajesticTF</th>
+                    <th>MajesticCF</th>
+                    <th>Трафик LiveInternet</th>
+                    <th>Трафик SimilarWeb</th>
                     <th>Язык</th>
+                    <th>Кол-во размещаемых ссылок</th>
+                    <th>Дата добавления в биржу</th>
                 </tr>
             </thead>
             <tbody>
                 @foreach ($data as $key => $value)
                 <tr>
-                    <td rowspan="4">{{ $loop->iteration }}</td>
-                    <td rowspan="4">{{$key}}</td>
-                    <td>Miralinks</td>
-                    @if($value['miralinks'])
-                    <td>{{$value['miralinks']->placement_price}}</td>
-                    <td>{{$value['miralinks']->writing_price}}</td>
-                    <td>{{$value['miralinks']->theme}}</td>
-                    <td>{{$value['miralinks']->region}}</td>
-                    <td>{{$value['miralinks']->google_index}}</td>
-                    <td>{{$value['miralinks']->traffic}}</td>
-                    <td>{{$value['miralinks']->created_at}}</td>
-                    @else
+                    <td>{{ $loop->iteration }}</td>
+                    <td>{{$key}}</td>
+                    <td>
+                        @foreach ($value['placement_price'] as $source => $price)   
+                        {{$source}} - {{$price}}
+                        @endforeach
+                    </td>
+                    <td>
+                        @foreach ($value['writing_price'] as $source => $price)   
+                        {{$source}} - {{$price}}
+                        @endforeach
+                    </td>
+                    <td>{{$value['theme']}}</td>
+                    <td>{{$value['desc']}}</td>
+                    <td>{{$value['region']}}</td>
+                    <td>{{$value['google_index']}}</td>
                     <td></td>
                     <td></td>
                     <td></td>
@@ -45,69 +86,9 @@
                     <td></td>
                     <td></td>
                     <td></td>
-                    @endif
-                    <td rowspan="4" class="text-center">{{$value['links']}}</td>
-                    <td rowspan="4" class="text-center">{{$value['lang']}}</td>
-                </tr>
-                <tr>
-                    <td>Sape</td>
-                    @if($value['sape'])
-                    <td>{{$value['sape']->placement_price}}</td>
-                    <td>{{$value['sape']->writing_price}}</td>
-                    <td>{{$value['sape']->theme}}</td>
-                    <td>{{$value['sape']->region}}</td>
-                    <td>{{$value['sape']->google_index}}</td>
-                    <td>{{$value['sape']->traffic}}</td>
-                    <td>{{$value['sape']->created_at}}</td>
-                    @else
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    @endif
-                </tr>
-                <tr>
-                    <td>Rotapost</td>
-                    @if($value['rotapost'])
-                    <td>{{$value['rotapost']->placement_price}}</td>
-                    <td>{{$value['rotapost']->writing_price}}</td>
-                    <td>{{$value['rotapost']->theme}}</td>
-                    <td>{{$value['rotapost']->region}}</td>
-                    <td>{{$value['rotapost']->google_index}}</td>
-                    <td>{{$value['rotapost']->traffic}}</td>
-                    <td>{{$value['rotapost']->created_at}}</td>
-                    @else
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    @endif
-                </tr>
-                <tr>
-                    <td>Gogetlinks</td>
-                    @if($value['gogetlinks'])
-                    <td>{{$value['gogetlinks']->placement_price}}</td>
-                    <td>{{$value['gogetlinks']->writing_price}}</td>
-                    <td>{{$value['gogetlinks']->theme}}</td>
-                    <td>{{$value['gogetlinks']->region}}</td>
-                    <td>{{$value['gogetlinks']->google_index}}</td>
-                    <td>{{$value['gogetlinks']->traffic}}</td>
-                    <td>{{$value['gogetlinks']->created_at}}</td>
-                    @else
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    @endif
+                    <td class="text-center">{{$value['lang']}}</td>
+                    <td class="text-center">{{$value['links']}}</td>
+                    <td class="text-center">{{$value['created_at']}}</td>
                 </tr>
                 @endforeach
             </tbody>
