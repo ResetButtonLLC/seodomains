@@ -73,7 +73,9 @@ class DomainsController extends Controller {
             }
         }
 
-        return view('domains.index', compact('data'));
+        //$paginator = new Illuminate\Pagination\LengthAwarePaginator($domains, count($domains), 5, 1);
+
+        return view('domains.index', compact(['data']));
     }
 
 }
