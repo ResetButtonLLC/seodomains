@@ -73,7 +73,7 @@ class DomainsController extends Controller {
             }
         }
 
-        return view('domains.index', compact('data'));
+        return view('domains.index', compact(['data','domains']));
     }
 
 }

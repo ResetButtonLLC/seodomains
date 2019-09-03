@@ -94,5 +94,7 @@
             </tbody>
         </table>
     </div>
+    {{ $domains->appends(request()->input())->links() }}
+
 </section>
 @endsection
