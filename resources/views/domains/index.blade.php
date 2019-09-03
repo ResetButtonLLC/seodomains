@@ -94,7 +94,7 @@
             </tbody>
         </table>
     </div>
-
+    {{ $domains->links() }}
 
 </section>
 @endsection

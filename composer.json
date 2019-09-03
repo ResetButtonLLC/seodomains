@@ -7,9 +7,9 @@
     "require": {
         "php": ">=7.0.0",
         "fideloper/proxy": "^4.0",
-        "laravel/framework": "5.6.*",
+        "laravel/framework": "5.7.*",
         "laravel/tinker": "~1.0",
-        "laravelcollective/html": "^5.6.0",
+        "laravelcollective/html": "^5.7.0",
         "nesbot/carbon": "1.29.*",
         "phpxmlrpc/phpxmlrpc": "4.*",
         "rootinc/laravel-azure-middleware": "^0.5.1"
