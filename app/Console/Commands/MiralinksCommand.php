@@ -42,15 +42,17 @@ class MiralinksCommand extends Command {
             while ($data = $this->getData($start)) {
                 if (count($data->aaData) > 0) {
                     foreach ($data->aaData as $domain) {
+                        $lang = json_decode($domain->rowData->langCode);
+                        if (isset($lang[0][0])) {
+                            $lang = $lang[0][0];
+                        } else {
+                            $lang = null;
+                        }
+                        $info = ['url' => $domain->rowData->{"Ground.folder_url_wl"}, 'name' => $domain->rowData->{"Ground.name"}, 'site_id' => $domain->rowData->{"Ground.id"}, 'placement_price' => $domain->rowData->{"Ground.price_usd"}, 'writing_price' => $domain->rowData->{"Ground.article_price_usd"}, 'region' => $domain->rowData->{"Region.title"}, 'theme' => $domain->rowData->subj, 'google_index' => $domain->rowData->{"Ground.google_indexed_count"}, 'links' => $domain->rowData->{"Ground.links_in_articles"}, 'language' => $lang, 'traffic' => $domain->rowData->{"traffic.value"}, 'source' => 'miralinks'];
                         if (!Domains::where('url', $domain->rowData->{"Ground.folder_url_wl"})->where('source', 'miralinks')->first()) {
-                            $lang = json_decode($domain->rowData->langCode);
-                            if (isset($lang[0][0])) {
-                                $lang = $lang[0][0];
-                            } else {
-                                $lang = null;
-                            }
-                            $new = ['url' => $domain->rowData->{"Ground.folder_url_wl"}, 'name' => $domain->rowData->{"Ground.name"}, 'placement_price' => $domain->rowData->{"Ground.price_usd"}, 'writing_price' => $domain->rowData->{"Ground.article_price_usd"}, 'region' => $domain->rowData->{"Region.title"}, 'theme' => $domain->rowData->subj, 'google_index' => $domain->rowData->{"Ground.google_indexed_count"}, 'links' => $domain->rowData->{"Ground.links_in_articles"}, 'language' => $lang, 'traffic' => $domain->rowData->{"traffic.value"}, 'source' => 'miralinks'];
-                            Domains::insert($new);
+                            Domains::insert($info);
+                        } else {
+                            Domains::where('url', $domain->rowData->{"Ground.folder_url_wl"})->where('source', 'miralinks')->update($info);
                         }
                     }
                     $start += 50;

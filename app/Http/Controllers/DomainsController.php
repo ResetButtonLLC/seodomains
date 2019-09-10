@@ -18,6 +18,13 @@ class DomainsController extends Controller {
             $domains = $domains->where('theme', 'like', '%' . $request->theme . '%');
         }
 
+        if ($request->price_from) {
+            $domains = $domains->where('placement_price', '>=', $request->price_from);
+        }
+        if ($request->price_to) {
+            $domains = $domains->where('placement_price', '<=', $request->price_to);
+        }
+
         $domains = $domains->orderBy('url')->paginate(20);
         $data = [];
         foreach ($domains as $domain) {
@@ -37,6 +44,8 @@ class DomainsController extends Controller {
                 $data[$domain->url]['theme'] = $miralinks->theme;
                 $data[$domain->url]['desc'] = $miralinks->name;
                 $data[$domain->url]['region'] = $miralinks->region;
+                $data[$domain->url]['site_id'] = $miralinks->site_id;
+                
                 if ($miralinks->writing_price) {
                     $data[$domain->url]['writing_price']['miralinks'] = $miralinks->writing_price;
                 }
@@ -73,7 +82,7 @@ class DomainsController extends Controller {
             }
         }
 
-        return view('domains.index', compact(['data','domains']));
+        return view('domains.index', compact(['data', 'domains']));
     }
 
 }

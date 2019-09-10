@@ -8,30 +8,36 @@
         <h1>Seo Domains</h1>
         <div class="col-md-12">
             {!! Form::open(array('method' => 'GET', 'route' => ['domains'], 'class' => 'form form-row')) !!}
-            <div class="control-group col-md-2">
-                {!! Form::label('resource[miralinks]', 'Miralinks', [ 'class' => 'control-label' ]) !!}
-                <div class="controls">
-                    {!! Form::checkbox('resource[miralinks]', 'value', ['class' => 'form-control']) !!}
+            <div class="col-md-6">
+                <div class="row">
+                    <div class="control-group col-md-3">
+                        {!! Form::label('resource[miralinks]', 'Miralinks', [ 'class' => 'control-label' ]) !!}
+                        <div class="controls">
+                            {!! Form::checkbox('resource[miralinks]', 'value', ['class' => 'form-control']) !!}
+                        </div>
+                    </div>
+                    <div class="control-group col-md-3">
+                        {!! Form::label('resource[sape]', 'Sape', [ 'class' => 'control-label' ]) !!}
+                        <div class="controls">
+                            {!! Form::checkbox('resource[sape]', 'value', ['class' => 'form-control']) !!}
+                        </div>
+                    </div>
+                    <div class="control-group col-md-3">
+                        {!! Form::label('resource[rotapost]', 'Rotapost', [ 'class' => 'control-label' ]) !!}
+                        <div class="controls">
+                            {!! Form::checkbox('resource[rotapost]', 'value', ['class' => 'form-control']) !!}
+                        </div>
+                    </div>
+                    <div class="control-group col-md-3">
+                        {!! Form::label('resource[gogetlinks]', 'Gogetlinks', [ 'class' => 'control-label' ]) !!}
+                        <div class="controls">
+                            {!! Form::checkbox('resource[gogetlinks]', 'value', ['class' => 'form-control']) !!}
+                        </div>
+                    </div>
                 </div>
             </div>
-            <div class="control-group col-md-2">
-                {!! Form::label('resource[sape]', 'Sape', [ 'class' => 'control-label' ]) !!}
-                <div class="controls">
-                    {!! Form::checkbox('resource[sape]', 'value', ['class' => 'form-control']) !!}
-                </div>
-            </div>
-            <div class="control-group col-md-2">
-                {!! Form::label('resource[rotapost]', 'Rotapost', [ 'class' => 'control-label' ]) !!}
-                <div class="controls">
-                    {!! Form::checkbox('resource[rotapost]', 'value', ['class' => 'form-control']) !!}
-                </div>
-            </div>
-            <div class="control-group col-md-2">
-                {!! Form::label('resource[gogetlinks]', 'Gogetlinks', [ 'class' => 'control-label' ]) !!}
-                <div class="controls">
-                    {!! Form::checkbox('resource[gogetlinks]', 'value', ['class' => 'form-control']) !!}
-                </div>
-            </div>
+            <div class="col-md-1">{!! Form::text('price_from', null, ['class' => 'form-control', 'placeholder' => 'Цена от']); !!}</div>
+            <div class="col-md-1">{!! Form::text('price_to', null, ['class' => 'form-control', 'placeholder' => 'Цена до']); !!}</div>
             <div class="col-md-2">{!! Form::text('theme', null, ['class' => 'form-control', 'placeholder' => 'Тематика']); !!}</div>
             <div class="col-md-2"> {!! Form::submit('Поиск', array('class'=>'btn btn-primary')) !!}</div>
 
@@ -64,7 +70,13 @@
                 @foreach ($data as $key => $value)
                 <tr>
                     <td>{{ $loop->iteration }}</td>
-                    <td>{{$key}}</td>
+                    <td>
+                        @if(isset($value['site_id']) && $value['site_id'])
+                        <a href="https://www.miralinks.ru/catalog/profileView/{{ $value['site_id'] }}" target="_blank">{{$key}}</a>
+                        @else
+                        {{$key}}
+                        @endif
+                    </td>
                     <td>
                         @foreach ($value['placement_price'] as $source => $price)   
                         {{$source}} - {{$price}}
@@ -94,7 +106,9 @@
             </tbody>
         </table>
     </div>
-    {{ $domains->appends(request()->input())->links() }}
+    <div class="container">
+        {{ $domains->appends(request()->input())->links("pagination::bootstrap-4") }}
+    </div>
 
 </section>
 @endsection

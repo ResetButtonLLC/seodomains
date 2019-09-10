@@ -41,7 +41,7 @@ class RotapostCommand extends Command {
         if ($this->login()) {
             $sites = $this->getSites();
             $added = 0;
-            
+
             foreach ($sites->Sites->BuySite as $site) {
                 $data = [];
                 $data['url'] = (string) $site->Url;
@@ -49,10 +49,12 @@ class RotapostCommand extends Command {
                 $data['writing_price'] = (float) $site->PressReleasePrice;
                 $data['theme'] = (string) $site->Category;
                 $data['google_index'] = (int) $site->PagesInGoogle;
+                $data['source'] = 'rotapost';
                 if (!Domains::where('url', $data['url'])->where('source', 'rotapost')->first()) {
-                    $data['source'] = 'rotapost';
                     Domains::insert($data);
                     $added++;
+                } else {
+                    Domains::where('url', $data['url'])->where('source', 'rotapost')->update($data);
                 }
             }
             echo 'Domains added from rotapost.ru: ' . $added . PHP_EOL;

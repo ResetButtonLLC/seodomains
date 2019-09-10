@@ -68,10 +68,12 @@ class GoggetlinksCommand extends Command {
                     unset($matches);
                 }
 
-                if ($data && !Domains::where('url', $data['url'])->where('source', 'gogetlinks')->first()) {
-                    $data['source'] = 'gogetlinks';
+                $data['source'] = 'gogetlinks';
+                if (!Domains::where('url', $data['url'])->where('source', 'gogetlinks')->first()) {
                     Domains::insert($data);
                     unset($data);
+                }else{
+                    Domains::where('url', $data['url'])->where('source', 'gogetlinks')->update($data);
                 }
             }
 
@@ -99,7 +101,7 @@ class GoggetlinksCommand extends Command {
         if (!mb_strpos($html, '<input type="password"')) {
             return false;
         }
-        dd(777);
+        
         $postinfo = "e_mail=" . env('GOGETLINKS_USERNAME')
                 . "&password=" . env('GOGETLINKS_PASSWORD')
                 . "&button=Войти"

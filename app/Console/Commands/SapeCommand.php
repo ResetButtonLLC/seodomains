@@ -47,20 +47,21 @@ class SapeCommand extends Command {
             $added = 0;
             while ($domains = $this->getDomains($page)) {
                 foreach ($domains as $domain) {
+                    $data = ['source' => 'sape'];
+                    $data['url'] = $domain['url']['string'];
+                    $data['placement_price'] = $domain['price']['double'];
+                    $data['google_index'] = $domain['nof_pages_in_google']['int'];
                     if (!Domains::where('url', $domain['url']['string'])->where('source', 'sape')->first()) {
-                        $data = ['source' => 'sape'];
-                        $data['url'] = $domain['url']['string'];
-                        $data['placement_price'] = $domain['price']['double'];
-                        $data['google_index'] = $domain['nof_pages_in_google']['int'];
                         Domains::insert($data);
                         $added++;
+                    } else {
+                        Domains::where('url', $domain['url']['string'])->where('source', 'sape')->update($data);
                     }
                 }
                 echo 'Domains from sape.ru page ' . $page . ' added: ' . $added . PHP_EOL;
                 $page++;
                 sleep(15);
             }
-            
         }
     }
 
