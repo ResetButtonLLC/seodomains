@@ -1,6 +1,12 @@
 @extends('layouts.app')
 
-
++@section('css')
+    <style>
+        #stocklink button {
+            margin-bottom: 5px;
+        }
+    </style>
+    +@endsection
 
 @section('content')
 <section class="container-fluid">
@@ -43,13 +49,13 @@
 
             {!! Form::close() !!}
         </div>
-        <table class="table">
-            <thead>
-                <tr>
+        <table class="table table-hover">
+             <thead class="thead-light">
+                 <tr>
                     <th>№</th>
                     <th>Url</th>
-                    <th>Цены</th>
-                    <th>Цена размещения с написанием</th>
+                     <th style="width: 200px">Цены</th>
+                     <th style="width: 200px">Цена размещения с написанием</th>
                     <th>Тематика</th>
                     <th>Описание</th>
                     <th>Регион</th>
@@ -70,21 +76,63 @@
                 @foreach ($data as $key => $value)
                 <tr>
                     <td>{{ $loop->iteration }}</td>
-                    <td>
-                        @if(isset($value['site_id']) && $value['site_id'])
-                        <a href="https://www.miralinks.ru/catalog/profileView/{{ $value['site_id'] }}" target="_blank">{{$key}}</a>
-                        @else
-                        {{$key}}
-                        @endif
-                    </td>
-                    <td>
-                        @foreach ($value['placement_price'] as $source => $price)   
-                        {{$source}} - {{$price}}
+                    <td><a href="http://{{$key}}">{{$key}}</a></td>
+                    <td id="stocklink">
+                        @foreach ($value['placement_price'] as $source => $price)
+                            @switch($source)
+                                @case('miralinks')
+                                <img src="https://www.miralinks.ru/favicon.ico">
+                                @break
+
+                                @case('gogetlinks')
+                                <img src="https://www.gogetlinks.net/favicon.ico">
+
+                                @break
+                                @case('rotapost')
+                                <img src="https://www.rotapost.ru/i/favicon.ico">
+                                @break
+
+                                @case('sape')
+                                <img src="https://static.sape.ru/pr-frontend/dist/pr/favicon.ico">
+                                @break
+
+                                @default
+
+                            @endswitch
+
+                                @if(isset($value['site_id']) && $value['site_id'])
+                                    <a href="https://www.miralinks.ru/catalog/profileView/{{ $value['site_id'] }}" target="_blank">{{$source}} - {{$price}}</a>
+                                @else
+                                    {{$source}} - {{$price}}
+                                @endif
+
+                            <br />
                         @endforeach
                     </td>
                     <td>
-                        @foreach ($value['writing_price'] as $source => $price)   
-                        {{$source}} - {{$price}}
+                        @foreach ($value['writing_price'] as $source => $price)
+                            @switch($source)
+                                @case('miralinks')
+                                <img src="https://www.miralinks.ru/favicon.ico">
+                                @break
+
+                                @case('gogetlinks')
+                                <img src="https://www.gogetlinks.net/favicon.ico">
+
+                                @break
+                                @case('rotapost')
+                                <img src="https://www.rotapost.ru/i/favicon.ico">
+                                @break
+
+                                @case('sape')
+                                <img src="https://static.sape.ru/pr-frontend/dist/pr/favicon.ico">
+                                @break
+
+                                @default
+
+                            @endswitch
+
+                            {{$source}} - {{$price}}<br />
                         @endforeach
                     </td>
                     <td>{{$value['theme']}}</td>

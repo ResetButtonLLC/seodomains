@@ -82,6 +82,16 @@ class DomainsController extends Controller {
             }
         }
 
+        foreach ($data as $domain=>$stats) {
+            if ($stats['placement_price']) {
+                asort($data[$domain]['placement_price']);
+            }
+
+            if ($stats['writing_price']) {
+                asort($data[$domain]['writing_price']);
+            }
+        }
+
         return view('domains.index', compact(['data', 'domains']));
     }
 
