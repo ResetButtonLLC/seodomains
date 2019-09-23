@@ -4,7 +4,10 @@ namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
 use Log;
-use App\Models\Domains;
+use App\Models\{
+    Domains,
+    Gogetlinks
+};
 
 class GoggetlinksCommand extends Command {
 
@@ -51,7 +54,7 @@ class GoggetlinksCommand extends Command {
                 $values = explode('<td', $col);
                 preg_match($url, $values[1], $matches);
                 if ($matches) {
-                    $data['url'] = utf8_encode($matches[1]);
+                    $site = utf8_encode($matches[1]);
 
                     unset($matches);
                 }
@@ -68,12 +71,19 @@ class GoggetlinksCommand extends Command {
                     unset($matches);
                 }
 
-                $data['source'] = 'gogetlinks';
-                if (!Domains::where('url', $data['url'])->where('source', 'gogetlinks')->first()) {
-                    Domains::insert($data);
-                    unset($data);
-                }else{
-                    Domains::where('url', $data['url'])->where('source', 'gogetlinks')->update($data);
+                if ($domain = Domains::where('url', $site)->first()) {
+                    $data['domain_id'] = $domain->id;
+                } else {
+                    $domain = Domains::insertGetId(['url' => $site, 'created_at' => date('Y-m-d H:i:s')]);
+                    $data['domain_id'] = $domain;
+                }
+
+                if (Gogetlinks::where('domain_id', $data['domain_id'])->first()) {
+                    $data['updated_at'] = date('Y-m-d H:i:s');
+                    Gogetlinks::where('domain_id', $data['domain_id'])->update($data);
+                } else {
+                    $data['created_at'] = date('Y-m-d H:i:s');
+                    Gogetlinks::insert($data);
                 }
             }
 
@@ -101,7 +111,7 @@ class GoggetlinksCommand extends Command {
         if (!mb_strpos($html, '<input type="password"')) {
             return false;
         }
-        
+
         $postinfo = "e_mail=" . env('GOGETLINKS_USERNAME')
                 . "&password=" . env('GOGETLINKS_PASSWORD')
                 . "&button=Войти"
@@ -165,6 +175,7 @@ class GoggetlinksCommand extends Command {
         curl_close($curl);
 
         if ($err) {
+            Log::info(print_r($err, 1));
             return false;
         } else {
             return $response;

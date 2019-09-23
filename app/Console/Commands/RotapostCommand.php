@@ -4,7 +4,10 @@ namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
 use Log;
-use App\Models\Domains;
+use App\Models\{
+    Domains,
+    Rotapost
+};
 
 class RotapostCommand extends Command {
 
@@ -44,17 +47,25 @@ class RotapostCommand extends Command {
 
             foreach ($sites->Sites->BuySite as $site) {
                 $data = [];
-                $data['url'] = (string) $site->Url;
+                $url = (string) $site->Url;
                 $data['placement_price'] = (float) $site->PostPrice;
                 $data['writing_price'] = (float) $site->PressReleasePrice;
                 $data['theme'] = (string) $site->Category;
                 $data['google_index'] = (int) $site->PagesInGoogle;
-                $data['source'] = 'rotapost';
-                if (!Domains::where('url', $data['url'])->where('source', 'rotapost')->first()) {
-                    Domains::insert($data);
-                    $added++;
+
+                if ($domain = Domains::where('url', $url)->first()) {
+                    $data['domain_id'] = $domain->id;
                 } else {
-                    Domains::where('url', $data['url'])->where('source', 'rotapost')->update($data);
+                    $domain = Domains::insertGetId(['url' => $url, 'created_at' => date('Y-m-d H:i:s')]);
+                    $data['domain_id'] = $domain;
+                }
+
+                if (Rotapost::where('domain_id', $data['domain_id'])->first()) {
+                    $data['updated_at'] = date('Y-m-d H:i:s');
+                    Rotapost::where('domain_id', $data['domain_id'])->update($data);
+                } else {
+                    $data['created_at'] = date('Y-m-d H:i:s');
+                    Rotapost::insert($data);
                 }
             }
             echo 'Domains added from rotapost.ru: ' . $added . PHP_EOL;

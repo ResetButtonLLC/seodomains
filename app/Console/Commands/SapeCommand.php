@@ -4,7 +4,10 @@ namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
 use Log;
-use App\Models\Domains;
+use App\Models\{
+    Domains,
+    Sape
+};
 use PhpXmlRpc\Value;
 use PhpXmlRpc\Request;
 use PhpXmlRpc\Client;
@@ -47,15 +50,24 @@ class SapeCommand extends Command {
             $added = 0;
             while ($domains = $this->getDomains($page)) {
                 foreach ($domains as $domain) {
-                    $data = ['source' => 'sape'];
-                    $data['url'] = $domain['url']['string'];
+                    $url = $domain['url']['string'];
                     $data['placement_price'] = $domain['price']['double'];
                     $data['google_index'] = $domain['nof_pages_in_google']['int'];
-                    if (!Domains::where('url', $domain['url']['string'])->where('source', 'sape')->first()) {
-                        Domains::insert($data);
-                        $added++;
+
+                    if ($domain = Domains::where('url', $url)->first()) {
+                        $data['domain_id'] = $domain->id;
                     } else {
-                        Domains::where('url', $domain['url']['string'])->where('source', 'sape')->update($data);
+                        $domain = Domains::insertGetId(['url' => $url, 'created_at' => date('Y-m-d H:i:s')]);
+                        $data['domain_id'] = $domain;
+                    }
+
+                    if (Sape::where('domain_id', $data['domain_id'])->first()) {
+                        $data['updated_at'] = date('Y-m-d H:i:s');
+                        Sape::where('domain_id', $data['domain_id'])->update($data);
+                    } else {
+                        $data['created_at'] = date('Y-m-d H:i:s');
+                        Sape::insert($data);
+                        $added++;
                     }
                 }
                 echo 'Domains from sape.ru page ' . $page . ' added: ' . $added . PHP_EOL;

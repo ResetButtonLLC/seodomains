@@ -67,30 +67,48 @@
                 </tr>
             </thead>
             <tbody>
-                @foreach ($data as $key => $value)
+                @foreach ($domains as $key => $value)
                 <tr>
-                    <td>{{ $loop->iteration }}</td>
+                    <td>{{ $value->id }}</td>
                     <td>
-                        @if(isset($value['site_id']) && $value['site_id'])
-                        <a href="https://www.miralinks.ru/catalog/profileView/{{ $value['site_id'] }}" target="_blank">{{$key}}</a>
+                        @if($value->miralinks && $value->miralinks->site_id)
+                        <a href="https://www.miralinks.ru/catalog/profileView/{{ $value->miralinks->site_id }}" target="_blank">{{$value->url}}</a>
                         @else
-                        {{$key}}
+                        {{$value->url}}
                         @endif
                     </td>
                     <td>
-                        @foreach ($value['placement_price'] as $source => $price)   
-                        {{$source}} - {{$price}}
-                        @endforeach
+                        @if($value->miralinks && $value->miralinks->placement_price)
+                        Miralinks - {{$value->miralinks->placement_price}}<br>
+                        @endif
+                        @if($value->rotapost && $value->rotapost->placement_price)
+                        Rotapost - {{$value->rotapost->placement_price}}<br>
+                        @endif
+                        @if($value->sape && $value->sape->placement_price)
+                        Sape - {{$value->sape->placement_price}}<br>
+                        @endif
+                        @if($value->gogetlinks && $value->gogetlinks->placement_price)
+                        Sape - {{$value->gogetlinks->placement_price}}
+                        @endif
                     </td>
                     <td>
-                        @foreach ($value['writing_price'] as $source => $price)   
-                        {{$source}} - {{$price}}
-                        @endforeach
+                        @if($value->miralinks && $value->miralinks->writing_price)
+                        Miralinks - {{$value->miralinks->writing_price}}<br>
+                        @endif
+                        @if($value->rotapost && $value->rotapost->writing_price)
+                        Rotapost - {{$value->rotapost->writing_price}}<br>
+                        @endif
+                        @if($value->sape && $value->sape->writing_price)
+                        Sape - {{$value->sape->writing_price}}<br>
+                        @endif
+                        @if($value->gogetlinks && $value->gogetlinks->writing_price)
+                        Sape - {{$value->gogetlinks->writing_price}}
+                        @endif
                     </td>
-                    <td>{{$value['theme']}}</td>
-                    <td>{{$value['desc']}}</td>
-                    <td>{{$value['region']}}</td>
-                    <td>{{$value['google_index']}}</td>
+                    <td>{{$value->miralinks ? $value->miralinks->theme : ''}}</td>
+                    <td>{{$value->miralinks ? $value->miralinks->desc : ''}}</td>
+                    <td>{{$value->miralinks ? $value->miralinks->region : ''}}</td>
+                    <td>{{$value->miralinks ? $value->miralinks->google_index : ''}}</td>
                     <td></td>
                     <td></td>
                     <td></td>
@@ -98,9 +116,9 @@
                     <td></td>
                     <td></td>
                     <td></td>
-                    <td class="text-center">{{$value['lang']}}</td>
-                    <td class="text-center">{{$value['links']}}</td>
-                    <td class="text-center">{{$value['created_at']}}</td>
+                    <td class="text-center">{{$value->miralinks ? $value->miralinks->lang : ''}}</td>
+                    <td class="text-center">{{$value->miralinks ? $value->miralinks->links : ''}}</td>
+                    <td class="text-center">{{$value->created_at}}</td>
                 </tr>
                 @endforeach
             </tbody>

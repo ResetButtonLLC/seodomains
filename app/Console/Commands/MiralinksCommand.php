@@ -4,7 +4,10 @@ namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
 use Log;
-use App\Models\Domains;
+use App\Models\{
+    Domains,
+    Miralinks
+};
 
 class MiralinksCommand extends Command {
 
@@ -48,11 +51,21 @@ class MiralinksCommand extends Command {
                         } else {
                             $lang = null;
                         }
-                        $info = ['url' => $domain->rowData->{"Ground.folder_url_wl"}, 'name' => $domain->rowData->{"Ground.name"}, 'site_id' => $domain->rowData->{"Ground.id"}, 'placement_price' => $domain->rowData->{"Ground.price_usd"}, 'writing_price' => $domain->rowData->{"Ground.article_price_usd"}, 'region' => $domain->rowData->{"Region.title"}, 'theme' => $domain->rowData->subj, 'google_index' => $domain->rowData->{"Ground.google_indexed_count"}, 'links' => $domain->rowData->{"Ground.links_in_articles"}, 'language' => $lang, 'traffic' => $domain->rowData->{"traffic.value"}, 'source' => 'miralinks'];
-                        if (!Domains::where('url', $domain->rowData->{"Ground.folder_url_wl"})->where('source', 'miralinks')->first()) {
-                            Domains::insert($info);
+                        $url = $domain->rowData->{"Ground.folder_url_wl"};
+                        $info = ['name' => $domain->rowData->{"Ground.name"}, 'site_id' => $domain->rowData->{"Ground.id"}, 'placement_price' => $domain->rowData->{"Ground.price_usd"}, 'writing_price' => $domain->rowData->{"Ground.article_price_usd"}, 'placement_price_rur' => $domain->rowData->{"Ground.price_rur"}, 'writing_price_rur' => $domain->rowData->{"Ground.article_price_rur"}, 'region' => $domain->rowData->{"Region.title"}, 'theme' => $domain->rowData->subj, 'google_index' => $domain->rowData->{"Ground.google_indexed_count"}, 'links' => $domain->rowData->{"Ground.links_in_articles"}, 'language' => $lang, 'traffic' => $domain->rowData->{"traffic.value"}];
+                        if ($domain = Domains::where('url', $url)->first()) {
+                            $info['domain_id'] = $domain->id;
                         } else {
-                            Domains::where('url', $domain->rowData->{"Ground.folder_url_wl"})->where('source', 'miralinks')->update($info);
+                            $domain = Domains::insertGetId(['url' => $url, 'created_at' => date('Y-m-d H:i:s')]);
+                            $info['domain_id'] = $domain;
+                        }
+
+                        if (Miralinks::where('domain_id', $info['domain_id'])->first()) {
+                            $info['updated_at'] = date('Y-m-d H:i:s');
+                            Miralinks::where('domain_id', $info['domain_id'])->update($info);
+                        } else {
+                            $info['created_at'] = date('Y-m-d H:i:s');
+                            Miralinks::insert($info);
                         }
                     }
                     $start += 50;
