@@ -1,6 +1,12 @@
 @extends('layouts.app')
 
-
+@section('css')
+<style>
+    #stocklink button {
+        margin-bottom: 5px;
+    }
+</style>
+@endsection
 
 @section('content')
 <section class="container-fluid">
@@ -43,13 +49,13 @@
 
             {!! Form::close() !!}
         </div>
-        <table class="table">
-            <thead>
+        <table class="table table-hover">
+            <thead class="thead-light">
                 <tr>
                     <th>№</th>
                     <th>Url</th>
-                    <th>Цены</th>
-                    <th>Цена размещения с написанием</th>
+                    <th style="width: 200px">Цены</th>
+                    <th style="width: 200px">Цена размещения с написанием</th>
                     <th>Тематика</th>
                     <th>Описание</th>
                     <th>Регион</th>
@@ -70,41 +76,40 @@
                 @foreach ($domains as $key => $value)
                 <tr>
                     <td>{{ $value->id }}</td>
-                    <td>
-                        @if($value->miralinks && $value->miralinks->site_id)
-                        <a href="https://www.miralinks.ru/catalog/profileView/{{ $value->miralinks->site_id }}" target="_blank">{{$value->url}}</a>
-                        @else
-                        {{$value->url}}
-                        @endif
-                    </td>
-                    <td>
+                    <td><a href="http://{{ $value->url }}">{{ $value->url }}</a></td>
+                    <td id="stocklink">
                         @if($value->miralinks && $value->miralinks->placement_price)
+                        <img src="https://www.miralinks.ru/favicon.ico"> 
+                        @if(isset($value->miralinks->site_id))
+                        <a href="https://www.miralinks.ru/catalog/profileView/{{ $value->miralinks->site_id }}" target="_blank">Miralinks - {{$value->miralinks->placement_price}}</a><br>
+                        @else
                         Miralinks - {{$value->miralinks->placement_price}}<br>
                         @endif
+                        @endif
                         @if($value->rotapost && $value->rotapost->placement_price)
-                        Rotapost - {{$value->rotapost->placement_price}}<br>
+                        <img src="https://www.rotapost.ru/i/favicon.ico"> Rotapost - {{$value->rotapost->placement_price}}<br>
                         @endif
                         @if($value->sape && $value->sape->placement_price)
-                        Sape - {{$value->sape->placement_price}}<br>
+                        <img src="https://static.sape.ru/pr-frontend/dist/pr/favicon.ico"> Sape - {{$value->sape->placement_price}}<br>
                         @endif
                         @if($value->gogetlinks && $value->gogetlinks->placement_price)
-                        Sape - {{$value->gogetlinks->placement_price}}
+                        <img src="https://www.gogetlinks.net/favicon.ico"> Gogetlinks - {{$value->gogetlinks->placement_price}}
                         @endif
                     </td>
                     <td>
                         @if($value->miralinks && $value->miralinks->writing_price)
-                        Miralinks - {{$value->miralinks->writing_price}}<br>
+                        <img src="https://www.miralinks.ru/favicon.ico"> Miralinks - {{$value->miralinks->writing_price}}<br>
                         @endif
                         @if($value->rotapost && $value->rotapost->writing_price)
-                        Rotapost - {{$value->rotapost->writing_price}}<br>
+                        <img src="https://www.rotapost.ru/i/favicon.ico"> Rotapost - {{$value->rotapost->writing_price}}<br>
                         @endif
                         @if($value->sape && $value->sape->writing_price)
-                        Sape - {{$value->sape->writing_price}}<br>
+                        <img src="https://static.sape.ru/pr-frontend/dist/pr/favicon.ico"> Sape - {{$value->sape->writing_price}}<br>
                         @endif
                         @if($value->gogetlinks && $value->gogetlinks->writing_price)
-                        Sape - {{$value->gogetlinks->writing_price}}
+                        <img src="https://www.gogetlinks.net/favicon.ico"> Gogetlinks - {{$value->gogetlinks->writing_price}}
                         @endif
-                    </td>
+                    </td>   
                     <td>{{$value->miralinks ? $value->miralinks->theme : ''}}</td>
                     <td>{{$value->miralinks ? $value->miralinks->desc : ''}}</td>
                     <td>{{$value->miralinks ? $value->miralinks->region : ''}}</td>
