@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Domains;
 use Illuminate\Database\Eloquent\Builder;
+//use Rap2hpoutre\FastExcel\FastExcel;
 
 class DomainsController extends Controller {
 
@@ -39,7 +40,9 @@ class DomainsController extends Controller {
         }
 
         $domains = $domains->orderBy('url')->paginate(env('PAGE_COUNT'));
-
+//        if (isset($request->export)) {
+//            (new FastExcel($domains))->download('file.xlsx');
+//        }
         return view('domains.index', compact(['domains']));
     }
 

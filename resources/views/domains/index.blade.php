@@ -14,7 +14,7 @@
         <h1>Seo Domains</h1>
         <div class="col-md-12">
             {!! Form::open(array('method' => 'GET', 'route' => ['domains'], 'class' => 'form form-row')) !!}
-            <div class="col-md-6">
+            <div class="col-md-4">
                 <div class="row">
                     <div class="control-group col-md-3">
                         {!! Form::label('resource[miralinks]', 'Miralinks', [ 'class' => 'control-label' ]) !!}
@@ -45,7 +45,8 @@
             <div class="col-md-1">{!! Form::text('price_from', null, ['class' => 'form-control', 'placeholder' => 'Цена от']); !!}</div>
             <div class="col-md-1">{!! Form::text('price_to', null, ['class' => 'form-control', 'placeholder' => 'Цена до']); !!}</div>
             <div class="col-md-2">{!! Form::text('theme', null, ['class' => 'form-control', 'placeholder' => 'Тематика']); !!}</div>
-            <div class="col-md-2"> {!! Form::submit('Поиск', array('class'=>'btn btn-primary')) !!}</div>
+            <div class="col-md-2"> {!! Form::submit('Поиск', ['class'=>'btn btn-primary']) !!}</div>
+            <div class="col-md-2"> {!! Form::submit('Экспорт', ['class'=>'btn btn-primary', 'name' => 'export']) !!}</div>
 
             {!! Form::close() !!}
         </div>

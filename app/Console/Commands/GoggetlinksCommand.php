@@ -24,6 +24,7 @@ class GoggetlinksCommand extends Command {
      * @var string
      */
     protected $description = 'Command description';
+    protected $count;
 
     /**
      * Create a new command instance.
@@ -40,18 +41,34 @@ class GoggetlinksCommand extends Command {
      * @return mixed
      */
     public function handle() {
-        $page = 1;
+        $page = 0;
         $url = "/<a ?.*>(.*)<\/a>/";
         $traffik = '/(.*)<\/td>/';
         $price = '/value="(.*)"><\/label>/';
+        $quantity = "/(.*)<\/td>/";
+        $added = 0;
         while ($data = $this->getData($page)) {
             $data = explode('<tbody id="body_table_content">', $data);
+
+            if (!$this->count) {
+                $lines = explode('<td', $data[0]);
+                preg_match($quantity, $lines[1], $matches);
+                $this->count = preg_replace('/\D/', '', $matches[1]);
+            }
+
+            if ($added >= $this->count) {
+                break;
+            }
+
             $row = explode('search_sites_row', $data[1]);
+
+
             unset($row[0]);
 
             foreach ($row as $col) {
                 $data = [];
                 $values = explode('<td', $col);
+
                 preg_match($url, $values[1], $matches);
                 if ($matches) {
                     $site = utf8_encode($matches[1]);
@@ -65,7 +82,7 @@ class GoggetlinksCommand extends Command {
                     unset($matches);
                 }
 
-                preg_match($price, $values[8], $matches);
+                preg_match($price, $values[9], $matches);
                 if ($matches) {
                     $data['placement_price'] = $matches[1];
                     unset($matches);
@@ -85,6 +102,7 @@ class GoggetlinksCommand extends Command {
                     $data['created_at'] = date('Y-m-d H:i:s');
                     Gogetlinks::insert($data);
                 }
+                $added++;
             }
 
             $page++;
@@ -182,4 +200,14 @@ class GoggetlinksCommand extends Command {
         }
     }
 
+}
+
+function get_string_between($string, $start, $end) {
+    $string = ' ' . $string;
+    $ini = strpos($string, $start);
+    if ($ini == 0)
+        return '';
+    $ini += strlen($start);
+    $len = strpos($string, $end, $ini) - $ini;
+    return substr($string, $ini, $len);
 }
