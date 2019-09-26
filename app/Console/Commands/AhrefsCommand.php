@@ -48,7 +48,7 @@ class AhrefsCommand extends Command
             $domains[] = $domain->url;
         }
 
-        $domains = array_slice($domains,0,5); //DEBUG
+        //$domains = array_slice($domains,0,5); //DEBUG
 
         $this->info('Get '.count($domains).' domains from database');
 
