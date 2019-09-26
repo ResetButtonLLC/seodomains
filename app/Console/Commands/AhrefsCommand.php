@@ -41,15 +41,16 @@ class AhrefsCommand extends Command
     public function handle()
     {
 
-        $domains_urls = DB::table((new Domains)->getTable())->select('url')->get();
+        $domains_table = (new Domains)->getTable();
+        $domains_urls = DB::table($domains_table)->select('url')->get();
 
         foreach ($domains_urls as $domain) {
             $domains[] = $domain->url;
         }
 
-        $this->info('Get '.count($domains).' domains from database');
+        $domains = array_slice($domains,0,5); //DEBUG
 
-        $domains = array_slice($domains,0,10); //DEBUG
+        $this->info('Get '.count($domains).' domains from database');
 
         $ahrefs = new ApiPromodoHelper();
         //Ahrefs DR
@@ -57,21 +58,53 @@ class AhrefsCommand extends Command
         $this->info('Asking Ahrefs for DR');
         $bar = $this->output->createProgressBar(count($domains));
         $bar->start();
+        $bar->setMessage('Asking Ahrefs for DR ... ');
 
         foreach ($domains as $domain) {
             $result = $ahrefs->makeRequest('getDomainRating',[$domain]);
             if($result) {
-                $ahrefs_data[$domain] = current($result);
+                $ahrefs_data[$domain]['dr'] = current($result)['domain_rating'];
             }
             $bar->advance();
 
         }
         $bar->finish();
+        $this->info("\n");
+
         //End Ahrefs DR
 
-        //todo Ahrefs In/Out Links
+        //Ahrefs In/Out Links
+        $this->info("Ahrefs In/Out Links");
+        $bar = $this->output->createProgressBar(count($domains));
+        $bar->start();
 
-        print_r($ahrefs_data);
+        foreach ($domains as $domain) {
+            $result = $ahrefs->makeRequest('getDomainLinks',[$domain]);
+            if($result) {
+                $ahrefs_data[$domain]['inlinks'] = current($result)["metrics"]["refdomains"];
+                //$ahrefs_data[$domain]['inlinks'] = current($result)["metrics"]["refpages"];
+            }
+            $bar->advance();
+
+        }
+        $bar->finish();
+        $this->info("\n");
+        //End Ahrefs In/Out Links
+
+        //Import into DB
+        $this->info("Updating DB");
+
+        $bar = $this->output->createProgressBar(count($ahrefs_data ));
+        $bar->start();
+
+       foreach ($ahrefs_data as $ahrefs_domain_name => $ahrefs_domain_data ) {
+            DB::table($domains_table)->where('url',$ahrefs_domain_name)->update(['ahrefs_dr' => $ahrefs_domain_data['dr'],'ahrefs_inlinks' => $ahrefs_domain_data['inlinks']]);
+            $bar->advance();
+        }
+        $bar->finish();
+        $this->info("\n");
+
+        $this->info("Process complete");
 
     }
 
