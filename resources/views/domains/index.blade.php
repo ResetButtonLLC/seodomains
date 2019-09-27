@@ -79,12 +79,12 @@
                     <td>{{ $value->id }}</td>
                     <td><a href="http://{{ $value->url }}">{{ $value->url }}</a></td>
                     <td id="stocklink">
-                        @if($value->miralinks && $value->miralinks->placement_price)
+                        @if($value->miralinks && $value->miralinks->placement_price_rur)
                         <img src="https://www.miralinks.ru/favicon.ico"> 
                         @if(isset($value->miralinks->site_id))
-                        <a href="https://www.miralinks.ru/catalog/profileView/{{ $value->miralinks->site_id }}" target="_blank">Miralinks - {{$value->miralinks->placement_price}}</a><br>
+                        <a href="https://www.miralinks.ru/catalog/profileView/{{ $value->miralinks->site_id }}" target="_blank">Miralinks - {{$value->miralinks->placement_price_rur}}</a><br>
                         @else
-                        Miralinks - {{$value->miralinks->placement_price}}<br>
+                        Miralinks - {{$value->miralinks->placement_price_rur}}<br>
                         @endif
                         @endif
                         @if($value->rotapost && $value->rotapost->placement_price)
@@ -98,8 +98,8 @@
                         @endif
                     </td>
                     <td>
-                        @if($value->miralinks && $value->miralinks->writing_price)
-                        <img src="https://www.miralinks.ru/favicon.ico"> Miralinks - {{$value->miralinks->writing_price}}<br>
+                        @if($value->miralinks && $value->miralinks->writing_price_rur)
+                        <img src="https://www.miralinks.ru/favicon.ico"> Miralinks - {{$value->miralinks->writing_price_rur}}<br>
                         @endif
                         @if($value->rotapost && $value->rotapost->writing_price)
                         <img src="https://www.rotapost.ru/i/favicon.ico"> Rotapost - {{$value->rotapost->writing_price}}<br>
