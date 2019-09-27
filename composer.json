@@ -11,7 +11,8 @@
         "laravel/tinker": "~1.0",
         "laravelcollective/html": "^5.8.0",
         "phpxmlrpc/phpxmlrpc": "4.*",
-        "rootinc/laravel-azure-middleware": "^0.5.1"
+        "rootinc/laravel-azure-middleware": "^0.5.1",
+        "rap2hpoutre/fast-excel": "^1.2"
     },
     "require-dev": {
         "filp/whoops": "~2.0",
