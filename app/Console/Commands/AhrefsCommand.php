@@ -64,6 +64,8 @@ class AhrefsCommand extends Command
             $result = $ahrefs->makeRequest('getDomainRating',[$domain]);
             if($result) {
                 $ahrefs_data[$domain]['dr'] = current($result)['domain_rating'];
+            } else {
+                $ahrefs_data[$domain]['dr'] = -1;
             }
             $bar->advance();
 
@@ -83,6 +85,8 @@ class AhrefsCommand extends Command
             if($result) {
                 $ahrefs_data[$domain]['inlinks'] = current($result)["metrics"]["refdomains"];
                 //$ahrefs_data[$domain]['inlinks'] = current($result)["metrics"]["refpages"];
+            } else {
+                $ahrefs_data[$domain]['inlinks'] = -1;
             }
             $bar->advance();
 
