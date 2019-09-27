@@ -47,6 +47,7 @@ class AhrefsCommand extends Command
         foreach ($domains_urls as $domain) {
             $domains[] = $domain->url;
         }
+        $domains = array_filter($domains);
         $this->info('Get '.count($domains).' domains from database');
 
         $domain_limit = $this->option('limit');
