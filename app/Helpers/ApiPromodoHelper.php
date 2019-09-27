@@ -18,7 +18,7 @@ class ApiPromodoHelper
             'req' =>$domains
         );
 
-        $curl = curl_init('https://api.promodo.ua/ahrefs/public/'.$endpoint);
+        $curl = curl_init('https://api.promodo.ua/'.$endpoint);
         curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, 0);
         curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, 0);
         curl_setopt($curl, CURLOPT_RETURNTRANSFER,true);
@@ -33,7 +33,26 @@ class ApiPromodoHelper
         curl_setopt($curl, CURLOPT_POSTFIELDS,json_encode($payload));
         $json = curl_exec($curl);
 
-        return json_decode($json,'ASSOS');
+        return json_decode($json,'ASSOC');
+
+    }
+
+    public function makeOneRequest(string $endpoint, string $domain)
+    {
+
+        $curl = curl_init('https://api.promodo.ua/'.$endpoint.'?domain='.$domain);
+        curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, 0);
+        curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, 0);
+        curl_setopt($curl, CURLOPT_RETURNTRANSFER,true);
+        curl_setopt($curl, CURLOPT_FOLLOWLOCATION,true);
+        curl_setopt($curl, CURLOPT_CONNECTTIMEOUT,30);
+        curl_setopt($curl, CURLOPT_HTTPHEADER, array(
+            'Api-Token:'.$this->api_token,
+        ));
+
+        $json = curl_exec($curl);
+
+        return json_decode($json,'ASSOC');
 
     }
 

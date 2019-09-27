@@ -7,21 +7,21 @@ use App\Models\Domains;
 use Illuminate\Support\Facades\DB;
 use App\Helpers\ApiPromodoHelper;
 
-class AhrefsCommand extends Command
+class SerpstatCommand extends Command
 {
     /**
      * The name and signature of the console command.
      *
      * @var string
      */
-    protected $signature = 'domains:ahrefs {--limit=0: Run only X domains}';
+    protected $signature = 'domains:traffic {--limit=0: Run only X domains}';
 
     /**
      * The console command description.
      *
      * @var string
      */
-    protected $description = 'get Ahrefs DR and In/Out Links for domains';
+    protected $description = 'get site traffic form Serpstat, source - google.ua';
 
     /**
      * Create a new command instance.
@@ -56,55 +56,33 @@ class AhrefsCommand extends Command
         }
 
         $api = new ApiPromodoHelper();
-        //Ahrefs DR
+        //Serpstat google.ua traffic
 
-        $this->info('Fetching Ahrefs DR ... ');
+        $this->info('Asking Serpstat for traffic [Google.ua]');
         $bar = $this->output->createProgressBar(count($domains));
         $bar->start();
 
         foreach ($domains as $domain) {
-            $result = $api->makeRequest('ahrefs/public/getDomainRating',[$domain]);
-            if(isset(current($result)['domain_rating'])) {
-                $ahrefs_data[$domain]['dr'] = current($result)['domain_rating'];
+            $result = $api->makeOneRequest('serpstat/scrapeone',$domain);
+            if(isset($result['traff'])) {
+                $serpstat_data[$domain]['serpstat_traffic'] = $result['traff'];
             } else {
-                $ahrefs_data[$domain]['dr'] = -1;
+                $serpstat_data[$domain]['serpstat_traffic'] = -1;
             }
             $bar->advance();
 
         }
         $bar->finish();
         $this->info("\n");
-
-        //End Ahrefs DR
-
-        //Ahrefs In/Out Links
-        $this->info("Fetching Ahrefs In/Out Links");
-        $bar = $this->output->createProgressBar(count($domains));
-        $bar->start();
-
-        foreach ($domains as $domain) {
-            $result = $api->makeRequest('ahrefs/public/getDomainLinks',[$domain]);
-            if(isset(current($result)["metrics"]["refdomains"])) {
-                $ahrefs_data[$domain]['inlinks'] = current($result)["metrics"]["refdomains"];
-                //$ahrefs_data[$domain]['inlinks'] = current($result)["metrics"]["refpages"];
-            } else {
-                $ahrefs_data[$domain]['inlinks'] = -1;
-            }
-            $bar->advance();
-
-        }
-        $bar->finish();
-        $this->info("\n");
-        //End Ahrefs In/Out Links
 
         //Import into DB
         $this->info("Updating DB");
 
-        $bar = $this->output->createProgressBar(count($ahrefs_data));
+        $bar = $this->output->createProgressBar(count($serpstat_data));
         $bar->start();
 
-       foreach ($ahrefs_data as $ahrefs_domain_name => $ahrefs_domain_data ) {
-            DB::table($domains_table)->where('url',$ahrefs_domain_name)->update(['ahrefs_dr' => $ahrefs_domain_data['dr'],'ahrefs_inlinks' => $ahrefs_domain_data['inlinks']]);
+       foreach ($serpstat_data as $serpstat_domain_name => $serpstat_domain_data ) {
+            DB::table($domains_table)->where('url',$serpstat_domain_name)->update(['serpstat_traffic' => $serpstat_domain_data['serpstat_traffic']]);
             $bar->advance();
         }
         $bar->finish();
