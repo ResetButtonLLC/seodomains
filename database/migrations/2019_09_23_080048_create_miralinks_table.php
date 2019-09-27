@@ -16,6 +16,7 @@ class CreateMiralinksTable extends Migration {
             $table->increments('id');
             $table->string('name')->nullable();
             $table->integer('site_id')->nullable();
+            $table->text('desc')->nullable();
             $table->float('placement_price', 10, 2)->nullable();
             $table->float('writing_price', 10, 2)->nullable();
             $table->float('placement_price_rur', 10, 2)->nullable();
@@ -26,6 +27,7 @@ class CreateMiralinksTable extends Migration {
             $table->integer('links')->nullable();
             $table->string('language')->nullable();
             $table->integer('traffic')->nullable();
+            $table->string('lang')->nullable();
             $table->timestamp('created_at')->nullable();
             $table->timestamp('updated_at')->nullable();
             $table->integer('domain_id')->unsigned();

@@ -45,6 +45,7 @@ class MiralinksCommand extends Command {
             while ($data = $this->getData($start)) {
                 if (count($data->aaData) > 0) {
                     foreach ($data->aaData as $domain) {
+                        dd($domain);
                         $lang = json_decode($domain->rowData->langCode);
                         if (isset($lang[0][0])) {
                             $lang = $lang[0][0];
@@ -52,7 +53,7 @@ class MiralinksCommand extends Command {
                             $lang = null;
                         }
                         $url = $domain->rowData->{"Ground.folder_url_wl"};
-                        $info = ['name' => $domain->rowData->{"Ground.name"}, 'site_id' => $domain->rowData->{"Ground.id"}, 'placement_price' => $domain->rowData->{"Ground.price_usd"}, 'writing_price' => $domain->rowData->{"Ground.article_price_usd"}, 'placement_price_rur' => $domain->rowData->{"Ground.price_rur"}, 'writing_price_rur' => $domain->rowData->{"Ground.article_price_rur"}, 'region' => $domain->rowData->{"Region.title"}, 'theme' => $domain->rowData->subj, 'google_index' => $domain->rowData->{"Ground.google_indexed_count"}, 'links' => $domain->rowData->{"Ground.links_in_articles"}, 'language' => $lang, 'traffic' => $domain->rowData->{"traffic.value"}];
+                        $info = ['name' => $domain->rowData->{"Ground.name"}, 'site_id' => $domain->rowData->{"Ground.id"}, 'desc' => $domain->rowData->{"Ground.description"}, 'placement_price' => $domain->rowData->{"Ground.price_usd"}, 'writing_price' => $domain->rowData->{"Ground.article_price_usd"}, 'placement_price_rur' => $domain->rowData->{"Ground.price_rur"}, 'writing_price_rur' => $domain->rowData->{"Ground.article_price_rur"}, 'region' => $domain->rowData->{"Region.title"}, 'theme' => $domain->rowData->subj, 'google_index' => $domain->rowData->{"Ground.google_indexed_count"}, 'links' => $domain->rowData->{"Ground.links_in_articles"}, 'lang' => $lang, 'traffic' => $domain->rowData->{"traffic.value"}];
                         if ($domain = Domains::where('url', $url)->first()) {
                             $info['domain_id'] = $domain->id;
                         } else {
