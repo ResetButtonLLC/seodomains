@@ -68,6 +68,7 @@
                     <th>MajesticCF</th>
                     <th>Трафик LiveInternet</th>
                     <th>Трафик SimilarWeb</th>
+                    <th>Трафик Serpstat</th>
                     <th>Язык</th>
                     <th>Кол-во размещаемых ссылок</th>
                     <th>Дата добавления в биржу</th>
@@ -115,13 +116,14 @@
                     <td>{{$value->miralinks ? $value->miralinks->desc : ''}}</td>
                     <td>{{$value->miralinks ? $value->miralinks->region : ''}}</td>
                     <td>{{$value->miralinks ? $value->miralinks->google_index : ''}}</td>
+                    <td>{{$value->ahrefs_dr ? $value->ahrefs_dr : ''}}</td>
+                    <td>{{$value->ahrefs_inlinks ? $value->ahrefs_inlinks : ''}}</td>
                     <td></td>
                     <td></td>
                     <td></td>
                     <td></td>
                     <td></td>
-                    <td></td>
-                    <td></td>
+                    <td class="serpstat_traffic">{{$value->serpstat_traffic ? $value->serpstat_traffic : ''}}</td>
                     <td class="text-center">{{$value->miralinks ? $value->miralinks->lang : ''}}</td>
                     <td class="text-center">{{$value->miralinks ? $value->miralinks->links : ''}}</td>
                     <td class="text-center">{{$value->created_at}}</td>
