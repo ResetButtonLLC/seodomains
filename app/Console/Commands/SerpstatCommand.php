@@ -14,7 +14,7 @@ class SerpstatCommand extends Command
      *
      * @var string
      */
-    protected $signature = 'domains:traffic {--limit=0: Run only X domains}';
+    protected $signature = 'domains:traffic {--limit=0: Run only X domains} {--skip=0: skip X domains}';
 
     /**
      * The console command description.
@@ -42,12 +42,17 @@ class SerpstatCommand extends Command
     {
 
         $domains_table = (new Domains)->getTable();
-        $domains_urls = DB::table($domains_table)->select('url')->get();
+        $domains_urls = DB::table($domains_table)->select('url')->skip($this->option('skip'))->take(PHP_INT_MAX)->get();
 
         foreach ($domains_urls as $domain) {
             $domains[] = $domain->url;
         }
         $domains = array_filter($domains);
+
+        $domain_skip = $this->option('skip');
+        if ($domain_skip) {
+            $this->info('Skipping ' . $domain_skip . ' domains');
+        }
         $this->info('Get '.count($domains).' domains from database');
 
         $domain_limit = $this->option('limit');
@@ -55,6 +60,8 @@ class SerpstatCommand extends Command
             $domains = array_slice($domains,0,$domain_limit);
             $this->info('OPTION:LIMIT. Run only '.count($domains).' domains');
         }
+
+
 
         $api = new ApiPromodoHelper();
         //Serpstat google.ua traffic
@@ -69,6 +76,9 @@ class SerpstatCommand extends Command
                 $serpstat_data[$domain]['serpstat_traffic'] = $result['traff'];
             } else {
                 $serpstat_data[$domain]['serpstat_traffic'] = -1;
+                print_r($domain);
+                print_r($result);
+
             }
             $bar->advance();
 
