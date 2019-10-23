@@ -23,7 +23,7 @@ class GoggetlinksCommand extends Command {
      *
      * @var string
      */
-    protected $description = 'Command description';
+    protected $description = 'Load domains from gogetlinks.net';
     protected $count;
 
     /**
