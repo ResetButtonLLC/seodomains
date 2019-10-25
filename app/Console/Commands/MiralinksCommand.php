@@ -40,9 +40,14 @@ class MiralinksCommand extends Command {
      * @return mixed
      */
     public function handle() {
+
+        var_dump($this->login());
+        die();
+
         if ($this->login()) {
             $start = 0;
             while ($data = $this->getData($start)) {
+
                 if (count($data->aaData) > 0) {
                     foreach ($data->aaData as $domain) {
                         dd($domain);
@@ -96,6 +101,10 @@ class MiralinksCommand extends Command {
 
         if (strpos($html, 'Ваши проекты')) {
             return true;
+        } else {
+            $this->error('Login not successful : saving page to '.url('/sites/miralinks/login.html').PHP_EOL);
+            file_put_contents(public_path('sites/miralinks/login.html'),$html);
+            return false;
         }
 
         $postinfo = "_method=POST"

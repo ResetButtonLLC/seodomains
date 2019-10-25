@@ -29,6 +29,7 @@ class SapeCommand extends Command {
     protected $description = 'Command description';
     protected $client;
     protected $accountId;
+    protected $auth_cookie;
 
     /**
      * Create a new command instance.
@@ -45,10 +46,16 @@ class SapeCommand extends Command {
      * @return mixed
      */
     public function handle() {
-        if ($this->login()) {
+
+        if ($this->sapeAuth()) {
             $page = 1;
             $added = 0;
-            while ($domains = $this->getDomains($page)) {
+
+            while ($domains = $this->sapeGetSitesFromPage($page)) {
+
+                print_r(count($domains));
+                die();
+
                 foreach ($domains as $domain) {
                     $url = $domain['url']['string'];
                     $data['placement_price'] = $domain['price']['double'];
@@ -70,7 +77,7 @@ class SapeCommand extends Command {
                         $added++;
                     }
                 }
-                echo 'Domains from sape.ru page ' . $page . ' added: ' . $added . PHP_EOL;
+                $this->line('Domains from sape.ru page ' . $page . ' added: ' . $added);
                 $page++;
                 sleep(15);
             }
@@ -80,18 +87,27 @@ class SapeCommand extends Command {
     private function login() {
         $this->client = new Client("/xmlrpc/", "api.pr.sape.ru", 80);
         $resp = $this->client->send(new Request('sape_pr.login', [new Value(env('SAPE_LOGIN')), new Value(env('SAPE_TOKEN'))]));
+
         if ($resp->errno > 0) {
+            $this->error('Auth not successful : saving responce to '.url('sites/sape/auth.txt').PHP_EOL);
+            file_put_contents(public_path('sites/sape/auth.txt'),$resp);
             return false;
         } else {
             $this->accountId = $resp->value();
             $cookies = $resp->cookies();
             $this->client->setcookie('PR', $resp->cookies()["PR"]["value"]);
+            $this->line('Auth successfull');
             return $this->accountId;
         }
     }
 
     private function getDomains($page = 1) {
-        $resp = $this->client->send(new Request('sape_pr.site.search', [new Value('news', 'string'), new Value([], 'struct'), new Value($page, 'int'), new Value(10, 'int')]));
+
+
+
+        $resp = $this->client->send(new Request('sape_pr.site.search', [new Value('news', 'string'), new Value([], 'struct'), new Value($page, 'int'), new Value(50, 'int')]));
+
+        //print_r($resp);
 
         if (!$resp->value()) {
             return false;
@@ -99,5 +115,103 @@ class SapeCommand extends Command {
             return $resp->value();
         }
     }
+
+    private function sapeAuth()
+    {
+        $payload='<?xml version="1.0"?>
+            <methodCall>
+               <methodName>sape_pr.login</methodName>
+                  <params>
+                     <param>
+                        <value><string>'.env('SAPE_LOGIN').'</string></value>
+                     </param>
+                     <param>
+                        <value><string>'.env('SAPE_TOKEN').'</string></value>
+                     </param>
+                  </params>
+            </methodCall>
+        ';
+
+        $resp = $this->makeRequest($payload);
+
+        $result = simplexml_load_string($resp);
+
+        if (isset($result->params->param->value->int)) {
+            $this->line('Auth successful');
+
+            return true;
+        } else {
+            $this->error('Responce not successful : saving responce to '.url('sites/sape/auth.txt').PHP_EOL);
+            file_put_contents(public_path('sites/sape/auth.txt'),$resp);
+            return false;
+        }
+
+    }
+
+    private function sapeGetSitesFromPage($page)
+    {
+        $payload='<?xml version="1.0"?>
+            <methodCall>
+               <methodName>sape_pr.site.search</methodName>
+                  <params>
+                     <param>
+                        <value><string>news</string></value>
+                     </param>
+                     <param>
+                        <value>
+                            <struct></struct>
+                         </value>
+                     </param>
+                     <param>
+                        <value><i4>'.$page.'</i4></value>
+                     </param>
+                     <param>
+                        <value><i4>1</i4></value>
+                     </param>
+                  </params>
+            </methodCall>
+        ';
+
+        $resp = $this->makeRequest($payload);
+
+        $result = simplexml_import_dom($resp);
+
+
+        file_put_contents(public_path('sites/sape/responce.txt'),print_r($result,true));
+
+
+        print_r($result);
+        die();
+
+    }
+
+
+    private function makeRequest($payload)
+    {
+        $curl = curl_init();
+
+        curl_setopt_array($curl, array(
+            CURLOPT_URL => "http://api.pr.sape.ru/xmlrpc/",
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_ENCODING => "",
+            CURLOPT_MAXREDIRS => 10,
+            CURLOPT_TIMEOUT => 30,
+            CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+            CURLOPT_POST => true,
+            CURLOPT_COOKIEJAR => public_path(env('SAPE_COOKIE_FILE')),
+            CURLOPT_COOKIEFILE => public_path(env('SAPE_COOKIE_FILE')),
+            CURLOPT_POSTFIELDS => $payload,
+            CURLOPT_HTTPHEADER => array(
+                "Content-Type: text/plain",
+            ),
+        ));
+
+        $response = curl_exec($curl);
+        curl_close($curl);
+
+        return $response;
+
+    }
+
 
 }
