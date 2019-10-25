@@ -50,11 +50,10 @@ class SapeCommand extends Command {
         if ($this->sapeAuth()) {
             $page = 1;
             $added = 0;
+            $updated = 0;
 
-            while ($domains = $this->sapeGetSitesFromPage($page)) {
+            while ($domains = $this->sapeGetSitesFromPage($page, 500)) {
 
-                print_r(count($domains));
-                die();
 
                 foreach ($domains as $domain) {
                     $url = $domain['url']['string'];
@@ -71,13 +70,14 @@ class SapeCommand extends Command {
                     if (Sape::where('domain_id', $data['domain_id'])->first()) {
                         $data['updated_at'] = date('Y-m-d H:i:s');
                         Sape::where('domain_id', $data['domain_id'])->update($data);
+                        $updated++;
                     } else {
                         $data['created_at'] = date('Y-m-d H:i:s');
                         Sape::insert($data);
                         $added++;
                     }
                 }
-                $this->line('Domains from sape.ru page ' . $page . ' added: ' . $added);
+                $this->line('Sape.ru page : ' . $page . ' | Fetched domains : ' . count($domains).' | Added total :  '.$added.' | Updated total : '.$updated.' | Sleeping for 15 seconds');
                 $page++;
                 sleep(15);
             }
@@ -148,8 +148,10 @@ class SapeCommand extends Command {
 
     }
 
-    private function sapeGetSitesFromPage($page)
+    private function sapeGetSitesFromPage($page, $domains_per_request = 10)
     {
+        $domains = array();
+
         $payload='<?xml version="1.0"?>
             <methodCall>
                <methodName>sape_pr.site.search</methodName>
@@ -166,23 +168,28 @@ class SapeCommand extends Command {
                         <value><i4>'.$page.'</i4></value>
                      </param>
                      <param>
-                        <value><i4>1</i4></value>
+                        <value><i4>'.$domains_per_request.'</i4></value>
                      </param>
                   </params>
             </methodCall>
         ';
 
-        $resp = $this->makeRequest($payload);
+        $resp = simplexml_load_string($this->makeRequest($payload));
 
-        $result = simplexml_import_dom($resp);
+        foreach ($resp->params->param->value->array->data->value as $entry) {
+            $domain_data = $entry->struct->member;
 
+            $id = current($domain_data[0]->value->int);
 
-        file_put_contents(public_path('sites/sape/responce.txt'),print_r($result,true));
+            $domains[$id]['url']['string'] = current($domain_data[1]->value->string[0]);
+            $domains[$id]['price']['double'] = intval (current ($domain_data[2]->value->double[0]));
+            $domains[$id]['nof_pages_in_google']['int'] = intval (current ($domain_data[14]->value->int[0]));
 
+        }
 
-        print_r($result);
-        die();
+        //file_put_contents(public_path('sites/sape/responce.txt'),print_r($resp->params->param->value->array->data ,true));
 
+        return $domains;
     }
 
 
