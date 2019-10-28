@@ -135,6 +135,9 @@ class GoggetlinksCommand extends Command {
 
             $page++;
         }
+
+        $bar->finish();
+
     }
 
     private function checkLogin()
@@ -243,7 +246,7 @@ class GoggetlinksCommand extends Command {
         $response = curl_exec($curl);
         $response = mb_convert_encoding($response, "utf-8", "windows-1251");
 
-        file_put_contents(public_path('sites/gogetlinks/page.html'),$response);
+        //file_put_contents(public_path('sites/gogetlinks/page.html'),$response);
 
 
         $err = curl_error($curl);
