@@ -9,3 +9,5 @@
 /storage/framework/views/*
 composer.lock
 /public/adwordsscripts/*
+/public/sites/*
+cookie-*
