@@ -29,6 +29,7 @@ class SapeCommand extends Command {
     protected $description = 'Command description';
     protected $client;
     protected $accountId;
+    protected $auth_cookie;
 
     /**
      * Create a new command instance.
@@ -45,10 +46,15 @@ class SapeCommand extends Command {
      * @return mixed
      */
     public function handle() {
-        if ($this->login()) {
+
+        if ($this->sapeAuth()) {
             $page = 1;
             $added = 0;
-            while ($domains = $this->getDomains($page)) {
+            $updated = 0;
+
+            while ($domains = $this->sapeGetSitesFromPage($page, 500)) {
+
+
                 foreach ($domains as $domain) {
                     $url = $domain['url']['string'];
                     $data['placement_price'] = $domain['price']['double'];
@@ -64,13 +70,14 @@ class SapeCommand extends Command {
                     if (Sape::where('domain_id', $data['domain_id'])->first()) {
                         $data['updated_at'] = date('Y-m-d H:i:s');
                         Sape::where('domain_id', $data['domain_id'])->update($data);
+                        $updated++;
                     } else {
                         $data['created_at'] = date('Y-m-d H:i:s');
                         Sape::insert($data);
                         $added++;
                     }
                 }
-                echo 'Domains from sape.ru page ' . $page . ' added: ' . $added . PHP_EOL;
+                $this->line('Sape.ru page : ' . $page . ' | Fetched domains : ' . count($domains).' | Added total :  '.$added.' | Updated total : '.$updated.' | Sleeping for 15 seconds');
                 $page++;
                 sleep(15);
             }
@@ -80,18 +87,27 @@ class SapeCommand extends Command {
     private function login() {
         $this->client = new Client("/xmlrpc/", "api.pr.sape.ru", 80);
         $resp = $this->client->send(new Request('sape_pr.login', [new Value(env('SAPE_LOGIN')), new Value(env('SAPE_TOKEN'))]));
+
         if ($resp->errno > 0) {
+            $this->error('Auth not successful : saving responce to '.url('sites/sape/auth.txt').PHP_EOL);
+            file_put_contents(public_path('sites/sape/auth.txt'),$resp);
             return false;
         } else {
             $this->accountId = $resp->value();
             $cookies = $resp->cookies();
             $this->client->setcookie('PR', $resp->cookies()["PR"]["value"]);
+            $this->line('Auth successfull');
             return $this->accountId;
         }
     }
 
     private function getDomains($page = 1) {
-        $resp = $this->client->send(new Request('sape_pr.site.search', [new Value('news', 'string'), new Value([], 'struct'), new Value($page, 'int'), new Value(10, 'int')]));
+
+
+
+        $resp = $this->client->send(new Request('sape_pr.site.search', [new Value('news', 'string'), new Value([], 'struct'), new Value($page, 'int'), new Value(50, 'int')]));
+
+        //print_r($resp);
 
         if (!$resp->value()) {
             return false;
@@ -99,5 +115,110 @@ class SapeCommand extends Command {
             return $resp->value();
         }
     }
+
+    private function sapeAuth()
+    {
+        $payload='<?xml version="1.0"?>
+            <methodCall>
+               <methodName>sape_pr.login</methodName>
+                  <params>
+                     <param>
+                        <value><string>'.env('SAPE_LOGIN').'</string></value>
+                     </param>
+                     <param>
+                        <value><string>'.env('SAPE_TOKEN').'</string></value>
+                     </param>
+                  </params>
+            </methodCall>
+        ';
+
+        $resp = $this->makeRequest($payload);
+
+        $result = simplexml_load_string($resp);
+
+        if (isset($result->params->param->value->int)) {
+            $this->line('Auth successful');
+
+            return true;
+        } else {
+            $this->error('Responce not successful : saving responce to '.url('sites/sape/auth.txt').PHP_EOL);
+            file_put_contents(public_path('sites/sape/auth.txt'),$resp);
+            return false;
+        }
+
+    }
+
+    private function sapeGetSitesFromPage($page, $domains_per_request = 10)
+    {
+        $domains = array();
+
+        $payload='<?xml version="1.0"?>
+            <methodCall>
+               <methodName>sape_pr.site.search</methodName>
+                  <params>
+                     <param>
+                        <value><string>news</string></value>
+                     </param>
+                     <param>
+                        <value>
+                            <struct></struct>
+                         </value>
+                     </param>
+                     <param>
+                        <value><i4>'.$page.'</i4></value>
+                     </param>
+                     <param>
+                        <value><i4>'.$domains_per_request.'</i4></value>
+                     </param>
+                  </params>
+            </methodCall>
+        ';
+
+        $resp = simplexml_load_string($this->makeRequest($payload));
+
+        foreach ($resp->params->param->value->array->data->value as $entry) {
+            $domain_data = $entry->struct->member;
+
+            $id = current($domain_data[0]->value->int);
+
+            $domains[$id]['url']['string'] = current($domain_data[1]->value->string[0]);
+            $domains[$id]['price']['double'] = intval (current ($domain_data[2]->value->double[0]));
+            $domains[$id]['nof_pages_in_google']['int'] = intval (current ($domain_data[14]->value->int[0]));
+
+        }
+
+        //file_put_contents(public_path('sites/sape/responce.txt'),print_r($resp->params->param->value->array->data ,true));
+
+        return $domains;
+    }
+
+
+    private function makeRequest($payload)
+    {
+        $curl = curl_init();
+
+        curl_setopt_array($curl, array(
+            CURLOPT_URL => "http://api.pr.sape.ru/xmlrpc/",
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_ENCODING => "",
+            CURLOPT_MAXREDIRS => 10,
+            CURLOPT_TIMEOUT => 30,
+            CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+            CURLOPT_POST => true,
+            CURLOPT_COOKIEJAR => public_path(env('SAPE_COOKIE_FILE')),
+            CURLOPT_COOKIEFILE => public_path(env('SAPE_COOKIE_FILE')),
+            CURLOPT_POSTFIELDS => $payload,
+            CURLOPT_HTTPHEADER => array(
+                "Content-Type: text/plain",
+            ),
+        ));
+
+        $response = curl_exec($curl);
+        curl_close($curl);
+
+        return $response;
+
+    }
+
 
 }

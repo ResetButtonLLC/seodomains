@@ -12,7 +12,7 @@ class Domains extends Model {
 
     public $timestamps = ['created_at'];
     protected $fillable = [
-        'id', 'url', 'created_at'
+        'id', 'url', 'created_at', 'majestic_tf', 'majestic_cf', 'majestic_updated'
     ];
 
     public function miralinks(): HasOne {
