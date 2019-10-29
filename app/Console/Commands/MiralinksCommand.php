@@ -76,16 +76,16 @@ class MiralinksCommand extends Command {
                         }
 
                         if (Miralinks::where('domain_id', $info['domain_id'])->first()) {
-                            $info['updated_at'] = date('Y-m-d H:i:s');
                             Miralinks::where('domain_id', $info['domain_id'])->update($info);
                         } else {
-                            $info['created_at'] = date('Y-m-d H:i:s');
                             Miralinks::insert($info);
+                            $info['updated_at'] = date('Y-m-d H:i:s');
                         }
                         $bar->advance();
                     }
                     $start += 50;
                 } else {
+
                     $bar->finish();
 
                     $this->line('Add Majestic CF/TF to main table');
@@ -94,27 +94,31 @@ class MiralinksCommand extends Command {
                      * todo
                     DB::table('domains')
                         ->join('miralinks', 'id', '=', 'miralinks.domain_id')
-                        ->whereNotNull('miralinks.majestic_cf')
                         ->update(['majestic_cf' => 'miralinks.majestic_cf'])
+                        ->whereNotNull('miralinks.majestic_cf')
                         ->get();
                     */
 
                     //Через Query builder не работает
                     DB::statement('
-          UPDATE domains 
-          INNER JOIN miralinks ON domains.id = miralinks.domain_id 
-          SET domains.majestic_cf = miralinks.majestic_cf, domains.majestic_updated = NOW() 
-          WHERE miralinks.majestic_cf IS NOT NULL;
-          ');
+                      UPDATE domains 
+                      INNER JOIN miralinks ON domains.id = miralinks.domain_id 
+                      SET domains.majestic_cf = miralinks.majestic_cf, domains.majestic_updated = NOW() 
+                      WHERE miralinks.majestic_cf IS NOT NULL;
+                      ');
 
-                    DB::statement('
-          UPDATE domains 
-          INNER JOIN miralinks ON domains.id = miralinks.domain_id 
-          SET domains.majestic_tf = miralinks.majestic_tf, domains.majestic_updated = NOW() 
-          WHERE miralinks.majestic_tf IS NOT NULL;
-          ');
+                                DB::statement('
+                      UPDATE domains 
+                      INNER JOIN miralinks ON domains.id = miralinks.domain_id 
+                      SET domains.majestic_tf = miralinks.majestic_tf, domains.majestic_updated = NOW() 
+                      WHERE miralinks.majestic_tf IS NOT NULL;
+                      ');
 
-                break;
+                    $this->line ('Deleting domains, that are no more exist from database');
+                    Miralinks::where('updated_at', '<=',Carbon::now()->subHours(12)->toDateTimeString())->delete();
+                    $this->line ('Update finished');
+
+                    break;
 
                 }
             }

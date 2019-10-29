@@ -8,6 +8,7 @@ use App\Models\{
     Domains,
     Sape
 };
+use Carbon\Carbon;
 use PhpXmlRpc\Value;
 use PhpXmlRpc\Request;
 use PhpXmlRpc\Client;
@@ -68,12 +69,11 @@ class SapeCommand extends Command {
                     }
 
                     if (Sape::where('domain_id', $data['domain_id'])->first()) {
-                        $data['updated_at'] = date('Y-m-d H:i:s');
                         Sape::where('domain_id', $data['domain_id'])->update($data);
                         $updated++;
                     } else {
-                        $data['created_at'] = date('Y-m-d H:i:s');
                         Sape::insert($data);
+                        $data['updated_at'] = date('Y-m-d H:i:s');
                         $added++;
                     }
                 }
@@ -81,6 +81,11 @@ class SapeCommand extends Command {
                 $page++;
                 sleep(15);
             }
+
+            $this->line ('Deleting domains, that are no more exist from database');
+            Sape::where('updated_at', '<=',Carbon::now()->subHours(2)->toDateTimeString())->delete();
+            $this->line ('Update finished');
+
         }
     }
 

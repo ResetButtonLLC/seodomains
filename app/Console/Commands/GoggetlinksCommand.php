@@ -8,6 +8,7 @@ use App\Models\{
     Domains,
     Gogetlinks
 };
+use Carbon\Carbon;
 
 class GoggetlinksCommand extends Command {
 
@@ -121,11 +122,10 @@ class GoggetlinksCommand extends Command {
                 }
 
                 if (Gogetlinks::where('domain_id', $data['domain_id'])->first()) {
-                    $data['updated_at'] = date('Y-m-d H:i:s');
                     Gogetlinks::where('domain_id', $data['domain_id'])->update($data);
                 } else {
-                    $data['created_at'] = date('Y-m-d H:i:s');
                     Gogetlinks::insert($data);
+                    $data['updated_at'] = date('Y-m-d H:i:s');
                 }
                 $added++;
 
@@ -137,6 +137,9 @@ class GoggetlinksCommand extends Command {
         }
 
         $bar->finish();
+        $this->line ('Deleting domains, that are no more exist from database');
+        Gogetlinks::where('updated_at', '<=',Carbon::now()->subHours(24)->toDateTimeString())->delete();
+        $this->line ('Update finished');
 
     }
 
