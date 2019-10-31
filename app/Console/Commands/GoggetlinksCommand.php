@@ -53,24 +53,23 @@ class GoggetlinksCommand extends Command {
         $quantity = "/(.*)<\/td>/";
         $added = 0;
 
+
+        $counter = array(
+            'current' => 0,
+            'total' => 0,
+            'new' => 0,
+            'updated' => 0,
+        );
+
         //set 50 sites per page
         //file_put_contents(public_path(env('GOGETLINKS_COOKIE_FILE')),'gogetlinks.net	FALSE	/	FALSE	1602936216	in_page_search_sites	50'.PHP_EOL, FILE_APPEND);
 
         while ($data = $this->getData($page)) {
 
-            //Antiban pause
-
-            if ($page) {
-                sleep(mt_rand(30,50));
-            }
-
-
             //Progressbar init
             if ($page == 0) {
-                preg_match('/Найдено\ (\d{1,6})\ сайт/si',$data, $matches);
-                $domains = trim($matches[1]);
-                $bar = $this->output->createProgressBar($domains);
-                $bar->start();
+                preg_match('/Найдено\ (\d{1,6})\ сайт/si', $data, $matches);
+                $counter['total'] = $matches[1];
             }
 
             $data = explode('<tbody id="body_table_content">', $data);
@@ -88,8 +87,8 @@ class GoggetlinksCommand extends Command {
             $row = explode('search_sites_row', $data[1]);
             unset($row[0]);
 
-            //print_r(count($row));
-            //die();
+
+            $counter['current'] = $counter['current'] + count($row);
 
             foreach ($row as $col) {
                 $data = [];
@@ -97,8 +96,7 @@ class GoggetlinksCommand extends Command {
 
                 preg_match($url, $values[1], $matches);
                 if ($matches) {
-                    $site = utf8_encode($matches[1]);
-
+                    $site = $matches[1];
                     unset($matches);
                 }
 
@@ -117,28 +115,33 @@ class GoggetlinksCommand extends Command {
                 if ($domain = Domains::where('url', $site)->first()) {
                     $data['domain_id'] = $domain->id;
                 } else {
-                    $domain = Domains::insertGetId(['url' => $site, 'created_at' => date('Y-m-d H:i:s')]);
+                    $domain = Domains::insertGetId(['url' => $site]);
                     $data['domain_id'] = $domain;
                 }
 
                 if (Gogetlinks::where('domain_id', $data['domain_id'])->first()) {
                     Gogetlinks::where('domain_id', $data['domain_id'])->update($data);
+                    $counter['updated']++;
                 } else {
                     Gogetlinks::insert($data);
+                    $counter['new']++;
+                    //Добавляем updated_at при создании, чтоб в конце обновления удалить домены у которых updated_at отличается на Х часов от времени обновления
                     $data['updated_at'] = date('Y-m-d H:i:s');
                 }
                 $added++;
-
-                $bar->advance();
-
             }
+
+            $antiban_pause = mt_rand(30, 50);
+
+            $this->line('Gogetlinks.ru page : ' . $page . ' | Fetched domains : ' . count($row) . ' | Progress: '.$counter['current'].'/'.$counter['total'].' | Added total : ' . $counter['new'] . ' | Updated total : ' . $counter['updated'] . ' | Sleeping for ' . $antiban_pause . ' seconds');
+
+            sleep($antiban_pause);
 
             $page++;
         }
 
-        $bar->finish();
         $this->line ('Deleting domains, that are no more exist from database');
-        Gogetlinks::where('updated_at', '<=',Carbon::now()->subHours(24)->toDateTimeString())->delete();
+        Gogetlinks::where('updated_at', '<=',Carbon::now()->subHours(12)->toDateTimeString())->delete();
         $this->line ('Update finished');
 
     }
@@ -163,6 +166,8 @@ class GoggetlinksCommand extends Command {
             $this->error('Login not successful : saving page to '.url('/sites/gogetlinks/login.html').PHP_EOL);
             $this->error('Most likely that the cookies has expired'.PHP_EOL);
             return;
+        } else {
+            $this->line('Auth successfull');
         }
 
     }
@@ -209,8 +214,6 @@ class GoggetlinksCommand extends Command {
     }
 
     private function getData($page = 0) {
-        Log::info('Gogetlinks page: ' . $page);
-
         if ($page > 0) {
             $params = 'action=search&additional_action=change_count_in_page&page=' . $page;
         } else {
@@ -249,7 +252,7 @@ class GoggetlinksCommand extends Command {
         $response = curl_exec($curl);
         $response = mb_convert_encoding($response, "utf-8", "windows-1251");
 
-        //file_put_contents(public_path('sites/gogetlinks/page.html'),$response);
+        //file_put_contents(public_path('sites/gogetlinks/page'.$page.'.html'),$response);
 
 
         $err = curl_error($curl);

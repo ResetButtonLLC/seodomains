@@ -43,20 +43,27 @@ class MiralinksCommand extends Command {
      */
     public function handle() {
 
+        $counter = array(
+            'current' => 0,
+            'total' => 0,
+            'new' => 0,
+            'updated' => 0,
+        );
+
         if ($this->login()) {
 
-            $this->line('Login successful');
+            $this->line('Auth successful');
             $start = 0;
             $total = 0;
             while ($data = $this->getData($start)) {
 
                 //Progressbar init
                 if ($start == 0) {
-                    $bar = $this->output->createProgressBar($data->iTotalRecords);
-                    $bar->start();
+                    $counter['total'] = $data->iTotalRecords;
                 }
 
                 if (count($data->aaData) > 0) {
+                    $counter['current'] = $counter['current']+count($data->aaData);
                     foreach ($data->aaData as $domain) {
 
                         $lang = json_decode($domain->rowData->langCode);
@@ -77,18 +84,21 @@ class MiralinksCommand extends Command {
 
                         if (Miralinks::where('domain_id', $info['domain_id'])->first()) {
                             Miralinks::where('domain_id', $info['domain_id'])->update($info);
+                            $counter['updated']++;
                         } else {
                             Miralinks::insert($info);
+                            //Добавляем updated_at при создании, чтоб в конце обновления удалить домены у которых updated_at отличается на Х часов от времени обновления
                             $info['updated_at'] = date('Y-m-d H:i:s');
+                            $counter['new']++;
                         }
-                        $bar->advance();
                     }
+                    $this->line('Miralinks.ru | Fetched domains : ' . count($data->aaData) . ' | Progress: '.$counter['current'].'/'.$counter['total'].' | Added total : ' . $counter['new'] . ' | Updated total : ' . $counter['updated']);
                     $start += 50;
+
                 } else {
 
-                    $bar->finish();
 
-                    $this->line('Add Majestic CF/TF to main table');
+                    $this->line('Exporting Majestic CF/TF to main table');
 
                     /*
                      * todo
