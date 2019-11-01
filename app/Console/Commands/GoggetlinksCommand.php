@@ -144,6 +144,8 @@ class GoggetlinksCommand extends Command {
         Gogetlinks::where('updated_at', '<=',Carbon::now()->subHours(12)->toDateTimeString())->delete();
         $this->line ('Update finished');
 
+        $this->call('domains:finalize');
+
     }
 
     private function checkLogin()

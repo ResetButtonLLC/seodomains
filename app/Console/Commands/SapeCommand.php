@@ -86,6 +86,8 @@ class SapeCommand extends Command {
             Sape::where('updated_at', '<=',Carbon::now()->subHours(2)->toDateTimeString())->delete();
             $this->line ('Update finished');
 
+            $this->call('domains:finalize');
+
         }
     }
 

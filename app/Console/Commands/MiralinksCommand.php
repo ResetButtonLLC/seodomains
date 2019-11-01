@@ -64,6 +64,7 @@ class MiralinksCommand extends Command {
 
                 if (count($data->aaData) > 0) {
                     $counter['current'] = $counter['current']+count($data->aaData);
+
                     foreach ($data->aaData as $domain) {
 
                         $lang = json_decode($domain->rowData->langCode);
@@ -74,7 +75,7 @@ class MiralinksCommand extends Command {
                             $lang = null;
                         }
                         $url = $domain->rowData->{"Ground.folder_url_wl"};
-                        $info = ['name' => $domain->rowData->{"Ground.name"}, 'site_id' => $domain->rowData->{"Ground.id"}, 'desc' => $domain->rowData->{"Ground.description"}, 'placement_price_usd' => $domain->rowData->{"Ground.price_usd"}, 'writing_price_usd' => $domain->rowData->{"Ground.article_price_usd"}, 'placement_price' => $domain->rowData->{"Ground.price_rur"}, 'writing_price' => $domain->rowData->{"Ground.article_price_rur"}, 'region' => $domain->rowData->{"Region.title"}, 'theme' => $domain->rowData->subj, 'google_index' => $domain->rowData->{"Ground.google_indexed_count"}, 'links' => $domain->rowData->{"Ground.links_in_articles"}, 'lang' => $lang, 'traffic' => $domain->rowData->{"traffic.value"}, 'majestic_tf' => $domain->rowData->{"Ground.tf"}, 'majestic_cf' => $domain->rowData->{"Ground.cf"}];
+                        $info = ['name' => $domain->rowData->{"Ground.name"}, 'site_id' => $domain->rowData->{"Ground.id"}, 'desc' => $domain->rowData->{"Ground.description"}, 'placement_price_usd' => $domain->rowData->{"Ground.price_usd"}, 'writing_price_usd' => $domain->rowData->{"Ground.article_price_usd"}, 'placement_price' => $domain->rowData->{"Ground.price_rur"}, 'writing_price' => $domain->rowData->{"Ground.article_price_rur"}+$domain->rowData->{"Ground.price_rur"}, 'region' => $domain->rowData->{"Region.title"}, 'theme' => $domain->rowData->subj, 'google_index' => $domain->rowData->{"Ground.google_indexed_count"}, 'links' => $domain->rowData->{"Ground.links_in_articles"}, 'lang' => $lang, 'traffic' => $domain->rowData->{"traffic.value"}, 'majestic_tf' => $domain->rowData->{"Ground.tf"}, 'majestic_cf' => $domain->rowData->{"Ground.cf"}];
                         if ($domain = Domains::where('url', $url)->first()) {
                             $info['domain_id'] = $domain->id;
                         } else {
@@ -96,7 +97,6 @@ class MiralinksCommand extends Command {
                     $start += 50;
 
                 } else {
-
 
                     $this->line('Exporting Majestic CF/TF to main table');
 
@@ -125,8 +125,10 @@ class MiralinksCommand extends Command {
                       ');
 
                     $this->line ('Deleting domains, that are no more exist from database');
-                    Miralinks::where('updated_at', '<=',Carbon::now()->subHours(12)->toDateTimeString())->delete();
+                    Miralinks::where('updated_at', '<=',Carbon::now()->subHours(6)->toDateTimeString())->delete();
                     $this->line ('Update finished');
+
+                    $this->call('domains:finalize');
 
                     break;
 

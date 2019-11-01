@@ -7,8 +7,10 @@ use App\Models\Domains;
 use Illuminate\Database\Eloquent\Builder;
 use Rap2hpoutre\FastExcel\FastExcel;
 use Illuminate\Support\Facades\DB;
-use Maatwebsite\Excel\Facades\Excel;
-use App\Exports\DomainsExport;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+use PhpOffice\PhpSpreadsheet\Cell;
+
 
 class DomainsController extends Controller {
 
@@ -16,21 +18,129 @@ class DomainsController extends Controller {
 
         if (isset($request->export))
         {
-            /*
-            $data = DB::table('domains')
+            ini_set('max_execution_time', 0);
+
+            $domains = DB::table('domains')
                 ->leftJoin('miralinks', 'domains.id', '=', 'miralinks.domain_id')
                 ->leftJoin('rotapost', 'domains.id', '=', 'rotapost.domain_id')
                 ->leftJoin('gogetlinks', 'domains.id', '=', 'gogetlinks.domain_id')
                 ->leftJoin('sape', 'domains.id', '=', 'sape.domain_id')
-                ->select('domains.url', 'miralinks.placement_price as miralinks_price', 'miralinks.writing_price as miralinks_writing_price', 'rotapost.placement_price  as rotapost_price', 'rotapost.writing_price  as rotapost_writing_price', 'gogetlinks.placement_price as gogetlinks_price', 'sape.placement_price as sape_price', 'miralinks.site_id as miralinks_site_id','miralinks.theme', 'miralinks.desc', 'miralinks.region', 'miralinks.google_index', 'miralinks.lang', 'miralinks.links', 'domains.ahrefs_dr', 'domains.ahrefs_inlinks', 'domains.ahrefs_outlinks', 'domains.majestic_cf','domains.majestic_tf','domains.serpstat_traffic')
+                ->select('domains.url', 'miralinks.placement_price as miralinks_price', 'miralinks.writing_price as miralinks_writing_price', 'rotapost.placement_price  as rotapost_price', 'rotapost.writing_price  as rotapost_writing_price', 'gogetlinks.placement_price as gogetlinks_price', 'sape.placement_price as sape_price', 'miralinks.site_id as miralinks_site_id','miralinks.theme', 'miralinks.desc', 'domains.country', 'miralinks.google_index', 'miralinks.lang', 'miralinks.links', 'domains.ahrefs_dr', 'domains.ahrefs_inlinks', 'domains.ahrefs_outlinks', 'domains.majestic_cf','domains.majestic_tf','domains.serpstat_traffic')
+                ->orderBy('domains.url', 'ASC')
+                ->limit(10000)
                 ->get();
 
-            //dd($data[2]);
+            $spreadsheet = new Spreadsheet();
+            $sheet = $spreadsheet->getActiveSheet();
 
-            //$data = collect(array( 'url' => 'rzn.aif.ru', 'miralinks_price' => '=HYPERLINK("http://example.microsoft.com/report/budget report.xlsx", "9300.0")', 'miralinks_writing_price' => 500.0, 'rotapost_price' => NULL, 'rotapost_writing_price' => NULL, 'gogetlinks_price' => NULL, 'sape_price' => NULL, 'miralinks_site_id' => 120549, 'theme' => 'Авто и Мото; Газеты, СМИ, порталы; Женский раздел', 'desc' => 'Рязанское подразделение Аргументов и Фактов. Все основные новости региона и РФ в целом. Корпоративная политика АиФ в материалах сайта. Требования к размещению: 1. Не размещаются простые сео-тексты; 2. Ссылка должна быть безанкорная, можно добавлять контакты в конце текста; 3. Текст должен иметь отношение к региону издания, быть интересен для читателя, а не для поисковиков. Пример хорошей статьи - http://www.oren.aif.ru/money/finance/v_orenburge_otyskat_rabotu_proshche_vsego_prodavcam_i_logistam Размещение материала происходит в основную ленту наравне с остальными редакторскими публикациями. Все материалы оформляются изображениями, хорошо форматируются. Также мы со своей стороны обеспечиваем усиление ссылки путем размещения ее в Твиттере/ЖЖ/социальных сетях.', 'region' => 'Россия', 'google_index' => 24100, 'lang' => 'ru', 'links' => 1, 'ahrefs_dr' => 83, 'ahrefs_inlinks' => 515, 'ahrefs_outlinks' => NULL, 'majestic_cf' => 41, 'majestic_tf' => 30, 'serpstat_traffic' => 0));
-            */
-            return Excel::download(new DomainsExport, 'domains.xlsx');
 
+            //Заголовки
+            $sheet->fromArray(
+                [
+                    'URL',
+                    'Miralinks цена размещения',
+                    'Miralinks цена написания',
+                    'Gogetlinks цена размещения',
+                    'Rotapost цена размещения',
+                    'Rotapost цена написания',
+                    'PR.Sape.ru цена размещения',
+
+                    'страна',
+                    'тематика',
+                    'описание',
+                    'язык',
+
+                    'Google Index',
+
+                    'Количество размещаемых ссылок (Миралинкс)',
+
+                    'Ahrefs DR',
+                    'Ahrefs Inlinks',
+                    'Ahrefs Outlinks',
+
+                    'Majestic CF',
+                    'Majestic TF',
+
+                    'Serpstat traffic',
+
+                ],  // The data to set
+                    NULL,        // Array values with this value will not be set
+                    'A1'         // Top left coordinate of the worksheet range where
+                //    we want to set these values (default is A1)
+                );
+
+
+
+            foreach($domains as $r => $data) {
+                //Ряд Потому что эксель начинается с 1 а не с 0, первый ряд - заголовки
+                $row = $r+2;
+                $column = 1;
+
+                //URL
+                $sheet->setCellValueByColumnAndRow($column, $row, $data->url);
+                $sheet->getCellByColumnAndRow($column, $row)->getHyperlink()->setUrl('http://'.$data->url);
+                $sheet->getStyleByColumnAndRow($column++, $row)->getFont()->getColor()->setARGB(\PhpOffice\PhpSpreadsheet\Style\Color::COLOR_BLUE);
+
+                //MIRALINKS (какой то баг с ссылкой - не работает прямая)
+                $sheet->setCellValueByColumnAndRow($column, $row, $data->miralinks_price);
+                if ($data->miralinks_price) {
+                    $sheet->getCellByColumnAndRow($column, $row)->getHyperlink()->setUrl('https://anonym.to/?https://www.miralinks.ru/catalog/profileView/'.$data->miralinks_site_id);
+                    $sheet->getStyleByColumnAndRow($column++, $row)->getFont()->getColor()->setARGB(\PhpOffice\PhpSpreadsheet\Style\Color::COLOR_BLUE);
+                }
+
+                $sheet->setCellValueByColumnAndRow($column, $row, $data->miralinks_writing_price);
+                if ($data->miralinks_writing_price) {
+                    $sheet->getCellByColumnAndRow($column, $row)->getHyperlink()->setUrl('https://anonym.to/?https://www.miralinks.ru/catalog/profileView/'.$data->miralinks_site_id);
+                    $sheet->getStyleByColumnAndRow($column++, $row)->getFont()->getColor()->setARGB(\PhpOffice\PhpSpreadsheet\Style\Color::COLOR_BLUE);
+                }
+
+                //GOGETLINKS
+                $sheet->setCellValueByColumnAndRow($column++, $row, $data->miralinks_price);
+
+                //ROTAPOST
+                $sheet->setCellValueByColumnAndRow($column++, $row, $data->rotapost_price);
+                $sheet->setCellValueByColumnAndRow($column++, $row, $data->rotapost_writing_price);
+
+                //SAPE
+                $sheet->setCellValueByColumnAndRow($column++, $row, $data->sape_price);
+
+                ////////////
+
+                //Тематика, регион, описание, язык
+                $sheet->setCellValueByColumnAndRow($column++, $row, $data->region);
+                $sheet->setCellValueByColumnAndRow($column++, $row, $data->theme);
+                $sheet->setCellValueByColumnAndRow($column++, $row, $data->desc);
+                $sheet->setCellValueByColumnAndRow($column++, $row, $data->lang);
+
+                //Google Index
+                $sheet->setCellValueByColumnAndRow($column++, $row, $data->google_index);
+
+                //Количество размещаемых ссылок (Миралинкс),
+                $sheet->setCellValueByColumnAndRow($column++, $row, $data->links);
+
+                ///////Метрики
+
+                //Ahrefs
+                $sheet->setCellValueByColumnAndRow($column++, $row, $data->ahrefs_dr);
+                $sheet->setCellValueByColumnAndRow($column++, $row, $data->ahrefs_inlinks);
+                $sheet->setCellValueByColumnAndRow($column++, $row, $data->ahrefs_outlinks);
+
+                //Majestic
+                $sheet->setCellValueByColumnAndRow($column++, $row, $data->majestic_cf);
+                $sheet->setCellValueByColumnAndRow($column++, $row, $data->majestic_tf);
+
+                //Serpstat
+                $sheet->setCellValueByColumnAndRow($column++, $row, $data->serpstat_traffic);
+
+           }
+
+            $writer = new Xlsx($spreadsheet);
+            $filename = storage_path('app/domains-'.date ('Y-m-d-H-i-s').'.xlsx');
+            $writer->save($filename);
+
+            return response()->download($filename)->deleteFileAfterSend();
+
+                // Call writer methods here
         }
 
         $domains = Domains::whereNotNull('url');

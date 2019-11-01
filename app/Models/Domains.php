@@ -7,10 +7,14 @@ use Illuminate\Database\Eloquent\{
     Builder,
     Relations\HasOne
 };
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Domains extends Model {
 
     public $timestamps = ['created_at'];
+    const UPDATED_AT = null;
+    use SoftDeletes;
+
     protected $fillable = [
         'id', 'url', 'created_at', 'majestic_tf', 'majestic_cf', 'majestic_updated'
     ];
