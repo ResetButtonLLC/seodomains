@@ -42,6 +42,7 @@ class FinalizeCommand extends Command
 
         //Удаляем домены которых нету ни в одной бирже
         $this->line("Deleting domains that doesn't exist in any service");
+
         Domains::doesntHave('miralinks')->doesntHave('gogetlinks','and')->doesntHave('sape','and')->delete();
 
         //Присваиваем регион в зависимости от доменной зоны, если его нету

@@ -26,6 +26,7 @@ class DomainsController extends Controller {
                 ->leftJoin('gogetlinks', 'domains.id', '=', 'gogetlinks.domain_id')
                 ->leftJoin('sape', 'domains.id', '=', 'sape.domain_id')
                 ->select('domains.url', 'miralinks.placement_price as miralinks_price', 'miralinks.writing_price as miralinks_writing_price', 'rotapost.placement_price  as rotapost_price', 'rotapost.writing_price  as rotapost_writing_price', 'gogetlinks.placement_price as gogetlinks_price', 'sape.placement_price as sape_price', 'miralinks.site_id as miralinks_site_id','miralinks.theme', 'miralinks.desc', 'domains.country', 'miralinks.google_index', 'miralinks.lang', 'miralinks.links', 'domains.ahrefs_dr', 'domains.ahrefs_inlinks', 'domains.ahrefs_outlinks', 'domains.majestic_cf','domains.majestic_tf','domains.serpstat_traffic')
+                ->whereNull('domains.deleted_at')
                 ->orderBy('domains.url', 'ASC')
                 ->limit(10000)
                 ->get();
@@ -85,17 +86,19 @@ class DomainsController extends Controller {
                 $sheet->setCellValueByColumnAndRow($column, $row, $data->miralinks_price);
                 if ($data->miralinks_price) {
                     $sheet->getCellByColumnAndRow($column, $row)->getHyperlink()->setUrl('https://anonym.to/?https://www.miralinks.ru/catalog/profileView/'.$data->miralinks_site_id);
-                    $sheet->getStyleByColumnAndRow($column++, $row)->getFont()->getColor()->setARGB(\PhpOffice\PhpSpreadsheet\Style\Color::COLOR_BLUE);
+                    $sheet->getStyleByColumnAndRow($column, $row)->getFont()->getColor()->setARGB(\PhpOffice\PhpSpreadsheet\Style\Color::COLOR_BLUE);
                 }
+                $column++;
 
                 $sheet->setCellValueByColumnAndRow($column, $row, $data->miralinks_writing_price);
                 if ($data->miralinks_writing_price) {
                     $sheet->getCellByColumnAndRow($column, $row)->getHyperlink()->setUrl('https://anonym.to/?https://www.miralinks.ru/catalog/profileView/'.$data->miralinks_site_id);
-                    $sheet->getStyleByColumnAndRow($column++, $row)->getFont()->getColor()->setARGB(\PhpOffice\PhpSpreadsheet\Style\Color::COLOR_BLUE);
+                    $sheet->getStyleByColumnAndRow($column, $row)->getFont()->getColor()->setARGB(\PhpOffice\PhpSpreadsheet\Style\Color::COLOR_BLUE);
                 }
+                $column++;
 
                 //GOGETLINKS
-                $sheet->setCellValueByColumnAndRow($column++, $row, $data->miralinks_price);
+                $sheet->setCellValueByColumnAndRow($column++, $row, $data->gogetlinks_price);
 
                 //ROTAPOST
                 $sheet->setCellValueByColumnAndRow($column++, $row, $data->rotapost_price);
@@ -107,7 +110,7 @@ class DomainsController extends Controller {
                 ////////////
 
                 //Тематика, регион, описание, язык
-                $sheet->setCellValueByColumnAndRow($column++, $row, $data->region);
+                $sheet->setCellValueByColumnAndRow($column++, $row, $data->country);
                 $sheet->setCellValueByColumnAndRow($column++, $row, $data->theme);
                 $sheet->setCellValueByColumnAndRow($column++, $row, $data->desc);
                 $sheet->setCellValueByColumnAndRow($column++, $row, $data->lang);
