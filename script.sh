@@ -70,6 +70,7 @@ sudo apt-get -y install git
 
 # Addons
 sudo apt install -y php-gd
+sudo apt install -y php-intl
 # Addons END
 
 # install Composer

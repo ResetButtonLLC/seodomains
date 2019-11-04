@@ -124,11 +124,9 @@ class MiralinksCommand extends Command {
                       WHERE miralinks.majestic_tf IS NOT NULL;
                       ');
 
-                    $this->line ('Deleting domains, that are no more exist from database');
-                    Miralinks::where('updated_at', '<=',Carbon::now()->subHours(6)->toDateTimeString())->delete();
-                    $this->line ('Update finished');
-
-                    $this->call('domains:finalize');
+                    $this->call('domains:finalize', [
+                        '--table' => (new Miralinks())->getTable()
+                    ]);
 
                     break;
 

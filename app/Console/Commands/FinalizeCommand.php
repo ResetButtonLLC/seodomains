@@ -5,6 +5,9 @@ namespace App\Console\Commands;
 use Illuminate\Console\Command;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\Domains;
+use App\Models\Update;
+use Illuminate\Support\Facades\DB;
+use Carbon\Carbon;
 
 class FinalizeCommand extends Command
 {
@@ -13,7 +16,9 @@ class FinalizeCommand extends Command
      *
      * @var string
      */
-    protected $signature = 'domains:finalize';
+    protected $signature = 'domains:finalize 
+        {--table=null : Table, that has to be cleaned from domains, that don\'t exist anymore} 
+        {--hours=3 : If domain update time is older than this option - it\'ll be deleted }';
 
     /**
      * The console command description.
@@ -40,10 +45,21 @@ class FinalizeCommand extends Command
     public function handle()
     {
 
-        //Удаляем домены которых нету ни в одной бирже
-        $this->line("Deleting domains that doesn't exist in any service");
+        $this->line ('Run finalize command');
+        //Если передана дочерняя таблица, то удаляем из нее домены для которых время обновления больше переданного в параметре hours, т.к. это значит что они не были обновлены при последнем обновлении и в бирже их больше нету
+        $child_table= $this->option('table');
+        $child_table_timeout= (int)$this->option('hours');
 
-        Domains::doesntHave('miralinks')->doesntHave('gogetlinks','and')->doesntHave('sape','and')->delete();
+        if ($child_table != 'null' && is_int($child_table_timeout)) {
+            $this->line ('Deleting domains, that are no more exist in '.$child_table.' from database');
+            DB::table($child_table)->where('updated_at', '<=',Carbon::now()->subHours($child_table_timeout)->toDateTimeString())->delete();
+            DB::table($child_table)->whereNull('updated_at')->delete(); //Очистка от старого мусора, потом можно удалить
+        }
+
+        //Удаляем домены которых нету ни в одной бирже
+        $this->line("Deleting domains, that doesn't exist in any service");
+
+        Domains::doesntHave('miralinks')->doesntHave('gogetlinks','and')->doesntHave('sape','and')->doesntHave('rotapost','and')->delete();
 
         //Присваиваем регион в зависимости от доменной зоны, если его нету
         $domains_without_country = Domains::select('id', 'url')->whereNull('country')->get();
@@ -54,8 +70,13 @@ class FinalizeCommand extends Command
             Domains::where('id',$no_country_domain->id)->update(['country'=> $country]);
         }
 
-        $this->line("Job done");
+        if ($child_table != 'null') {
 
+            $this->line ('Writing '.$child_table.' update data');
+            Update::setLinkExchangeUpdated($child_table);
+        }
+
+        $this->line("Job done");
 
     }
 

@@ -82,11 +82,9 @@ class SapeCommand extends Command {
                 sleep(15);
             }
 
-            $this->line ('Deleting domains, that are no more exist from database');
-            Sape::where('updated_at', '<=',Carbon::now()->subHours(2)->toDateTimeString())->delete();
-            $this->line ('Update finished');
-
-            $this->call('domains:finalize');
+            $this->call('domains:finalize', [
+                '--table' => (new Sape())->getTable()
+            ]);
 
         }
     }
@@ -193,6 +191,8 @@ class SapeCommand extends Command {
             $domains[$id]['url']['string'] = str_ireplace('https://','',$domains[$id]['url']['string']);
             $domains[$id]['url']['string'] = str_ireplace('http://','',$domains[$id]['url']['string']);
             $domains[$id]['url']['string'] = preg_replace ( '/^www\./', '', $domains[$id]['url']['string']);
+            $domains[$id]['url']['string'] = idn_to_utf8($domains[$id]['url']['string'],IDNA_DEFAULT,INTL_IDNA_VARIANT_UTS46); //punycode
+            //URLS=>DOMAINS done
 
             $domains[$id]['price']['double'] = intval (current ($domain_data[2]->value->double[0]));
             $domains[$id]['nof_pages_in_google']['int'] = intval (current ($domain_data[14]->value->int[0]));

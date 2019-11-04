@@ -140,12 +140,11 @@ class GoggetlinksCommand extends Command {
             $page++;
         }
 
-        $this->line ('Deleting domains, that are no more exist from database');
-        Gogetlinks::where('updated_at', '<=',Carbon::now()->subHours(12)->toDateTimeString())->delete();
-        $this->line ('Update finished');
-
-        $this->call('domains:finalize');
-
+        $this->call('domains:finalize', [
+            '--table' => (new Gogetlinks())->getTable(),
+            //Гогетлинкс обновляется медленно, поэтому окно обновления в часах ставим больше обычного
+            '--hours' => 8
+        ]);
     }
 
     private function checkLogin()
