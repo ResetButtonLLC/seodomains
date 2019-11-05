@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models\Domains;
+use App\Models\{Domains, Update};
 use Illuminate\Database\Eloquent\Builder;
 use Rap2hpoutre\FastExcel\FastExcel;
 use Illuminate\Support\Facades\DB;
@@ -28,7 +28,7 @@ class DomainsController extends Controller {
                 ->select('domains.url', 'miralinks.placement_price as miralinks_price', 'miralinks.writing_price as miralinks_writing_price', 'rotapost.placement_price  as rotapost_price', 'rotapost.writing_price  as rotapost_writing_price', 'gogetlinks.placement_price as gogetlinks_price', 'sape.placement_price as sape_price', 'miralinks.site_id as miralinks_site_id','miralinks.theme', 'miralinks.desc', 'domains.country', 'miralinks.google_index', 'miralinks.lang', 'miralinks.links', 'domains.ahrefs_dr', 'domains.ahrefs_inlinks', 'domains.ahrefs_outlinks', 'domains.majestic_cf','domains.majestic_tf','domains.serpstat_traffic')
                 ->whereNull('domains.deleted_at')
                 ->orderBy('domains.url', 'ASC')
-                ->limit(10000)
+                //->limit(10000)
                 ->get();
 
             $spreadsheet = new Spreadsheet();
@@ -177,6 +177,10 @@ class DomainsController extends Controller {
 
         $domains = $domains->orderBy('url')->paginate(env('PAGE_COUNT'));
 
-        return view('domains.index', compact(['domains']));
+        foreach (Update::all() as $update_date) {
+            $update_dates[$update_date->name] = date('d-m-Y',strtotime($update_date->updated_at));
+        }
+
+        return view('domains.index', compact(['domains', 'update_dates']));
     }
 }
