@@ -53,7 +53,7 @@ class AhrefsCommand extends Command
             $this->info('MODE [fill] : updating domains with empty data');
         } else {
             $domains_urls = Domains::all('url');
-            $this->info('MODE [refresh] : updating data for all domainss');
+            $this->info('MODE [refresh] : updating data for all domains');
         }
 
         foreach ($domains_urls as $domain) {

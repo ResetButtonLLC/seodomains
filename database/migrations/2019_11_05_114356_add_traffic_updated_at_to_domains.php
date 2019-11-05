@@ -5,7 +5,7 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 use App\Models\Domains;
 
-class AddAhrefsTimestampDomains extends Migration
+class AddTrafficUpdatedAtToDomains extends Migration
 {
     /**
      * Run the migrations.
@@ -15,11 +15,10 @@ class AddAhrefsTimestampDomains extends Migration
     public function up()
     {
 
-        Domains::whereNotNull('ahrefs_dr')->update(['ahrefs_dr' => null]);
-        Domains::whereNotNull('ahrefs_inlinks')->update(['ahrefs_inlinks' => null]);
+        Domains::whereNotNull('serpstat_traffic')->update(['serpstat_traffic' => null]);
 
         Schema::table('domains', function (Blueprint $table) {
-            $table->timestamp('ahrefs_updated_at')->after('ahrefs_outlinks')->nullable();
+            $table->timestamp('traffic_updated_at')->after('serpstat_traffic')->nullable(); //
         });
     }
 
@@ -31,7 +30,7 @@ class AddAhrefsTimestampDomains extends Migration
     public function down()
     {
         Schema::table('domains', function (Blueprint $table) {
-            $table->dropColumn('ahrefs_updated_at');
+            $table->dropColumn('traffic_updated_at');
         });
     }
 }

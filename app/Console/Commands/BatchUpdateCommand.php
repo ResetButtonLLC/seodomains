@@ -46,8 +46,8 @@ class BatchUpdateCommand extends Command
 
         //Обновляем параметры
         $this->call('domains:ahrefs');
-        /*
         $this->call('domains:traffic');
+        /*
         $this->call('domains:majestic');
         */
 
