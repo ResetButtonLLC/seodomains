@@ -20,24 +20,37 @@
                         {!! Form::label('resource[miralinks]', 'Miralinks', [ 'class' => 'control-label' ]) !!}
                         <div class="controls">
                             {!! Form::checkbox('resource[miralinks]', 'value', ['class' => 'form-control']) !!}
+                            @if (isset($update_dates['miralinks']))
+                                <span class="badge badge-primary">{{$update_dates['miralinks']}}</span>
+                            @endif
                         </div>
+
                     </div>
                     <div class="control-group col-md-3">
                         {!! Form::label('resource[sape]', 'Sape', [ 'class' => 'control-label' ]) !!}
                         <div class="controls">
                             {!! Form::checkbox('resource[sape]', 'value', ['class' => 'form-control']) !!}
+                            @if (isset($update_dates['sape']))
+                                <span class="badge badge-primary">{{$update_dates['sape']}}</span>
+                            @endif
                         </div>
                     </div>
                     <div class="control-group col-md-3">
                         {!! Form::label('resource[rotapost]', 'Rotapost', [ 'class' => 'control-label' ]) !!}
                         <div class="controls">
                             {!! Form::checkbox('resource[rotapost]', 'value', ['class' => 'form-control']) !!}
+                            @if (isset($update_dates['rotapost']))
+                                <span class="badge badge-primary">{{$update_dates['rotapost']}}</span>
+                            @endif
                         </div>
                     </div>
                     <div class="control-group col-md-3">
                         {!! Form::label('resource[gogetlinks]', 'Gogetlinks', [ 'class' => 'control-label' ]) !!}
                         <div class="controls">
                             {!! Form::checkbox('resource[gogetlinks]', 'value', ['class' => 'form-control']) !!}
+                            @if (isset($update_dates['gogetlinks']))
+                                <span class="badge badge-primary">{{$update_dates['gogetlinks']}}</span>
+                            @endif
                         </div>
                     </div>
                 </div>
