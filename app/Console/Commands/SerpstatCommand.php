@@ -6,6 +6,7 @@ use Illuminate\Console\Command;
 use App\Models\Domains;
 use Illuminate\Support\Facades\DB;
 use App\Helpers\ApiPromodoHelper;
+use Carbon\Carbon;
 
 class SerpstatCommand extends Command
 {
@@ -15,9 +16,7 @@ class SerpstatCommand extends Command
      * @var string
      */
     protected $signature = 'domains:traffic 
-        {--limit=0 : Run only X domains}
-        {--skip=0 : Skip X domains}
-        {--mode=refresh : MODES: 1) refresh - refresh all data 2) update - get data only for domains with no data}';
+        {--mode=fill : [1] refresh - refresh all data [2] fill - get data only for domains with no data}';
 
     /**
      * The console command description.
@@ -44,16 +43,15 @@ class SerpstatCommand extends Command
     public function handle()
     {
 
-        $domains_table = (new Domains)->getTable();
-        $domain_skip = $this->option('skip');
+        //Option: mode
+        $mode = $this->option('mode');
 
-        $domain_mode = $this->option('mode');
-
-        if ($domain_mode == 'update') {
-            $this->info('Updating domains with empty data');
-            $domains_urls = DB::table($domains_table)->select('url')->where('serpstat_traffic','<','1')->skip($domain_skip)->take(PHP_INT_MAX)->get();
+        if ($mode == 'fill') {
+            $domains_urls = Domains::whereNull('serpstat_traffic')->get('url');
+            $this->info('MODE [fill] : updating domains with empty data');
         } else {
-            $domains_urls = DB::table($domains_table)->select('url')->skip($domain_skip)->take(PHP_INT_MAX)->get();
+            $domains_urls = Domains::all('url');
+            $this->info('MODE [refresh] : updating data for all domains');
         }
 
         foreach ($domains_urls as $domain) {
@@ -61,18 +59,13 @@ class SerpstatCommand extends Command
         }
         $domains = array_filter($domains);
 
-        if ($domain_skip) {
-            $this->info('Skipping ' . $domain_skip . ' domains');
-        }
         $this->info(count($domains).' domains loaded from database');
 
         $domain_limit = $this->option('limit');
         if ($domain_limit>0) {
             $domains = array_slice($domains,0,$domain_limit);
-            $this->info('OPTION:LIMIT. Run only '.count($domains).' domains');
+            $this->info('OPTION: [limit] : Run only '.count($domains).' domains');
         }
-
-
 
         $api = new ApiPromodoHelper();
         //Serpstat google.ua traffic
@@ -82,28 +75,20 @@ class SerpstatCommand extends Command
         $bar->start();
 
         foreach ($domains as $domain) {
+            //getresult
             $result = $api->makeOneRequest('serpstat/scrapeone',$domain);
             if(isset($result['traff'])) {
                 $serpstat_data[$domain]['serpstat_traffic'] = $result['traff'];
             } else {
-                $serpstat_data[$domain]['serpstat_traffic'] = -1;
+                $serpstat_data[$domain]['serpstat_traffic'] = null;
             }
+
+            //Import into DB
+            Domains::where('url',$domain)->update(['serpstat_traffic' =>$serpstat_data[$domain]['serpstat_traffic'], 'traffic_updated_at' => Carbon::now()]);
             $bar->advance();
 
         }
-        $bar->finish();
-        $this->info("\n");
 
-        //Import into DB
-        $this->info("Updating DB");
-
-        $bar = $this->output->createProgressBar(count($serpstat_data));
-        $bar->start();
-
-       foreach ($serpstat_data as $serpstat_domain_name => $serpstat_domain_data ) {
-            DB::table($domains_table)->where('url',$serpstat_domain_name)->update(['serpstat_traffic' => $serpstat_domain_data['serpstat_traffic']]);
-            $bar->advance();
-        }
         $bar->finish();
         $this->info("\n");
 

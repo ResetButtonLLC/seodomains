@@ -6,6 +6,7 @@ use Illuminate\Console\Command;
 use App\Models\Domains;
 use Illuminate\Support\Facades\DB;
 use App\Helpers\ApiPromodoHelper;
+use Carbon\Carbon;
 
 class AhrefsCommand extends Command
 {
@@ -14,7 +15,9 @@ class AhrefsCommand extends Command
      *
      * @var string
      */
-    protected $signature = 'domains:ahrefs {--limit=0: Run only X domains}';
+    protected $signature = 'domains:ahrefs
+        {--mode=fill : launch modes => [1] "fill" - fill only empty data [2] "all" - refresh all domains } 
+        {--limit=0: Run only X domains}';
 
     /**
      * The console command description.
@@ -41,8 +44,17 @@ class AhrefsCommand extends Command
     public function handle()
     {
 
-        $domains_table = (new Domains)->getTable();
-        $domains_urls = DB::table($domains_table)->select('url')->get();
+
+        //Option: mode
+        $mode = $this->option('mode');
+
+        if ($mode == 'fill') {
+            $domains_urls = Domains::whereNull('ahrefs_dr')->orWhereNull('ahrefs_inlinks')->get('url');
+            $this->info('MODE [fill] : updating domains with empty data');
+        } else {
+            $domains_urls = Domains::all('url');
+            $this->info('MODE [refresh] : updating data for all domains');
+        }
 
         foreach ($domains_urls as $domain) {
             $domains[] = $domain->url;
@@ -50,6 +62,7 @@ class AhrefsCommand extends Command
         $domains = array_filter($domains);
         $this->info('Get '.count($domains).' domains from database');
 
+        //Option limit
         $domain_limit = $this->option('limit');
         if ($domain_limit>0) {
             $domains = array_slice($domains,0,$domain_limit);
@@ -57,56 +70,33 @@ class AhrefsCommand extends Command
         }
 
         $api = new ApiPromodoHelper();
-        //Ahrefs DR
 
-        $this->info('Fetching Ahrefs DR ... ');
+        $this->info('Fetching Ahrefs DR & Inlinks ... ');
         $bar = $this->output->createProgressBar(count($domains));
         $bar->start();
 
         foreach ($domains as $domain) {
+            //Ahrefs DR
             $result = $api->makeRequest('ahrefs/public/getDomainRating',[$domain]);
             if(isset(current($result)['domain_rating'])) {
                 $ahrefs_data[$domain]['dr'] = current($result)['domain_rating'];
             } else {
-                $ahrefs_data[$domain]['dr'] = -1;
+                $ahrefs_data[$domain]['dr'] = null;
             }
-            $bar->advance();
 
-        }
-        $bar->finish();
-        $this->info("\n");
-
-        //End Ahrefs DR
-
-        //Ahrefs In/Out Links
-        $this->info("Fetching Ahrefs In/Out Links");
-        $bar = $this->output->createProgressBar(count($domains));
-        $bar->start();
-
-        foreach ($domains as $domain) {
+            //Ahrefs Inlinks
             $result = $api->makeRequest('ahrefs/public/getDomainLinks',[$domain]);
             if(isset(current($result)["metrics"]["refdomains"])) {
                 $ahrefs_data[$domain]['inlinks'] = current($result)["metrics"]["refdomains"];
-                //$ahrefs_data[$domain]['inlinks'] = current($result)["metrics"]["refpages"];
             } else {
-                $ahrefs_data[$domain]['inlinks'] = -1;
+                $ahrefs_data[$domain]['inlinks'] = null;
             }
+
+            //Import into DB
+            Domains::where('url',$domain)->update(['ahrefs_dr' =>$ahrefs_data[$domain]['dr'],'ahrefs_inlinks' => $ahrefs_data[$domain]['inlinks'], 'ahrefs_updated_at' => Carbon::now()]);
+
             $bar->advance();
 
-        }
-        $bar->finish();
-        $this->info("\n");
-        //End Ahrefs In/Out Links
-
-        //Import into DB
-        $this->info("Updating DB");
-
-        $bar = $this->output->createProgressBar(count($ahrefs_data));
-        $bar->start();
-
-       foreach ($ahrefs_data as $ahrefs_domain_name => $ahrefs_domain_data ) {
-            DB::table($domains_table)->where('url',$ahrefs_domain_name)->update(['ahrefs_dr' => $ahrefs_domain_data['dr'],'ahrefs_inlinks' => $ahrefs_domain_data['inlinks']]);
-            $bar->advance();
         }
         $bar->finish();
         $this->info("\n");

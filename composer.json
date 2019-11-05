@@ -11,6 +11,7 @@
         "laravel/framework": "5.8.*",
         "laravel/tinker": "~1.0",
         "laravelcollective/html": "^5.8.0",
+        "phpoffice/phpspreadsheet": "^1.9",
         "phpxmlrpc/phpxmlrpc": "4.*",
         "rap2hpoutre/fast-excel": "^1.2",
         "rootinc/laravel-azure-middleware": "^0.5.1"

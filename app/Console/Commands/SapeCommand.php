@@ -8,6 +8,7 @@ use App\Models\{
     Domains,
     Sape
 };
+use Carbon\Carbon;
 use PhpXmlRpc\Value;
 use PhpXmlRpc\Request;
 use PhpXmlRpc\Client;
@@ -68,12 +69,11 @@ class SapeCommand extends Command {
                     }
 
                     if (Sape::where('domain_id', $data['domain_id'])->first()) {
-                        $data['updated_at'] = date('Y-m-d H:i:s');
                         Sape::where('domain_id', $data['domain_id'])->update($data);
                         $updated++;
                     } else {
-                        $data['created_at'] = date('Y-m-d H:i:s');
                         Sape::insert($data);
+                        $data['updated_at'] = date('Y-m-d H:i:s');
                         $added++;
                     }
                 }
@@ -81,6 +81,11 @@ class SapeCommand extends Command {
                 $page++;
                 sleep(15);
             }
+
+            $this->call('domains:finalize', [
+                '--table' => (new Sape())->getTable()
+            ]);
+
         }
     }
 
@@ -182,6 +187,13 @@ class SapeCommand extends Command {
             $id = current($domain_data[0]->value->int);
 
             $domains[$id]['url']['string'] = current($domain_data[1]->value->string[0]);
+            //URLS=>DOMAINS
+            $domains[$id]['url']['string'] = str_ireplace('https://','',$domains[$id]['url']['string']);
+            $domains[$id]['url']['string'] = str_ireplace('http://','',$domains[$id]['url']['string']);
+            $domains[$id]['url']['string'] = preg_replace ( '/^www\./', '', $domains[$id]['url']['string']);
+            $domains[$id]['url']['string'] = idn_to_utf8($domains[$id]['url']['string'],IDNA_DEFAULT,INTL_IDNA_VARIANT_UTS46); //punycode
+            //URLS=>DOMAINS done
+
             $domains[$id]['price']['double'] = intval (current ($domain_data[2]->value->double[0]));
             $domains[$id]['nof_pages_in_google']['int'] = intval (current ($domain_data[14]->value->int[0]));
 
