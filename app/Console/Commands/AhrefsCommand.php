@@ -49,9 +49,11 @@ class AhrefsCommand extends Command
         $mode = $this->option('mode');
 
         if ($mode == 'fill') {
-            $domains_urls = Domains::whereNull('ahrefs_updated_at')->get('url');
+            $domains_urls = Domains::whereNull('ahrefs_dr')->orWhereNull('ahrefs_inlinks')->get('url');
+            $this->info('MODE [fill] : updating domains with empty data');
         } else {
             $domains_urls = Domains::all('url');
+            $this->info('MODE [refresh] : updating data for all domainss');
         }
 
         foreach ($domains_urls as $domain) {
@@ -79,16 +81,15 @@ class AhrefsCommand extends Command
             if(isset(current($result)['domain_rating'])) {
                 $ahrefs_data[$domain]['dr'] = current($result)['domain_rating'];
             } else {
-                $ahrefs_data[$domain]['dr'] = -1;
+                $ahrefs_data[$domain]['dr'] = null;
             }
 
             //Ahrefs Inlinks
             $result = $api->makeRequest('ahrefs/public/getDomainLinks',[$domain]);
             if(isset(current($result)["metrics"]["refdomains"])) {
                 $ahrefs_data[$domain]['inlinks'] = current($result)["metrics"]["refdomains"];
-                //$ahrefs_data[$domain]['inlinks'] = current($result)["metrics"]["refpages"];
             } else {
-                $ahrefs_data[$domain]['inlinks'] = -1;
+                $ahrefs_data[$domain]['inlinks'] = null;
             }
 
             //Import into DB
