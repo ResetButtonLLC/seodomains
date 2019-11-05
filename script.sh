@@ -56,7 +56,7 @@ sudo cp /tmp/site.conf /etc/apache2/sites-available/00.conf
 sudo a2ensite 00.conf
 
 #
-sudo sed -i 's/memory_limit = 128M/memory_limit = 512M/g' /etc/php/7.2/apache2/php.ini
+sudo sed -i 's/memory_limit = 128M/memory_limit = 1024M/g' /etc/php/7.2/apache2/php.ini
 
 # restart services
 sudo a2enmod rewrite

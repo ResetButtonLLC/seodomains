@@ -44,64 +44,45 @@ class MajesticCommand extends Command
     public function handle()
     {
 
-        $domains_table = (new Domains)->getTable();
-        $domain_skip = $this->option('skip');
-
-        /* $domain_mode = $this->option('mode');
-
-        if ($domain_mode == 'update') {
-            $this->info('Updating domains with empty data');
-            $domains_urls = DB::table($domains_table)->select('url')->where('majestic_tf','<','1')->skip($domain_skip)->take(PHP_INT_MAX)->get();
-        } else {
-            $domains_urls = DB::table($domains_table)->select('url')->skip($domain_skip)->take(PHP_INT_MAX)->get();
-        } */
-
-        $domains_urls = DB::table($domains_table)->select('url')->skip($domain_skip)->take(PHP_INT_MAX)->get();
+        $domains_urls = Domains::whereNull('majestic_tf')->orWhereNull('majestic_tf')->get('url');
         foreach ($domains_urls as $domain) {
             $domains[] = $domain->url;
         }
         $domains = array_filter($domains);
 
-        if ($domain_skip) {
-            $this->info('Skipping ' . $domain_skip . ' domains');
-        }
+
         $this->info(count($domains).' domains loaded from database');
 
-        $domain_limit = $this->option('limit');
-        if ($domain_limit>0) {
-            $domains = array_slice($domains,0,$domain_limit);
-            $this->info('OPTION:LIMIT. Run only '.count($domains).' domains');
-        }
+        if ($this->confirm('Update will cost ~'.round(count($domains)/1000,2).' $. Do you wish to continue?')) {
 
-        $api = new ApiPromodoHelper();
+            $api = new ApiPromodoHelper();
 
-        $this->info('Asking Majestic for CF/TF and updating DB');
-        $bar = $this->output->createProgressBar(count($domains));
-        $bar->start();
+            $this->info('Asking Majestic for CF/TF and updating DB');
+            $bar = $this->output->createProgressBar(count($domains));
+            $bar->start();
 
-        foreach ($domains as $domain) {
-            $result = $api->makeRequest('majestic/scrape',[$domain]);
+            foreach ($domains as $domain) {
+                $result = $api->makeRequest('majestic/scrapeViaDomDetailer', [$domain]);
 
-            if((isset(current($result)['tf'])) && (isset(current($result)['cf']))) {
-                $majestic_data[$domain]['majestic_tf'] = current($result)['tf'];
-                $majestic_data[$domain]['majestic_cf'] = current($result)['cf'];
-            } else {
-                $majestic_data[$domain]['majestic_tf'] = -1;
-                $majestic_data[$domain]['majestic_cf'] = -1;
-                print_r($domain);
+                if ((isset(current($result)['tf'])) && (isset(current($result)['cf']))) {
+                    $majestic_data[$domain]['majestic_tf'] = current($result)['tf'];
+                    $majestic_data[$domain]['majestic_cf'] = current($result)['cf'];
+                } else {
+                    $majestic_data[$domain]['majestic_tf'] = null;
+                    $majestic_data[$domain]['majestic_cf'] = null;
+                }
+
+                Domains::where('url', $domain)->update(['majestic_tf' => $majestic_data[$domain]['majestic_tf'], 'majestic_cf' => $majestic_data[$domain]['majestic_tf']]);
+
+                $bar->advance();
+
             }
+            $bar->finish();
 
-            DB::table($domains_table)->where('url',$domain)->update(['majestic_tf' => $majestic_data[$domain]['majestic_tf'],'majestic_cf' => $majestic_data[$domain]['majestic_tf']]);
-
-            sleep ( mt_rand(60,90));
-
-            $bar->advance();
-
+            $this->info("Process complete");
+        } else {
+            $this->line("Operation cancelled");
         }
-        $bar->finish();
-
-        $this->info("Process complete");
-
     }
 
 }

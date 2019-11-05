@@ -96,7 +96,8 @@ class GoggetlinksCommand extends Command {
 
                 preg_match($url, $values[1], $matches);
                 if ($matches) {
-                    $site = $matches[1];
+                    $site = mb_strtolower($matches[1]);
+
                     unset($matches);
                 }
 

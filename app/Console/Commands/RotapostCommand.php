@@ -42,12 +42,23 @@ class RotapostCommand extends Command {
      */
     public function handle() {
         if ($this->login()) {
+            $this->line('Auth successful');
             $sites = $this->getSites();
-            $added = 0;
+
+
+
+            $counter = array(
+                'current' => 0,
+                'total' => count($sites->Sites->BuySite),
+                'new' => 0,
+                'updated' => 0,
+            );
 
             foreach ($sites->Sites->BuySite as $site) {
                 $data = [];
                 $url = (string) $site->Url;
+                $url = mb_strtolower($url);
+
                 $data['placement_price'] = (float) $site->PostPrice;
                 $data['writing_price'] = (float) $site->PressReleasePrice;
                 $data['theme'] = (string) $site->Category;
@@ -61,14 +72,23 @@ class RotapostCommand extends Command {
                 }
 
                 if (Rotapost::where('domain_id', $data['domain_id'])->first()) {
-                    $data['updated_at'] = date('Y-m-d H:i:s');
                     Rotapost::where('domain_id', $data['domain_id'])->update($data);
+                    $counter['updated']++;
                 } else {
-                    $data['created_at'] = date('Y-m-d H:i:s');
+                    $data['updated_at'] = date('Y-m-d H:i:s');
                     Rotapost::insert($data);
+                    $counter['new']++;
                 }
+
+                $counter['current']++;
+
+                $this->line('Rotapost | Progress: '.$counter['current'].'/'.$counter['total'].' | Added total : ' . $counter['new'] . ' | Updated total : ' . $counter['updated']);
             }
-            echo 'Domains added from rotapost.ru: ' . $added . PHP_EOL;
+
+            $this->call('domains:finalize', [
+                '--table' => (new Rotapost())->getTable()
+            ]);
+
         }
     }
 

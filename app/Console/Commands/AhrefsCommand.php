@@ -4,7 +4,6 @@ namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
 use App\Models\Domains;
-use Illuminate\Support\Facades\DB;
 use App\Helpers\ApiPromodoHelper;
 use Carbon\Carbon;
 

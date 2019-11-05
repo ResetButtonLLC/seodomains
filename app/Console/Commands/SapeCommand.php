@@ -57,7 +57,7 @@ class SapeCommand extends Command {
 
 
                 foreach ($domains as $domain) {
-                    $url = $domain['url']['string'];
+                    $url = mb_strtolower($domain['url']['string']);
                     $data['placement_price'] = $domain['price']['double'];
                     $data['google_index'] = $domain['nof_pages_in_google']['int'];
 
