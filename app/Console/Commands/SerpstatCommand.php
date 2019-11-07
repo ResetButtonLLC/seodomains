@@ -84,8 +84,9 @@ class SerpstatCommand extends Command
 
             //getresult
             $result = $api->makeOneRequest('serpstat/scrapeone',$domain);
-            if(isset($result['traff'])) {
-                $serpstat_data[$domain]['serpstat_traffic'] = $result['traff'];
+
+            if((isset(current($result)['traff']))) {
+                $serpstat_data[$domain]['serpstat_traffic'] = current($result)['traff'];
             } else {
                 $serpstat_data[$domain]['serpstat_traffic'] = null;
             }
