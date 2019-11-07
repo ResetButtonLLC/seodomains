@@ -55,10 +55,12 @@
                     </div>
                 </div>
             </div>
+            {{--
             <div class="col-md-1">{!! Form::text('price_from', null, ['class' => 'form-control', 'placeholder' => 'Цена от']); !!}</div>
             <div class="col-md-1">{!! Form::text('price_to', null, ['class' => 'form-control', 'placeholder' => 'Цена до']); !!}</div>
             <div class="col-md-2">{!! Form::text('theme', null, ['class' => 'form-control', 'placeholder' => 'Тематика']); !!}</div>
             <div class="col-md-2"> {!! Form::submit('Поиск', ['class'=>'btn btn-primary']) !!}</div>
+            --}}
             <div class="col-md-2"> {!! Form::submit('Экспорт', ['class'=>'btn btn-primary', 'name' => 'export']) !!}</div>
 
             {!! Form::close() !!}
