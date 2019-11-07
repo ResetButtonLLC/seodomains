@@ -60,12 +60,6 @@ class SerpstatCommand extends Command
 
         $this->info(count($domains).' domains loaded from database');
 
-        $domain_limit = $this->option('limit');
-        if ($domain_limit>0) {
-            $domains = array_slice($domains,0,$domain_limit);
-            $this->info('OPTION: [limit] : Run only '.count($domains).' domains');
-        }
-
         $api = new ApiPromodoHelper();
         //Serpstat google.ua traffic
 
