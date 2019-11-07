@@ -14,8 +14,9 @@ class SerpstatCommand extends Command
      *
      * @var string
      */
-    protected $signature = 'domains:traffic 
-        {--mode=fill : [1] refresh - refresh all data [2] fill - get data only for domains with no data}';
+    protected $signature = 'domains:serpstat 
+        {--mode=fill : launch modes => [1] "fill" - fill only empty data [2] "all" - refresh all domains } 
+        {--days=30: [only for "all" launch mode] refresh only data older than this value in days}';
 
     /**
      * The console command description.
@@ -47,10 +48,17 @@ class SerpstatCommand extends Command
 
         if ($mode == 'fill') {
             $domains_urls = Domains::whereNull('serpstat_traffic')->get('url');
-            $this->info('MODE [fill] : updating domains with empty data');
+            $this->line('MODE [fill] : updating domains with empty data');
         } else {
-            $domains_urls = Domains::all('url');
-            $this->info('MODE [refresh] : updating data for all domains');
+            $this->line('MODE [refresh] : refreshing data for all domains');
+            //Option days
+            $days = $this->option('days');
+            if (intval($days>0)) {
+                $this->line("OPTION: DAYS. Quering domains with data older than $days days");
+                $domains_urls = Domains::whereDate('traffic_updated_at','<=',Carbon::now()->subDays($days))->orwhereNull('serpstat_traffic')->get('url');
+            } else {
+                $domains_urls = Domains::all('url');
+            }
         }
 
         foreach ($domains_urls as $domain) {
@@ -58,16 +66,22 @@ class SerpstatCommand extends Command
         }
         $domains = array_filter($domains);
 
-        $this->info(count($domains).' domains loaded from database');
+        $this->line(count($domains).' domains loaded from database');
 
         $api = new ApiPromodoHelper();
         //Serpstat google.ua traffic
 
-        $this->info('Asking Serpstat for traffic [Google.ua]');
-        $bar = $this->output->createProgressBar(count($domains));
-        $bar->start();
+        $this->line('Asking Serpstat for traffic [Google.ua]');
+
+        $counter = array(
+            'current' => 0,
+            'total' => count($domains),
+        );
 
         foreach ($domains as $domain) {
+
+            $this->line(++$counter['current'].'/'.$counter['total'].' | Domain: '.$domain);
+
             //getresult
             $result = $api->makeOneRequest('serpstat/scrapeone',$domain);
             if(isset($result['traff'])) {
@@ -78,14 +92,10 @@ class SerpstatCommand extends Command
 
             //Import into DB
             Domains::where('url',$domain)->update(['serpstat_traffic' =>$serpstat_data[$domain]['serpstat_traffic'], 'traffic_updated_at' => Carbon::now()]);
-            $bar->advance();
 
         }
 
-        $bar->finish();
-        $this->info("\n");
-
-        $this->info("Process complete");
+        $this->line("Process complete");
 
     }
 
