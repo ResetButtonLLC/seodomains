@@ -47,6 +47,7 @@ class GoggetlinksCommand extends Command {
         $this->checkLogin();
 
         $page = 0;
+        $retries = 3;
         $url = "/<a ?.*>(.*)<\/a>/";
         $traffik = '/(.*)<\/td>/';
         $price = '/value="(.*)"><\/label>/';
@@ -72,71 +73,89 @@ class GoggetlinksCommand extends Command {
                 $counter['total'] = $matches[1];
             }
 
-            $data = explode('<tbody id="body_table_content">', $data);
+            //Иногда страница не отдается, признак того что на странице что то не то - отсутствие body_table_content
+            $page_valid = (boolean)stripos($data,'<tbody id="body_table_content">');
+            $current_retry = $retries;
 
-            if (!$this->count) {
-                $lines = explode('<td', $data[0]);
-                preg_match($quantity, $lines[1], $matches);
-                $this->count = preg_replace('/\D/', '', $matches[1]);
+            while (!$page_valid && $current_retry) {
+                $antiban_pause = mt_rand(30, 50);
+                $this->line('Gogetlinks.ru page : ' . $page . ' | Error while fetching page | '.$current_retry--.' retries left | Sleeping for ' . $antiban_pause . ' seconds');
+                sleep($antiban_pause);
+                $data = $this->getData($page);
+                $page_valid = (boolean)stripos($data,'<tbody id="body_table_content">');
             }
 
-            if ($added >= $this->count) {
-                break;
+            if ($page_valid) {
+
+                $data = explode('<tbody id="body_table_content">', $data);
+
+                if (!$this->count) {
+                    $lines = explode('<td', $data[0]);
+                    preg_match($quantity, $lines[1], $matches);
+                    $this->count = preg_replace('/\D/', '', $matches[1]);
+                }
+
+                if ($added >= $this->count) {
+                    break;
+                }
+
+                $row = explode('search_sites_row', $data[1]);
+
+                unset($row[0]);
+
+                $counter['current'] = $counter['current'] + count($row);
+
+                foreach ($row as $col) {
+                    $data = [];
+                    $values = explode('<td', $col);
+
+                    preg_match($url, $values[1], $matches);
+                    if ($matches) {
+                        $site = mb_strtolower($matches[1]);
+
+                        unset($matches);
+                    }
+
+                    preg_match($traffik, $values[4], $matches);
+                    if ($matches) {
+                        $data['traffic'] = preg_replace('/\D/', '', $matches[1]);
+                        unset($matches);
+                    }
+
+                    preg_match($price, $values[9], $matches);
+                    if ($matches) {
+                        $data['placement_price'] = $matches[1];
+                        unset($matches);
+                    }
+
+                    if ($domain = Domains::where('url', $site)->first()) {
+                        $data['domain_id'] = $domain->id;
+                    } else {
+                        $domain = Domains::insertGetId(['url' => $site]);
+                        $data['domain_id'] = $domain;
+                    }
+
+                    if (Gogetlinks::where('domain_id', $data['domain_id'])->first()) {
+                        Gogetlinks::where('domain_id', $data['domain_id'])->update($data);
+                        $counter['updated']++;
+                    } else {
+                        Gogetlinks::insert($data);
+                        $counter['new']++;
+                        //Добавляем updated_at при создании, чтоб в конце обновления удалить домены у которых updated_at отличается на Х часов от времени обновления
+                        $data['updated_at'] = date('Y-m-d H:i:s');
+                    }
+                    $added++;
+                }
+
+                $antiban_pause = mt_rand(30, 50);
+                $this->line('Gogetlinks.ru page : ' . $page . ' | Fetched domains : ' . count($row) . ' | Progress: '.$counter['current'].'/'.$counter['total'].' | Added total : ' . $counter['new'] . ' | Updated total : ' . $counter['updated'] . ' | Sleeping for ' . $antiban_pause . ' seconds');
+                sleep($antiban_pause);
+            } else {
+                //Если страница так и не прогрузилась, то пропускаем ее
+                $antiban_pause = mt_rand(30, 50);
+                $this->line('Gogetlinks.ru page : ' . $page . ' | No more retries left, skipping page | Sleeping for ' . $antiban_pause . ' seconds');
+                sleep($antiban_pause);
             }
-
-            $row = explode('search_sites_row', $data[1]);
-            unset($row[0]);
-
-
-            $counter['current'] = $counter['current'] + count($row);
-
-            foreach ($row as $col) {
-                $data = [];
-                $values = explode('<td', $col);
-
-                preg_match($url, $values[1], $matches);
-                if ($matches) {
-                    $site = mb_strtolower($matches[1]);
-
-                    unset($matches);
-                }
-
-                preg_match($traffik, $values[4], $matches);
-                if ($matches) {
-                    $data['traffic'] = preg_replace('/\D/', '', $matches[1]);
-                    unset($matches);
-                }
-
-                preg_match($price, $values[9], $matches);
-                if ($matches) {
-                    $data['placement_price'] = $matches[1];
-                    unset($matches);
-                }
-
-                if ($domain = Domains::where('url', $site)->first()) {
-                    $data['domain_id'] = $domain->id;
-                } else {
-                    $domain = Domains::insertGetId(['url' => $site]);
-                    $data['domain_id'] = $domain;
-                }
-
-                if (Gogetlinks::where('domain_id', $data['domain_id'])->first()) {
-                    Gogetlinks::where('domain_id', $data['domain_id'])->update($data);
-                    $counter['updated']++;
-                } else {
-                    Gogetlinks::insert($data);
-                    $counter['new']++;
-                    //Добавляем updated_at при создании, чтоб в конце обновления удалить домены у которых updated_at отличается на Х часов от времени обновления
-                    $data['updated_at'] = date('Y-m-d H:i:s');
-                }
-                $added++;
-            }
-
-            $antiban_pause = mt_rand(30, 50);
-
-            $this->line('Gogetlinks.ru page : ' . $page . ' | Fetched domains : ' . count($row) . ' | Progress: '.$counter['current'].'/'.$counter['total'].' | Added total : ' . $counter['new'] . ' | Updated total : ' . $counter['updated'] . ' | Sleeping for ' . $antiban_pause . ' seconds');
-
-            sleep($antiban_pause);
 
             $page++;
         }
