@@ -15,9 +15,7 @@ class Domains extends Model {
     const UPDATED_AT = null;
     use SoftDeletes;
 
-    protected $fillable = [
-        'id', 'url', 'created_at', 'majestic_tf', 'majestic_cf', 'majestic_updated'
-    ];
+    protected $guarded = [];
 
     public function miralinks(): HasOne {
         return $this->hasOne('App\Models\Miralinks', 'domain_id', 'id');
