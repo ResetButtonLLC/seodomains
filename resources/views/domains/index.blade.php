@@ -78,9 +78,11 @@
                     <th>Индекс страниц Google</th>
                     <th>DR (ahrefs)</th>
                     <th>Вх/Исх домены (ahrefs)</th>
+                    <th>Ahrefs positions top10</th>
+                    <th>Ahrefs traffic top10</th>
                     <th>MajesticTF</th>
                     <th>MajesticCF</th>
-                    <th>Трафик Serpstat</th>
+
                     <th>Язык</th>
                     <th>Кол-во размещаемых ссылок</th>
                     <th>Дата добавления в биржу</th>
@@ -130,9 +132,10 @@
                     <td>{{$value->miralinks ? $value->miralinks->google_index : ''}}</td>
                     <td>{{$value->ahrefs_dr ? $value->ahrefs_dr : ''}}</td>
                     <td>{{$value->ahrefs_inlinks ? $value->ahrefs_inlinks : ''}}</td>
+                    <td class="ahrefs_positions_top10">{{$value->ahrefs_positions_top10 ? $value->ahrefs_positions_top10 : ''}}</td>
+                    <td class="ahrefs_traffic_top10">{{$value->ahrefs_traffic_top10 ? $value->ahrefs_traffic_top10 : ''}}</td>
                     <td class="majestic_cf">{{$value->majestic_cf ? $value->majestic_cf : ''}}</td>
                     <td class="majestic_tf">{{$value->majestic_tf ? $value->majestic_tf : ''}}</td>
-                    <td class="serpstat_traffic">{{$value->serpstat_traffic ? $value->serpstat_traffic : ''}}</td>
                     <td class="text-center">{{$value->miralinks ? $value->miralinks->lang : ''}}</td>
                     <td class="text-center">{{$value->miralinks ? $value->miralinks->links : ''}}</td>
                     <td class="text-center">{{$value->created_at}}</td>

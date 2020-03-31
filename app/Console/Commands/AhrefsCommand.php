@@ -16,7 +16,7 @@ class AhrefsCommand extends Command
      */
     protected $signature = 'domains:ahrefs
         {--mode=fill : launch modes => [1] "fill" - fill only empty data [2] "all" - refresh all domains } 
-        {--days=30: [only for "all" launch mode] refresh only data older than this value in days}';
+        {--days=0 : [only for "all" launch mode] refresh only data older than this value in days}';
 
     /**
      * The console command description.
@@ -30,9 +30,14 @@ class AhrefsCommand extends Command
      *
      * @return void
      */
+
+    private $api;
+
     public function __construct()
     {
         parent::__construct();
+
+        $this->api = new ApiPromodoHelper();
     }
 
     /**
@@ -68,15 +73,14 @@ class AhrefsCommand extends Command
         $domains = array_filter($domains);
         $this->line('Get '.count($domains).' domains from database');
 
-
-        $api = new ApiPromodoHelper();
-
-        $this->line('Fetching Ahrefs DR & Inlinks ... ');
+        $this->line('Fetching Ahrefs DR / Inlinks / Traffic Top10 / Position Top10 ... ');
 
         $counter = array(
             'current' => 0,
             'total' => count($domains),
         );
+
+        $api = new ApiPromodoHelper();
 
         foreach ($domains as $domain) {
 
@@ -84,22 +88,32 @@ class AhrefsCommand extends Command
 
             //Ahrefs DR
             $result = $api->makeRequest('ahrefs/public/getDomainRating',[$domain]);
-            if(isset(current($result)['domain_rating'])) {
-                $ahrefs_data[$domain]['dr'] = current($result)['domain_rating'];
-            } else {
-                $ahrefs_data[$domain]['dr'] = null;
-            }
+            $ahrefs_data[$domain]['dr'] = current($result)['domain_rating'] ?? null;
 
             //Ahrefs Inlinks
             $result = $api->makeRequest('ahrefs/public/getDomainLinks',[$domain]);
-            if(isset(current($result)["metrics"]["refdomains"])) {
-                $ahrefs_data[$domain]['inlinks'] = current($result)["metrics"]["refdomains"];
-            } else {
-                $ahrefs_data[$domain]['inlinks'] = null;
-            }
+            $ahrefs_data[$domain]['inlinks'] = current($result)["metrics"]["refdomains"] ?? null;
+
+            //Ahrefs positions & traffic
+            $result = $api->makeRequest('ahrefs/public/positions_metrics',[$domain]);
+            $ahrefs_data[$domain]['positions_top3'] = current($result)["metrics"]["positions_top3"] ?? null;
+            $ahrefs_data[$domain]['positions_top10'] = current($result)["metrics"]["positions_top10"] ?? null;
+            $ahrefs_data[$domain]['positions_top100'] = current($result)["metrics"]["positions"] ?? null;
+            $ahrefs_data[$domain]['traffic_top3'] = (int)round(current($result)["metrics"]["traffic_top3"]) ?? null;
+            $ahrefs_data[$domain]['traffic_top10'] = (int)round(current($result)["metrics"]["traffic_top10"]) ?? null;
+            $ahrefs_data[$domain]['traffic_top100'] = (int)round(current($result)["metrics"]["traffic"]) ?? null;
 
             //Import into DB
-            Domains::where('url',$domain)->update(['ahrefs_dr' =>$ahrefs_data[$domain]['dr'],'ahrefs_inlinks' => $ahrefs_data[$domain]['inlinks'], 'ahrefs_updated_at' => Carbon::now()]);
+            Domains::where('url',$domain)->update([
+                'ahrefs_dr' =>$ahrefs_data[$domain]['dr'],
+                'ahrefs_inlinks' => $ahrefs_data[$domain]['inlinks'],
+                'ahrefs_positions_top3' => $ahrefs_data[$domain]['positions_top3'],
+                'ahrefs_positions_top10' => $ahrefs_data[$domain]['positions_top10'],
+                'ahrefs_positions_top100' => $ahrefs_data[$domain]['positions_top100'],
+                'ahrefs_traffic_top3' => $ahrefs_data[$domain]['traffic_top3'],
+                'ahrefs_traffic_top10' => $ahrefs_data[$domain]['traffic_top10'],
+                'ahrefs_traffic_top100' => $ahrefs_data[$domain]['traffic_top100'],
+                'ahrefs_updated_at' => Carbon::now()]);
 
         }
 

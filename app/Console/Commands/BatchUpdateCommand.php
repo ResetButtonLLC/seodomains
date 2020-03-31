@@ -40,14 +40,14 @@ class BatchUpdateCommand extends Command
         //Обновляем домены из бирж
         $this->call('domains:sape');
         $this->call('domains:miralinks');
-        $this->call('domains:gogetlinks');
         $this->call('domains:rotapost');
+        $this->call('domains:gogetlinks');
 
 
         //Обновляем параметры
-        $this->call('domains:ahrefs');
-        $this->call('domains:serpstat');
+        $this->call('domains:ahrefs --mode=all --days=15');
         /*
+        $this->call('domains:serpstat');
         $this->call('domains:majestic');
         */
 
