@@ -43,9 +43,12 @@ class BatchUpdateCommand extends Command
         $this->call('domains:rotapost');
         $this->call('domains:gogetlinks');
 
-
         //Обновляем параметры
-        $this->call('domains:ahrefs --mode=all --days=15');
+        $this->call('domains:ahrefs',[
+            '--mode' => 'all',
+            '--days' => '15'
+        ]);
+
         /*
         $this->call('domains:serpstat');
         $this->call('domains:majestic');
