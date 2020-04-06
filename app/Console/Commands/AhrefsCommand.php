@@ -48,7 +48,6 @@ class AhrefsCommand extends Command
     public function handle()
     {
 
-
         //Option: mode
         $mode = $this->option('mode');
 
