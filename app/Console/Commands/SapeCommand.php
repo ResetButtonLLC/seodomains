@@ -219,8 +219,8 @@ class SapeCommand extends Command {
             CURLOPT_TIMEOUT => 30,
             CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
             CURLOPT_POST => true,
-            CURLOPT_COOKIEJAR => public_path(env('SAPE_COOKIE_FILE')),
-            CURLOPT_COOKIEFILE => public_path(env('SAPE_COOKIE_FILE')),
+            CURLOPT_COOKIEJAR => storage_path(env('SAPE_COOKIE_FILE')),
+            CURLOPT_COOKIEFILE => storage_path(env('SAPE_COOKIE_FILE')),
             CURLOPT_POSTFIELDS => $payload,
             CURLOPT_HTTPHEADER => array(
                 "Content-Type: text/plain",
