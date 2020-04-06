@@ -53,7 +53,7 @@ class SapeCommand extends Command {
             $added = 0;
             $updated = 0;
 
-            while ($domains = $this->sapeGetSitesFromPage($page, 500)) {
+            while ($domains = $this->sapeGetSitesFromPage($page, 250)) {
 
 
                 foreach ($domains as $domain) {
@@ -179,7 +179,9 @@ class SapeCommand extends Command {
             </methodCall>
         ';
 
-        $resp = simplexml_load_string($this->makeRequest($payload));
+        $responce = $this->makeRequest($payload);
+
+        $resp = simplexml_load_string($responce);
 
         foreach ($resp->params->param->value->array->data->value as $entry) {
             $domain_data = $entry->struct->member;

@@ -8,13 +8,9 @@ www.gogetlinks.net	FALSE	/	FALSE	0	select_menu	1
 www.gogetlinks.net	FALSE	/	FALSE	1614347205	_a0	92b26246c17f856d0c976cb3df733b3b
 www.gogetlinks.net	FALSE	/	FALSE	0	type_user	buy
 .www.gogetlinks.net	TRUE	/	FALSE	0	PHPSESSID	180c326354c9096c7cdf1032333988c6
-.gogetlinks.net	TRUE	/	FALSE	1585403205	e_mail	soft%40promodo.com
-.gogetlinks.net	TRUE	/	FALSE	1585403205	hash	7710b222ed93bf8323b4d8af1e7cf3f8
-www.gogetlinks.net	FALSE	/	FALSE	1585403205	rem_acc	%7B%22soft%40promodo.com%22%3A%227710b222ed93bf8323b4d8af1e7cf3f8%22%7D
 www.gogetlinks.net	FALSE	/	FALSE	1613915205	in_page_my_comps	20
 www.gogetlinks.net	FALSE	/	FALSE	0	selected_submenu	1
 .gogetlinks.net	TRUE	/	FALSE	1740491206	_jsuid	2865507241
 gogetlinks.net	FALSE	/	FALSE	0	select_menu	1
 #HttpOnly_.gogetlinks.net	TRUE	/	FALSE	1616152468	__ddg1	1NariRoGb0KQwzEWIK97
 gogetlinks.net	FALSE	/	FALSE	1616152467	_a0	0e294e407977e3d29ad5de7e2a3ae846
-gogetlinks.net	FALSE	/	FALSE	1584696817	search_sites_last_tab	deleted

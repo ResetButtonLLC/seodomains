@@ -183,7 +183,7 @@ class GoggetlinksCommand extends Command {
         $html = curl_exec($ch);
 
         if (!strpos($html, 'my_campaigns.php')) {
-            file_put_contents(public_path('sites/gogetlinks/login.html'),$html);
+            //file_put_contents(public_path('sites/gogetlinks/login.html'),$html);
             $this->error('Login not successful : saving page to '.url('/sites/gogetlinks/login.html').PHP_EOL);
             $this->error('Most likely that the cookies has expired'.PHP_EOL);
             return;
