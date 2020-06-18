@@ -144,6 +144,7 @@ class GoggetlinksCommand extends Command {
                         //Добавляем updated_at при создании, чтоб в конце обновления удалить домены у которых updated_at отличается на Х часов от времени обновления
                         $data['updated_at'] = date('Y-m-d H:i:s');
                     }
+
                     $added++;
                 }
 
@@ -163,7 +164,7 @@ class GoggetlinksCommand extends Command {
         $this->call('domains:finalize', [
             '--table' => (new Gogetlinks())->getTable(),
             //Гогетлинкс обновляется медленно, поэтому окно обновления в часах ставим больше обычного
-            '--hours' => 8
+            '--hours' => 24
         ]);
     }
 
