@@ -72,8 +72,8 @@ class SapeCommand extends Command {
                         Sape::where('domain_id', $data['domain_id'])->update($data);
                         $updated++;
                     } else {
-                        Sape::insert($data);
                         $data['updated_at'] = date('Y-m-d H:i:s');
+                        Sape::insert($data);
                         $added++;
                     }
                 }

@@ -65,25 +65,19 @@ class GoggetlinksCommand extends Command {
         //set 50 sites per page
         //file_put_contents(public_path(env('GOGETLINKS_COOKIE_FILE')),'gogetlinks.net	FALSE	/	FALSE	1602936216	in_page_search_sites	50'.PHP_EOL, FILE_APPEND);
 
-        while ($data = $this->getData($page)) {
+        //Получим количество сайтов
+        $data = $this->getData($page);
+        preg_match('/Найдено\ (\d{1,6})\ сайт/si', $data, $matches);
+        $counter['total'] = $matches[1];
+        $counter['current'] = 0;
 
-            //Progressbar init
-            if ($page == 0) {
-                preg_match('/Найдено\ (\d{1,6})\ сайт/si', $data, $matches);
-                $counter['total'] = $matches[1];
-            }
+        while ($counter['current'] < $counter['total']) {
 
-            //Иногда страница не отдается, признак того что на странице что то не то - отсутствие body_table_content
+            //Эту строку нельзя использовать в условии выше, т.к. она иногда отдает пустой ответ и скан заканчивается
+            $data = $this->getData($page);
+
             $page_valid = (boolean)stripos($data,'<tbody id="body_table_content">');
             $current_retry = $retries;
-
-            while (!$page_valid && $current_retry) {
-                $antiban_pause = mt_rand(30, 50);
-                $this->line('Gogetlinks.ru page : ' . $page . ' | Error while fetching page | '.$current_retry--.' retries left | Sleeping for ' . $antiban_pause . ' seconds');
-                sleep($antiban_pause);
-                $data = $this->getData($page);
-                $page_valid = (boolean)stripos($data,'<tbody id="body_table_content">');
-            }
 
             if ($page_valid) {
 
@@ -139,10 +133,10 @@ class GoggetlinksCommand extends Command {
                         Gogetlinks::where('domain_id', $data['domain_id'])->update($data);
                         $counter['updated']++;
                     } else {
+                        $data['updated_at'] = date('Y-m-d H:i:s');
                         Gogetlinks::insert($data);
                         $counter['new']++;
                         //Добавляем updated_at при создании, чтоб в конце обновления удалить домены у которых updated_at отличается на Х часов от времени обновления
-                        $data['updated_at'] = date('Y-m-d H:i:s');
                     }
 
                     $added++;
@@ -151,21 +145,25 @@ class GoggetlinksCommand extends Command {
                 $antiban_pause = mt_rand(30, 50);
                 $this->line('Gogetlinks.ru page : ' . $page . ' | Fetched domains : ' . count($row) . ' | Progress: '.$counter['current'].'/'.$counter['total'].' | Added total : ' . $counter['new'] . ' | Updated total : ' . $counter['updated'] . ' | Sleeping for ' . $antiban_pause . ' seconds');
                 sleep($antiban_pause);
+
+                $page++;
+
             } else {
                 //Если страница так и не прогрузилась, то пропускаем ее
                 $antiban_pause = mt_rand(30, 50);
-                $this->line('Gogetlinks.ru page : ' . $page . ' | No more retries left, skipping page | Sleeping for ' . $antiban_pause . ' seconds');
+                $this->line('Gogetlinks.ru page : ' . $page . ' | Problem fetching page, retrying | Sleeping for ' . $antiban_pause . ' seconds');
                 sleep($antiban_pause);
             }
 
-            $page++;
+
         }
 
         $this->call('domains:finalize', [
             '--table' => (new Gogetlinks())->getTable(),
             //Гогетлинкс обновляется медленно, поэтому окно обновления в часах ставим больше обычного
-            '--hours' => 24
+            '--hours' => 30
         ]);
+
     }
 
     private function checkLogin()

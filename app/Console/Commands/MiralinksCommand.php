@@ -87,9 +87,9 @@ class MiralinksCommand extends Command {
                             Miralinks::where('domain_id', $info['domain_id'])->update($info);
                             $counter['updated']++;
                         } else {
-                            Miralinks::insert($info);
                             //Добавляем updated_at при создании, чтоб в конце обновления удалить домены у которых updated_at отличается на Х часов от времени обновления
                             $info['updated_at'] = date('Y-m-d H:i:s');
+                            Miralinks::insert($info);
                             $counter['new']++;
                         }
                     }
