@@ -77,7 +77,7 @@ class SapeCommand extends Command {
                         $added++;
                     }
                 }
-                $this->line('Sape.ru page : ' . $page . ' | Fetched domains : ' . count($domains).' | Added total :  '.$added.' | Updated total : '.$updated.' | Sleeping for 15 seconds');
+                $this->line('Sape.ru page : ' . $page . ' | Fetched domains : ' . count($domains) . ' | Added total :  ' . $added . ' | Updated total : ' . $updated . ' | Sleeping for 15 seconds');
                 $page++;
                 sleep(15);
             }
@@ -85,7 +85,6 @@ class SapeCommand extends Command {
             $this->call('domains:finalize', [
                 '--table' => (new Sape())->getTable()
             ]);
-
         }
     }
 
@@ -94,8 +93,8 @@ class SapeCommand extends Command {
         $resp = $this->client->send(new Request('sape_pr.login', [new Value(env('SAPE_LOGIN')), new Value(env('SAPE_TOKEN'))]));
 
         if ($resp->errno > 0) {
-            $this->error('Auth not successful : saving responce to '.url('sites/sape/auth.txt').PHP_EOL);
-            file_put_contents(public_path('sites/sape/auth.txt'),$resp);
+            $this->error('Auth not successful : saving responce to ' . url('sites/sape/auth.txt') . PHP_EOL);
+            file_put_contents(public_path('sites/sape/auth.txt'), $resp);
             return false;
         } else {
             $this->accountId = $resp->value();
@@ -121,17 +120,16 @@ class SapeCommand extends Command {
         }
     }
 
-    private function sapeAuth()
-    {
-        $payload='<?xml version="1.0"?>
+    private function sapeAuth() {
+        $payload = '<?xml version="1.0"?>
             <methodCall>
                <methodName>sape_pr.login</methodName>
                   <params>
                      <param>
-                        <value><string>'.env('SAPE_LOGIN').'</string></value>
+                        <value><string>' . env('SAPE_LOGIN') . '</string></value>
                      </param>
                      <param>
-                        <value><string>'.env('SAPE_TOKEN').'</string></value>
+                        <value><string>' . env('SAPE_TOKEN') . '</string></value>
                      </param>
                   </params>
             </methodCall>
@@ -146,18 +144,16 @@ class SapeCommand extends Command {
 
             return true;
         } else {
-            $this->error('Responce not successful : saving responce to '.url('sites/sape/auth.txt').PHP_EOL);
-            file_put_contents(public_path('sites/sape/auth.txt'),$resp);
+            $this->error('Responce not successful : saving responce to ' . url('sites/sape/auth.txt') . PHP_EOL);
+            file_put_contents(public_path('sites/sape/auth.txt'), $resp);
             return false;
         }
-
     }
 
-    private function sapeGetSitesFromPage($page, $domains_per_request = 10)
-    {
+    private function sapeGetSitesFromPage($page, $domains_per_request = 10) {
         $domains = array();
 
-        $payload='<?xml version="1.0"?>
+        $payload = '<?xml version="1.0"?>
             <methodCall>
                <methodName>sape_pr.site.search</methodName>
                   <params>
@@ -170,10 +166,10 @@ class SapeCommand extends Command {
                          </value>
                      </param>
                      <param>
-                        <value><i4>'.$page.'</i4></value>
+                        <value><i4>' . $page . '</i4></value>
                      </param>
                      <param>
-                        <value><i4>'.$domains_per_request.'</i4></value>
+                        <value><i4>' . $domains_per_request . '</i4></value>
                      </param>
                   </params>
             </methodCall>
@@ -182,23 +178,28 @@ class SapeCommand extends Command {
         $responce = $this->makeRequest($payload);
 
         $resp = simplexml_load_string($responce);
+        if (isset($resp->params->param->value) && isset($resp->params->param->value->array->data->value)) {
+            foreach ($resp->params->param->value->array->data->value as $entry) {
+                $domain_data = $entry->struct->member;
 
-        foreach ($resp->params->param->value->array->data->value as $entry) {
-            $domain_data = $entry->struct->member;
+                $id = current($domain_data[0]->value->int);
 
-            $id = current($domain_data[0]->value->int);
+                $domains[$id]['url']['string'] = current($domain_data[1]->value->string[0]);
+                //URLS=>DOMAINS
+                $domains[$id]['url']['string'] = str_ireplace('https://', '', $domains[$id]['url']['string']);
+                $domains[$id]['url']['string'] = str_ireplace('http://', '', $domains[$id]['url']['string']);
+                $domains[$id]['url']['string'] = preg_replace('/^www\./', '', $domains[$id]['url']['string']);
+                $domains[$id]['url']['string'] = idn_to_utf8($domains[$id]['url']['string'], IDNA_DEFAULT, INTL_IDNA_VARIANT_UTS46); //punycode
+                //URLS=>DOMAINS done
 
-            $domains[$id]['url']['string'] = current($domain_data[1]->value->string[0]);
-            //URLS=>DOMAINS
-            $domains[$id]['url']['string'] = str_ireplace('https://','',$domains[$id]['url']['string']);
-            $domains[$id]['url']['string'] = str_ireplace('http://','',$domains[$id]['url']['string']);
-            $domains[$id]['url']['string'] = preg_replace ( '/^www\./', '', $domains[$id]['url']['string']);
-            $domains[$id]['url']['string'] = idn_to_utf8($domains[$id]['url']['string'],IDNA_DEFAULT,INTL_IDNA_VARIANT_UTS46); //punycode
-            //URLS=>DOMAINS done
-
-            $domains[$id]['price']['double'] = intval (current ($domain_data[2]->value->double[0]));
-            $domains[$id]['nof_pages_in_google']['int'] = intval (current ($domain_data[14]->value->int[0]));
-
+                $domains[$id]['price']['double'] = intval(current($domain_data[2]->value->double[0]));
+                $domains[$id]['nof_pages_in_google']['int'] = intval(current($domain_data[14]->value->int[0]));
+            }
+        } else {
+             $antiban_pause = mt_rand(30, 50);
+                $this->line('Sape page : ' . $page . ' | Problem fetching page, retrying | Sleeping for ' . $antiban_pause . ' seconds');
+                sleep($antiban_pause);
+                $this->sapeGetSitesFromPage($page, 250);
         }
 
         //file_put_contents(public_path('sites/sape/responce.txt'),print_r($resp->params->param->value->array->data ,true));
@@ -206,9 +207,7 @@ class SapeCommand extends Command {
         return $domains;
     }
 
-
-    private function makeRequest($payload)
-    {
+    private function makeRequest($payload) {
         $curl = curl_init();
 
         curl_setopt_array($curl, array(
@@ -231,8 +230,6 @@ class SapeCommand extends Command {
         curl_close($curl);
 
         return $response;
-
     }
-
 
 }

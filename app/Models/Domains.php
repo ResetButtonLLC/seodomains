@@ -32,5 +32,9 @@ class Domains extends Model {
     public function rotapost(): HasOne {
         return $this->hasOne('App\Models\Rotapost', 'domain_id', 'id');
     }
+    
+    public function prnews(): HasOne {
+        return $this->hasOne('App\Models\Prnews', 'domain_id', 'id');
+    }
 
 }
