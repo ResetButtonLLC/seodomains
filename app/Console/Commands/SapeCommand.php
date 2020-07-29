@@ -141,7 +141,7 @@ class SapeCommand extends Command {
 
         if (isset($result->params->param->value->int)) {
             $this->line('Auth successful');
-
+            sleep(60);
             return true;
         } else {
             $this->error('Responce not successful : saving responce to ' . url('sites/sape/auth.txt') . PHP_EOL);
@@ -196,10 +196,11 @@ class SapeCommand extends Command {
                 $domains[$id]['nof_pages_in_google']['int'] = intval(current($domain_data[14]->value->int[0]));
             }
         } else {
-             $antiban_pause = mt_rand(30, 50);
-                $this->line('Sape page : ' . $page . ' | Problem fetching page, retrying | Sleeping for ' . $antiban_pause . ' seconds');
-                sleep($antiban_pause);
-                $this->sapeGetSitesFromPage($page, 250);
+            Log::info(print_r($resp, true));
+            $antiban_pause = mt_rand(50, 60);
+            $this->line('Sape page : ' . $page . ' | Problem fetching page, retrying | Sleeping for ' . $antiban_pause . ' seconds');
+            sleep($antiban_pause);
+            $this->sapeGetSitesFromPage($page, 250);
         }
 
         //file_put_contents(public_path('sites/sape/responce.txt'),print_r($resp->params->param->value->array->data ,true));
