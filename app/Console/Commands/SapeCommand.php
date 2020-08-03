@@ -31,6 +31,7 @@ class SapeCommand extends Command {
     protected $client;
     protected $accountId;
     protected $auth_cookie;
+    protected $sleep;
 
     /**
      * Create a new command instance.
@@ -47,15 +48,13 @@ class SapeCommand extends Command {
      * @return mixed
      */
     public function handle() {
-
+        $this->sleep = mt_rand(50, 60);
         if ($this->sapeAuth()) {
             $page = 1;
             $added = 0;
             $updated = 0;
 
             while ($domains = $this->sapeGetSitesFromPage($page, 250)) {
-
-
                 foreach ($domains as $domain) {
                     $url = mb_strtolower($domain['url']['string']);
                     $data['placement_price'] = $domain['price']['double'];
@@ -79,7 +78,7 @@ class SapeCommand extends Command {
                 }
                 $this->line('Sape.ru page : ' . $page . ' | Fetched domains : ' . count($domains) . ' | Added total :  ' . $added . ' | Updated total : ' . $updated . ' | Sleeping for 15 seconds');
                 $page++;
-                sleep(15);
+                sleep($this->sleep);
             }
 
             $this->call('domains:finalize', [
@@ -106,12 +105,7 @@ class SapeCommand extends Command {
     }
 
     private function getDomains($page = 1) {
-
-
-
         $resp = $this->client->send(new Request('sape_pr.site.search', [new Value('news', 'string'), new Value([], 'struct'), new Value($page, 'int'), new Value(50, 'int')]));
-
-        //print_r($resp);
 
         if (!$resp->value()) {
             return false;
@@ -136,12 +130,10 @@ class SapeCommand extends Command {
         ';
 
         $resp = $this->makeRequest($payload);
-
         $result = simplexml_load_string($resp);
-
         if (isset($result->params->param->value->int)) {
             $this->line('Auth successful');
-            sleep(60);
+            sleep($this->sleep);
             return true;
         } else {
             $this->error('Responce not successful : saving responce to ' . url('sites/sape/auth.txt') . PHP_EOL);
@@ -174,7 +166,7 @@ class SapeCommand extends Command {
                   </params>
             </methodCall>
         ';
-
+        $this->line('Sape page : ' . $page);
         $responce = $this->makeRequest($payload);
 
         $resp = simplexml_load_string($responce);
@@ -191,15 +183,14 @@ class SapeCommand extends Command {
                 $domains[$id]['url']['string'] = preg_replace('/^www\./', '', $domains[$id]['url']['string']);
                 $domains[$id]['url']['string'] = idn_to_utf8($domains[$id]['url']['string'], IDNA_DEFAULT, INTL_IDNA_VARIANT_UTS46); //punycode
                 //URLS=>DOMAINS done
-
+                $this->line('Sape page : ' . $page . ' ' . $domains[$id]['url']['string']);
                 $domains[$id]['price']['double'] = intval(current($domain_data[2]->value->double[0]));
                 $domains[$id]['nof_pages_in_google']['int'] = intval(current($domain_data[14]->value->int[0]));
             }
         } else {
             Log::info(print_r($resp, true));
-            $antiban_pause = mt_rand(50, 60);
-            $this->line('Sape page : ' . $page . ' | Problem fetching page, retrying | Sleeping for ' . $antiban_pause . ' seconds');
-            sleep($antiban_pause);
+            $this->line('Sape page : ' . $page . ' | Problem fetching page, retrying | Sleeping for ' . $this->sleep . ' seconds');
+            sleep($this->sleep);
             $this->sapeGetSitesFromPage($page, 250);
         }
 
