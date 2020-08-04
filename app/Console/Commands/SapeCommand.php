@@ -31,7 +31,7 @@ class SapeCommand extends Command {
     protected $client;
     protected $accountId;
     protected $auth_cookie;
-    protected $sleep;
+
 
     /**
      * Create a new command instance.
@@ -48,38 +48,44 @@ class SapeCommand extends Command {
      * @return mixed
      */
     public function handle() {
-        $this->sleep = mt_rand(50, 60);
         if ($this->sapeAuth()) {
-            $page = 1;
+            $page = 0;
             $added = 0;
             $updated = 0;
+            $domains_per_request = 250;
 
-            while ($domains = $this->sapeGetSitesFromPage($page, 250)) {
-                foreach ($domains as $domain) {
-                    $url = mb_strtolower($domain['url']['string']);
-                    $data['placement_price'] = $domain['price']['double'];
-                    $data['google_index'] = $domain['nof_pages_in_google']['int'];
 
-                    if ($domain = Domains::where('url', $url)->first()) {
-                        $data['domain_id'] = $domain->id;
-                    } else {
-                        $domain = Domains::insertGetId(['url' => $url, 'created_at' => date('Y-m-d H:i:s')]);
-                        $data['domain_id'] = $domain;
-                    }
+            do  {
+                $domains = $this->sapeGetSitesFromPage($page, $domains_per_request);
 
-                    if (Sape::where('domain_id', $data['domain_id'])->first()) {
-                        Sape::where('domain_id', $data['domain_id'])->update($data);
-                        $updated++;
-                    } else {
-                        $data['updated_at'] = date('Y-m-d H:i:s');
-                        Sape::insert($data);
-                        $added++;
-                    }
-                }
-                $this->line('Sape.ru page : ' . $page . ' | Fetched domains : ' . count($domains) . ' | Added total :  ' . $added . ' | Updated total : ' . $updated . ' | Sleeping for 15 seconds');
-                $page++;
-                sleep($this->sleep);
-            }
+                        foreach ($domains as $domain) {
+                            $url = mb_strtolower($domain['url']['string']);
+                            $data['placement_price'] = $domain['price']['double'];
+                            $data['google_index'] = $domain['nof_pages_in_google']['int'];
+
+                            if ($domain = Domains::where('url', $url)->first()) {
+                                $data['domain_id'] = $domain->id;
+                            } else {
+                                $domain = Domains::insertGetId(['url' => $url, 'created_at' => date('Y-m-d H:i:s')]);
+                                $data['domain_id'] = $domain;
+                            }
+
+                            if (Sape::where('domain_id', $data['domain_id'])->first()) {
+                                Sape::where('domain_id', $data['domain_id'])->update($data);
+                                $updated++;
+                            } else {
+                                $data['updated_at'] = date('Y-m-d H:i:s');
+                                Sape::insert($data);
+                                $added++;
+                            }
+                        }
+                        $this->line('Sape.ru page : ' . $page . ' | Fetched domains : ' . count($domains) . ' | Added total :  ' . $added . ' | Updated total : ' . $updated . ' | Sleeping for 20 seconds');
+                        $page++;
+                        sleep(20);
+
+                    //работаем пока доменов больше нуля
+
+            } while (count($domains)>0);
 
             $this->call('domains:finalize', [
                 '--table' => (new Sape())->getTable()
@@ -104,15 +110,6 @@ class SapeCommand extends Command {
         }
     }
 
-    private function getDomains($page = 1) {
-        $resp = $this->client->send(new Request('sape_pr.site.search', [new Value('news', 'string'), new Value([], 'struct'), new Value($page, 'int'), new Value(50, 'int')]));
-
-        if (!$resp->value()) {
-            return false;
-        } else {
-            return $resp->value();
-        }
-    }
 
     private function sapeAuth() {
         $payload = '<?xml version="1.0"?>
@@ -133,7 +130,6 @@ class SapeCommand extends Command {
         $result = simplexml_load_string($resp);
         if (isset($result->params->param->value->int)) {
             $this->line('Auth successful');
-            sleep($this->sleep);
             return true;
         } else {
             $this->error('Responce not successful : saving responce to ' . url('sites/sape/auth.txt') . PHP_EOL);
@@ -166,33 +162,57 @@ class SapeCommand extends Command {
                   </params>
             </methodCall>
         ';
-        $this->line('Sape page : ' . $page);
-        $responce = $this->makeRequest($payload);
 
-        $resp = simplexml_load_string($responce);
-        if (isset($resp->params->param->value) && isset($resp->params->param->value->array->data->value)) {
-            foreach ($resp->params->param->value->array->data->value as $entry) {
-                $domain_data = $entry->struct->member;
+        $sape_success = false;
+        $retry = 0;
 
-                $id = current($domain_data[0]->value->int);
+        do {
 
-                $domains[$id]['url']['string'] = current($domain_data[1]->value->string[0]);
-                //URLS=>DOMAINS
-                $domains[$id]['url']['string'] = str_ireplace('https://', '', $domains[$id]['url']['string']);
-                $domains[$id]['url']['string'] = str_ireplace('http://', '', $domains[$id]['url']['string']);
-                $domains[$id]['url']['string'] = preg_replace('/^www\./', '', $domains[$id]['url']['string']);
-                $domains[$id]['url']['string'] = idn_to_utf8($domains[$id]['url']['string'], IDNA_DEFAULT, INTL_IDNA_VARIANT_UTS46); //punycode
-                //URLS=>DOMAINS done
-                $this->line('Sape page : ' . $page . ' ' . $domains[$id]['url']['string']);
-                $domains[$id]['price']['double'] = intval(current($domain_data[2]->value->double[0]));
-                $domains[$id]['nof_pages_in_google']['int'] = intval(current($domain_data[14]->value->int[0]));
+            $responce = $this->makeRequest($payload);
+
+            $resp = simplexml_load_string($responce);
+
+            //dd($resp->params->param->value->array->data, isset($resp->params->param->value->array->data));
+            if (isset($resp->params->param->value->array->data)) {
+                //Это ответ с доменами
+                foreach ($resp->params->param->value->array->data->value as $entry) {
+                    $domain_data = $entry->struct->member;
+
+                    $id = current($domain_data[0]->value->int);
+
+                    $domains[$id]['url']['string'] = current($domain_data[1]->value->string[0]);
+                    //URLS=>DOMAINS
+                    $domains[$id]['url']['string'] = str_ireplace('https://', '', $domains[$id]['url']['string']);
+                    $domains[$id]['url']['string'] = str_ireplace('http://', '', $domains[$id]['url']['string']);
+                    $domains[$id]['url']['string'] = preg_replace('/^www\./', '', $domains[$id]['url']['string']);
+                    $domains[$id]['url']['string'] = idn_to_utf8($domains[$id]['url']['string'], IDNA_DEFAULT, INTL_IDNA_VARIANT_UTS46); //punycode
+                    //URLS=>DOMAINS done
+                    //$this->line('Sape page : ' . $page . ' ' . $domains[$id]['url']['string']);
+                    $domains[$id]['price']['double'] = intval(current($domain_data[2]->value->double[0]));
+                    $domains[$id]['nof_pages_in_google']['int'] = intval(current($domain_data[14]->value->int[0]));
+                    $sape_success = true;
+                }
+            } else {
+                //Пробуем получить ошибку
+                if (isset($resp->fault->value->struct->member)) {
+                    $error = $resp->fault->value->struct->member[1]->value->string;
+                } else {
+                    //Если нет ни ошибок ни доменов, значит кончились домены
+                    $error = 'Неизвестная ошибка';
+                }
+
+                $retry++;
+                $this->line('Sape page : ' . $page . ' | Problem fetching page #'.$retry.' | '.$error.' | Sleeping for 30 seconds ');
+                sleep(30);
+                $sape_success = false;
+
+                //Т.к. API сапы бажит и отдает ошибку когда домены кончились, то при превышении числа попыток получить страницу, отметим запрос как успешный, чтоб произошел выход из цикла, потом этот блок можно будет убрать
+                if ($retry >=10) {
+                    $sape_success = true;
+                }
+
             }
-        } else {
-            Log::info(print_r($resp, true));
-            $this->line('Sape page : ' . $page . ' | Problem fetching page, retrying | Sleeping for ' . $this->sleep . ' seconds');
-            sleep($this->sleep);
-            $this->sapeGetSitesFromPage($page, 250);
-        }
+        } while (!$sape_success);
 
         //file_put_contents(public_path('sites/sape/responce.txt'),print_r($resp->params->param->value->array->data ,true));
 

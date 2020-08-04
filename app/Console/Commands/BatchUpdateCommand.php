@@ -11,7 +11,7 @@ class BatchUpdateCommand extends Command
      *
      * @var string
      */
-    protected $signature = 'domains:batchupdate';
+    protected $signature = 'domains:update';
 
     /**
      * The console command description.
@@ -42,6 +42,7 @@ class BatchUpdateCommand extends Command
         $this->call('domains:miralinks');
         $this->call('domains:rotapost');
         $this->call('domains:gogetlinks');
+        $this->call('domains:prnews');
 
         //Обновляем параметры
         $this->call('domains:ahrefs',[
