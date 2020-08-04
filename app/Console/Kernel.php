@@ -24,7 +24,7 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule)
     {
-        $schedule->command('domains:batchupdate')->weeklyOn(6, '0:10');
+        $schedule->command('domains:update')->weeklyOn(6, '0:10');
     }
 
     /**
