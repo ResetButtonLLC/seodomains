@@ -75,15 +75,13 @@ class AhrefsCommand extends Command
         $this->line('Fetching Ahrefs DR / Inlinks / Traffic Top10 / Position Top10 ... ');
 
         $counter = array(
-            'current' => 0,
+            'current' => 1,
             'total' => count($domains),
         );
 
         $api = new ApiPromodoHelper();
 
         foreach ($domains as $domain) {
-
-            $this->line('Ahrefs | '. ++$counter['current'].'/'.$counter['total'].' | Domain: '.$domain);
 
             //Ahrefs DR
             $result = $api->makeRequest('ahrefs/public/getDomainRating',[$domain]);
@@ -109,6 +107,8 @@ class AhrefsCommand extends Command
             $ahrefs_data[$domain]['traffic_top10'] = isset(current($result)["metrics"]["traffic_top10"]) ? (int)round(current($result)["metrics"]["traffic_top10"]) : null;
             $ahrefs_data[$domain]['traffic_top100'] = isset(current($result)["metrics"]["traffic"]) ? (int)round(current($result)["metrics"]["traffic"]) : null;
 
+            $this->line('Ahrefs | '. $counter['current'].'/'.$counter['total'].' | Domain: '.$domain.'| DR:'.$ahrefs_data[$domain]['dr'].' Inlinks:'.$ahrefs_data[$domain]['inlinks'].' PositionsTop100:'.$ahrefs_data[$domain]['positions_top100'].' Traffic:'.$ahrefs_data[$domain]['traffic_top100']);
+
             //Import into DB
             Domains::where('url',$domain)->update([
                 'ahrefs_dr' =>$ahrefs_data[$domain]['dr'],
@@ -120,6 +120,8 @@ class AhrefsCommand extends Command
                 'ahrefs_traffic_top10' => $ahrefs_data[$domain]['traffic_top10'],
                 'ahrefs_traffic_top100' => $ahrefs_data[$domain]['traffic_top100'],
                 'ahrefs_updated_at' => Carbon::now()]);
+
+            $counter['current']++;
 
         }
 
