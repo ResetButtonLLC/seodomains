@@ -83,7 +83,7 @@ class AhrefsCommand extends Command
 
         foreach ($domains as $domain) {
 
-            $this->line('Ahrefs | ', ++$counter['current'].'/'.$counter['total'].' | Domain: '.$domain);
+            $this->line('Ahrefs | '. ++$counter['current'].'/'.$counter['total'].' | Domain: '.$domain);
 
             //Ahrefs DR
             $result = $api->makeRequest('ahrefs/public/getDomainRating',[$domain]);
