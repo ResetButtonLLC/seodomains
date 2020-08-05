@@ -14,7 +14,8 @@
         "phpoffice/phpspreadsheet": "^1.9",
         "phpxmlrpc/phpxmlrpc": "4.*",
         "rap2hpoutre/fast-excel": "^1.2",
-        "rootinc/laravel-azure-middleware": "^0.5.1"
+        "rootinc/laravel-azure-middleware": "^0.5.1",
+        "symfony/dom-crawler": "^5.1"
     },
     "require-dev": {
         "filp/whoops": "~2.0",
