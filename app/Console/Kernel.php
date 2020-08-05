@@ -4,6 +4,7 @@ namespace App\Console;
 
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
+use Carbon\Carbon;
 
 class Kernel extends ConsoleKernel
 {
@@ -24,7 +25,7 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule)
     {
-        $schedule->command('domains:update')->weeklyOn(6, '0:10');
+        $schedule->command('domains:update')->weeklyOn(6, '0:10')->sendOutputTo(storage_path('logs/'.Carbon::now()->toDateString().'-run.log'));
     }
 
     /**
