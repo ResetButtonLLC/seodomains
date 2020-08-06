@@ -37,7 +37,7 @@ class DomainsController extends Controller {
                         'domains.ahrefs_dr', 'domains.ahrefs_inlinks', 'domains.ahrefs_outlinks', 'domains.ahrefs_positions_top10', 'domains.ahrefs_traffic_top10', 'domains.majestic_cf', 'domains.majestic_tf')
                     ->whereNull('domains.deleted_at')
                     ->orderBy('domains.url', 'ASC')
-                        ->limit(500)
+//                        ->limit(500)
                     ->get();
 
 //
