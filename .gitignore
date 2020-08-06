@@ -7,7 +7,6 @@
 /storage/framework/cache/*
 /storage/framework/sessions/*
 /storage/framework/views/*
-composer.lock
 /public/adwordsscripts/*
 /public/sites/*
 cookie-*
