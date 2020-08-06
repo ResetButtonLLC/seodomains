@@ -17,7 +17,6 @@ class DomainsController extends Controller {
 
     public function index(Request $request) {
 
-
         if (isset($request->export)) {
             ini_set('max_execution_time', 0);
 
