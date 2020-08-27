@@ -49,7 +49,7 @@ class DomainsController extends Controller {
             ini_set('max_execution_time', 0);
 
             $domains = $domains->orderBy('domains.url', 'ASC')
-                    ->limit(1000)
+//                    ->limit(1000)
                     ->get();
 
             $spreadsheet = new Spreadsheet();
