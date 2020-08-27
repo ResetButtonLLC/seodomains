@@ -10,7 +10,7 @@ use App\Models\{
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
-use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+use PhpOffice\PhpSpreadsheet\Writer\Xls;
 use PhpOffice\PhpSpreadsheet\Cell;
 
 class DomainsController extends Controller {
@@ -49,7 +49,7 @@ class DomainsController extends Controller {
             ini_set('max_execution_time', 0);
 
             $domains = $domains->orderBy('domains.url', 'ASC')
-//                    ->limit(500)
+                    ->limit(1000)
                     ->get();
 
             $spreadsheet = new Spreadsheet();
@@ -162,8 +162,8 @@ class DomainsController extends Controller {
                 //$sheet->setCellValueByColumnAndRow($column++, $row, $data->serpstat_traffic);
             }
 
-            $writer = new Xlsx($spreadsheet);
-            $filename = storage_path('app/domains-' . date('Y-m-d-H-i-s') . '.xlsx');
+            $writer = new Xls($spreadsheet);
+            $filename = storage_path('app/domains-' . date('Y-m-d-H-i-s') . '.xls');
             $writer->save($filename);
 
             return response()->download($filename)->deleteFileAfterSend();
