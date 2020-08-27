@@ -10,7 +10,7 @@ use App\Models\{
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
-use PhpOffice\PhpSpreadsheet\Writer\Xls;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 use PhpOffice\PhpSpreadsheet\Cell;
 
 class DomainsController extends Controller {
@@ -162,8 +162,8 @@ class DomainsController extends Controller {
                 //$sheet->setCellValueByColumnAndRow($column++, $row, $data->serpstat_traffic);
             }
 
-            $writer = new Xls($spreadsheet);
-            $filename = storage_path('app/domains-' . date('Y-m-d-H-i-s') . '.xls');
+            $writer = new Xlsx($spreadsheet);
+            $filename = storage_path('app/domains-' . date('Y-m-d-H-i-s') . '.xlsx');
             $writer->save($filename);
 
             return response()->download($filename)->deleteFileAfterSend();
