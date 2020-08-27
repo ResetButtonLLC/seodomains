@@ -49,7 +49,7 @@ class DomainsController extends Controller {
             ini_set('max_execution_time', 0);
 
             $domains = $domains->orderBy('domains.url', 'ASC')
-//                    ->limit(500)
+                    ->limit(500)
                     ->get();
 
             $spreadsheet = new Spreadsheet();
@@ -85,7 +85,8 @@ class DomainsController extends Controller {
 
 
             foreach ($domains as $r => $data) {
-                
+                if(!$data->url)
+                    continue;
                 //Ряд Потому что эксель начинается с 1 а не с 0, первый ряд - заголовки
                 $row = $r + 2;
                 $column = 1;
