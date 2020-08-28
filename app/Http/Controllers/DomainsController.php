@@ -122,7 +122,7 @@ class DomainsController extends Controller {
             if (!$data->url)
                 continue;
             //Ряд Потому что эксель начинается с 1 а не с 0, первый ряд - заголовки
-            $row = $r + 1;
+            $row = $r + 2;
             $column = 1;
             //URL
             $sheet->setCellValueByColumnAndRow($column, $row, $data->url);
