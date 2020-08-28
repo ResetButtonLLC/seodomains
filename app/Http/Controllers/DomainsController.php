@@ -48,6 +48,7 @@ class DomainsController extends Controller {
 
         if (isset($request->export)) {
             ini_set('max_execution_time', 0);
+            ini_set('memory_limit', '2048M');
 
             $sites = $domains->orderBy('domains.url', 'ASC')
                     ->offset(0)
@@ -143,10 +144,10 @@ class DomainsController extends Controller {
                 $column++;
 
                 $sheet->setCellValueByColumnAndRow($column, $row, $data->miralinks['writing_price'] ? $data->miralinks['writing_price'] : '-');
-                if ($data->miralinks['site_id']) {
-                    $sheet->getCellByColumnAndRow($column, $row)->getHyperlink()->setUrl('https://anonym.to/?"https://www.miralinks.ru/catalog/profileView/' . $data->miralinks['site_id'] . '"');
-                    $sheet->getStyleByColumnAndRow($column, $row)->getFont()->getColor()->setARGB(\PhpOffice\PhpSpreadsheet\Style\Color::COLOR_BLUE);
-                }
+//                if ($data->miralinks['site_id']) {
+//                    $sheet->getCellByColumnAndRow($column, $row)->getHyperlink()->setUrl('https://anonym.to/?"https://www.miralinks.ru/catalog/profileView/' . $data->miralinks['site_id'] . '"');
+//                    $sheet->getStyleByColumnAndRow($column, $row)->getFont()->getColor()->setARGB(\PhpOffice\PhpSpreadsheet\Style\Color::COLOR_BLUE);
+//                }
                 $column++;
             }
 
