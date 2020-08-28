@@ -49,7 +49,7 @@ class DomainsController extends Controller {
             ini_set('max_execution_time', 0);
 
             $domains = $domains->orderBy('domains.url', 'ASC')
-                    ->limit(1000)
+//                    ->limit(1000)
                     ->get();
 
             $spreadsheet = new Spreadsheet();
@@ -109,15 +109,15 @@ class DomainsController extends Controller {
                     $sheet->setCellValueByColumnAndRow($column, $row, $data->miralinks['placement_price'] ? $data->miralinks['placement_price'] : '-');
                     if ($data->miralinks['site_id']) {
                         $sheet->getCellByColumnAndRow($column, $row)->getHyperlink()->setUrl('https://anonym.to/?https://www.miralinks.ru/catalog/profileView/' . $data->miralinks['site_id']);
+                        $sheet->getStyleByColumnAndRow($column, $row)->getFont()->getColor()->setARGB(\PhpOffice\PhpSpreadsheet\Style\Color::COLOR_BLUE);
                     }
-                    $sheet->getStyleByColumnAndRow($column, $row)->getFont()->getColor()->setARGB(\PhpOffice\PhpSpreadsheet\Style\Color::COLOR_BLUE);
                     $column++;
 
                     $sheet->setCellValueByColumnAndRow($column, $row, $data->miralinks['writing_price'] ? $data->miralinks['writing_price'] : '-');
                     if ($data->miralinks['site_id']) {
                         $sheet->getCellByColumnAndRow($column, $row)->getHyperlink()->setUrl('https://anonym.to/?https://www.miralinks.ru/catalog/profileView/' . $data->miralinks['site_id']);
+                        $sheet->getStyleByColumnAndRow($column, $row)->getFont()->getColor()->setARGB(\PhpOffice\PhpSpreadsheet\Style\Color::COLOR_BLUE);
                     }
-                    $sheet->getStyleByColumnAndRow($column, $row)->getFont()->getColor()->setARGB(\PhpOffice\PhpSpreadsheet\Style\Color::COLOR_BLUE);
                     $column++;
                 }
 
