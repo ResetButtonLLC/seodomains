@@ -49,20 +49,20 @@ class DomainsController extends Controller {
         if (isset($request->export)) {
             ini_set('max_execution_time', 0);
             ini_set('memory_limit', '2048M');
-
+            $offset = $limit = 35000;
             $sites = $domains->orderBy('domains.url', 'ASC')
                     ->offset(0)
-                    ->limit(35000)
+                    ->limit($limit)
                     ->get();
 
             $data = $this->addData($request, $sites);
 
-            $sites = $domains->orderBy('domains.url', 'ASC')
-                    ->offset(35000)
-                    ->limit(35000)
-                    ->get();
+            while ($sites = $domains->orderBy('domains.url', 'ASC')->offset($offset)->limit($limit)->get()) {
+                $data = $this->addData($request, $sites, $data[0], $data[1], $data[2], $data[3]);
+                $offset = $offset + $offset;
+            }
 
-            $data = $this->addData($request, $sites, $data[0], $data[1], $data[2], $data[3]);
+            
 //            dd($data);
 
 
