@@ -106,17 +106,17 @@ class DomainsController extends Controller {
 
                 //MIRALINKS (какой то баг с ссылкой - не работает прямая)
                 if (isset($request->resource['miralinks'])) {
-                    $sheet->setCellValueByColumnAndRow($column, $row, $data->miralinks['placement_price'] ? $data->miralinks['placement_price'] : '');
+                    $sheet->setCellValueByColumnAndRow($column, $row, $data->miralinks['placement_price'] ? $data->miralinks['placement_price'] : '-');
 //                    if ($data->miralinks['placement_price'] && $data->miralinks['site_id']) {
-//                        $sheet->getCellByColumnAndRow($column, $row)->getHyperlink()->setUrl('https://www.miralinks.ru/catalog/profileView/' . $data->miralinks['site_id']);
-//                        $sheet->getStyleByColumnAndRow($column, $row)->getFont()->getColor()->setARGB(\PhpOffice\PhpSpreadsheet\Style\Color::COLOR_BLUE);
+                        $sheet->getCellByColumnAndRow($column, $row)->getHyperlink()->setUrl('https://www.miralinks.ru/catalog/profileView/' . $data->miralinks['site_id']);
+                        $sheet->getStyleByColumnAndRow($column, $row)->getFont()->getColor()->setARGB(\PhpOffice\PhpSpreadsheet\Style\Color::COLOR_BLUE);
 //                    }
                     $column++;
 
-                    $sheet->setCellValueByColumnAndRow($column, $row, $data->miralinks['writing_price'] ? $data->miralinks['writing_price'] : '');
+                    $sheet->setCellValueByColumnAndRow($column, $row, $data->miralinks['writing_price'] ? $data->miralinks['writing_price'] : '-');
 //                    if ($data->miralinks['writing_price'] && $data->miralinks['site_id']) {
-//                        $sheet->getCellByColumnAndRow($column, $row)->getHyperlink()->setUrl('https://www.miralinks.ru/catalog/profileView/' . $data->miralinks['site_id']);
-//                        $sheet->getStyleByColumnAndRow($column, $row)->getFont()->getColor()->setARGB(\PhpOffice\PhpSpreadsheet\Style\Color::COLOR_BLUE);
+                        $sheet->getCellByColumnAndRow($column, $row)->getHyperlink()->setUrl('https://www.miralinks.ru/catalog/profileView/' . $data->miralinks['site_id']);
+                        $sheet->getStyleByColumnAndRow($column, $row)->getFont()->getColor()->setARGB(\PhpOffice\PhpSpreadsheet\Style\Color::COLOR_BLUE);
 //                    }
                     $column++;
                 }
