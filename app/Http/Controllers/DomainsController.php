@@ -50,7 +50,7 @@ class DomainsController extends Controller {
 
             $domains = $domains->orderBy('domains.url', 'ASC')
                     ->offset(35000)
-                    //->limit(38000)
+                    ->limit(38000)
                     ->get();
 
             $spreadsheet = new Spreadsheet();
