@@ -58,6 +58,9 @@ class DomainsController extends Controller {
             $data = $this->addData($request, $sites);
 
             while ($sites = $domains->orderBy('domains.url', 'ASC')->offset($offset)->limit($limit)->get()) {
+                if(count($sites) == 0){
+                    break;
+                }
                 $data = $this->addData($request, $sites, $data[0], $data[1], $data[2], $data[3]);
                 $offset = $offset + $offset;
             }
