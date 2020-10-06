@@ -15,7 +15,8 @@
         "phpxmlrpc/phpxmlrpc": "4.*",
         "rap2hpoutre/fast-excel": "^1.2",
         "rootinc/laravel-azure-middleware": "^0.5.1",
-        "symfony/dom-crawler": "^5.1"
+        "symfony/dom-crawler": "^5.1",
+        "ext-curl": "*"
     },
     "require-dev": {
         "filp/whoops": "~2.0",
