@@ -44,7 +44,9 @@ class GoggetlinksCommand extends Command {
     public function handle()
     {
 
-        $this->checkLogin();
+        if (!$this->checkLogin()) {
+            die();
+        }
 
         $page = 0;
         $retries = 3;
@@ -169,9 +171,10 @@ class GoggetlinksCommand extends Command {
     private function checkLogin()
     {
         $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, env('GOGETLINKS_LOGIN_URL'));
+        curl_setopt($ch, CURLOPT_URL, 'https://gogetlinks.net/profile');
         curl_setopt($ch, CURLOPT_REFERER, env('GOGETLINKS_LOGIN_URL'));
         curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
+        curl_setopt($ch,CURLOPT_ENCODING, '');
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
         curl_setopt($ch, CURLOPT_COOKIEJAR, public_path(env('GOGETLINKS_COOKIE_FILE')));
         curl_setopt($ch, CURLOPT_COOKIEFILE, public_path(env('GOGETLINKS_COOKIE_FILE')));
@@ -179,13 +182,21 @@ class GoggetlinksCommand extends Command {
         curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
         curl_setopt($ch, CURLOPT_HTTPHEADER,array(
             "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.97 Safari/537.36",
+            "Accept:  */*",
+            "Accept-Encoding:  gzip, deflate",
+            "Accept-Language:  ru-RU,ru;q=0.8,en-US;q=0.5,en;q=0.3",
+            "Cache-Control:  no-cache",
+            "Connection:  keep-alive",
+            "Content-Type: application/x-www-form-urlencoded",
+            "Referer:  https://gogetlinks.net",
+            "cache-control:  no-cache",
         ));
 
         $html = curl_exec($ch);
 
-        if (!strpos($html, 'my_campaigns.php')) {
-            //file_put_contents(public_path('sites/gogetlinks/login.html'),$html);
-            $this->error('Login not successful : saving page to '.url('/sites/gogetlinks/login.html').PHP_EOL);
+        if (!strpos($html, '<li class="header-authorized__nav-item">')) {
+            file_put_contents(public_path('sites/gogetlinks/debug.html'),$html);
+            $this->error('Login not successful : saving page to '.url('/sites/gogetlinks/debug.html').PHP_EOL);
             $this->error('Most likely that the cookies has expired'.PHP_EOL);
             return false;
         } else {
@@ -200,6 +211,7 @@ class GoggetlinksCommand extends Command {
         curl_setopt($ch, CURLOPT_URL, env('GOGETLINKS_LOGIN_URL'));
         curl_setopt($ch, CURLOPT_REFERER, env('GOGETLINKS_LOGIN_URL'));
         curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
+        curl_setopt($ch,CURLOPT_ENCODING, '');
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
         curl_setopt($ch, CURLOPT_COOKIEJAR, public_path(env('GOGETLINKS_COOKIE_FILE')));
         curl_setopt($ch, CURLOPT_COOKIEFILE, public_path(env('GOGETLINKS_COOKIE_FILE')));
@@ -231,6 +243,7 @@ class GoggetlinksCommand extends Command {
 
         curl_setopt($ch, CURLOPT_URL, env('GOGETLINKS_LOGIN_URL_POST'));
         curl_setopt($ch, CURLOPT_POST, 1);
+        curl_setopt($ch,CURLOPT_ENCODING, '');
         curl_setopt($ch, CURLOPT_POSTFIELDS, $postinfo);
 
         $html = curl_exec($ch);
