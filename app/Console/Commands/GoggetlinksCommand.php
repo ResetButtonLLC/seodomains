@@ -45,6 +45,7 @@ class GoggetlinksCommand extends Command {
     {
 
         if (!$this->checkLogin()) {
+            dd($this->login());
             die();
         }
 
