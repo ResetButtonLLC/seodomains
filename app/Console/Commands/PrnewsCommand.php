@@ -99,6 +99,8 @@ class PrnewsCommand extends Command {
                         $counter['new']++;
                     }
                 }
+
+                //dd($data);
             }
 
             $this->line('prnews.io page : ' . $page . ' | Fetched domains : ' . count($sites) . ' |  Added total : ' . $counter['new'] . ' | Updated total : ' . $counter['updated']);
@@ -116,7 +118,7 @@ class PrnewsCommand extends Command {
     }
 
     private function getData($page) {
-        $url = $page == 1 ? 'https://prnews.io/sites/perpage/72/' : 'https://prnews.io/sites/page/'. $page .'/perpage/72/';
+        $url = $page == 1 ? 'https://prnews.io/sites/perpage/96/' : 'https://prnews.io/sites/page/'. $page .'/perpage/96/';
 
         $ch = curl_init($url);
         curl_setopt($ch, CURLOPT_HEADER, 0);
@@ -125,6 +127,9 @@ class PrnewsCommand extends Command {
         curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
 
         $curl_response = curl_exec($ch);
+
+        //file_put_contents(storage_path().'/prnews.html',$curl_response);
+
         curl_close($ch);
 
         return $curl_response;
