@@ -7,6 +7,7 @@
             
         </div>
         <div class="flex-container__block">
+            <div class="callback-button"><a href="{{ route('dr-price') }}">Средняя цена ссылки в зависимости от DR</a></div>
             @auth
             <div class="login-panel">
                 <div class="login-panel__user-icon">
