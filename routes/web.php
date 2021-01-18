@@ -9,4 +9,5 @@ Route::get('/login/azurecallback', '\App\Http\Middleware\AppAzure@azurecallback'
 
 Route::group(['middleware' => ['azure']], function () {
     Route::get('/domains', 'DomainsController@index')->name('domains');
+    Route::get('/dr-price', 'DomainsController@averagePriceForDr')->name('dr-price');
 });
