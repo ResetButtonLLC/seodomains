@@ -59,8 +59,8 @@ class RotapostCommand extends Command {
                 $url = (string) $site->Url;
                 $url = mb_strtolower($url);
 
-                $data['placement_price'] = (float) $site->PostPrice;
-                $data['writing_price'] = (float) $site->PressReleasePrice;
+                $data['placement_price'] = intval($site->PostovoiPrice);
+                $data['writing_price'] = intval($site->PostPrice);
                 $data['theme'] = (string) $site->Category;
                 $data['google_index'] = (int) $site->PagesInGoogle;
 

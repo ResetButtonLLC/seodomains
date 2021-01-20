@@ -9,6 +9,7 @@ use App\Models\{
     Gogetlinks
 };
 use Carbon\Carbon;
+use Symfony\Component\DomCrawler\Crawler;
 
 class GoggetlinksCommand extends Command {
 
@@ -48,6 +49,8 @@ class GoggetlinksCommand extends Command {
             die();
         }
 
+        $log_folder = storage_path('logs/debug/gogetlinks');
+
         $page = 0;
         $retries = 3;
         $url = "/<a ?.*>(.*)<\/a>/";
@@ -69,8 +72,14 @@ class GoggetlinksCommand extends Command {
 
         //Получим количество сайтов
         $data = $this->getData($page);
-        preg_match('/Найдено\ (\d{1,6})\ сайт/si', $data, $matches);
-        $counter['total'] = $matches[1];
+        file_put_contents(storage_path('gogetlinks.page.html'),$data);
+
+        $crawler = new Crawler($data);
+
+        $counter['total'] = $crawler->filter('body > div > table tr td')->first()->text();
+        $counter['total'] = $this->convertToNumber($counter['total']);
+
+        //$counter['total'] = $crawler->filterXPath('//*[@id="link_hint_232330"]');
         $counter['current'] = 0;
 
         while ($counter['current'] < $counter['total']) {
@@ -78,65 +87,61 @@ class GoggetlinksCommand extends Command {
             //Эту строку нельзя использовать в условии выше, т.к. она иногда отдает пустой ответ и скан заканчивается
             $data = $this->getData($page);
 
+            file_put_contents($log_folder.'/'.$counter['total'].'.html',$data);
+
             $page_valid = (boolean)stripos($data,'<tbody id="body_table_content">');
             $current_retry = $retries;
 
             if ($page_valid) {
 
-                $data = explode('<tbody id="body_table_content">', $data);
+                $current_page_dom = new Crawler($data);
 
-                if (!$this->count) {
-                    $lines = explode('<td', $data[0]);
-                    preg_match($quantity, $lines[1], $matches);
-                    $this->count = preg_replace('/\D/', '', $matches[1]);
-                }
+                //Проверить Убираем зацикливание на последней странице ?
 
-                if ($added >= $this->count) {
-                    break;
-                }
+                $rows = $current_page_dom->filter('tr.search_sites_row')->each(function (Crawler $node, $i) {
+                    return $node->html();
+                });
 
-                $row = explode('search_sites_row', $data[1]);
+                $counter['current'] = $counter['current'] + count($rows);
 
-                unset($row[0]);
-
-                $counter['current'] = $counter['current'] + count($row);
-
-                foreach ($row as $col) {
+                foreach ($rows as $row) {
                     $data = [];
-                    $values = explode('<td', $col);
 
-                    preg_match($url, $values[1], $matches);
-                    if ($matches) {
-                        $site = mb_strtolower($matches[1]);
+                    file_put_contents(storage_path('row.dom.html'),$row);
 
-                        unset($matches);
-                    }
+                    $row_dom = new Crawler($row);
 
-                    preg_match($traffik, $values[4], $matches);
-                    if ($matches) {
-                        $data['traffic'] = preg_replace('/\D/', '', $matches[1]);
-                        unset($matches);
-                    }
+                    $data['id'] = $row_dom->filter('input.row-id')->attr('value');
+                    $data['traffic'] = $this->convertToNumber($row_dom->filter('td.row_'.$data['id'])->eq(3)->text());
+                    $data['domain'] = $row_dom->filter('#link_hint_'.$data['id'])->text();
+                    //На гогете 3 цены, некоторых нету - берем максимальную, обычно это статья
+                    $prices = $row_dom->filter('body label input[type=hidden]')->each(function (Crawler $node, $i) {
+                        return $node->attr('value');
+                    });
 
-                    preg_match($price, $values[9], $matches);
-                    if ($matches) {
-                        $data['placement_price'] = $matches[1];
-                        unset($matches);
-                    }
+                    $data['placement_price'] = max($prices);
 
-                    if ($domain = Domains::where('url', $site)->first()) {
+                       if ($domain = Domains::where('url', $data['domain'])->first()) {
                         $data['domain_id'] = $domain->id;
                     } else {
-                        $domain = Domains::insertGetId(['url' => $site]);
+                        $domain = Domains::insertGetId(['url' => $data['domain']]);
                         $data['domain_id'] = $domain;
                     }
 
                     if (Gogetlinks::where('domain_id', $data['domain_id'])->first()) {
-                        Gogetlinks::where('domain_id', $data['domain_id'])->update($data);
+                        Gogetlinks::where('domain_id', $data['domain_id'])->update([
+                            'placement_price' => $data['placement_price'],
+                            'traffic' => $data['traffic'],
+                            'domain_id' => $data['domain_id'],
+                        ]);
                         $counter['updated']++;
                     } else {
-                        $data['updated_at'] = date('Y-m-d H:i:s');
-                        Gogetlinks::insert($data);
+                        Gogetlinks::insert([
+                            'placement_price' => $data['placement_price'],
+                            'traffic' => $data['traffic'],
+                            'domain_id' => $data['domain_id'],
+                            'updated_at' => date('Y-m-d H:i:s')
+                        ]);
                         $counter['new']++;
                         //Добавляем updated_at при создании, чтоб в конце обновления удалить домены у которых updated_at отличается на Х часов от времени обновления
                     }
@@ -145,7 +150,7 @@ class GoggetlinksCommand extends Command {
                 }
 
                 $antiban_pause = mt_rand(30, 50);
-                $this->line('Gogetlinks.ru page : ' . $page . ' | Fetched domains : ' . count($row) . ' | Progress: '.$counter['current'].'/'.$counter['total'].' | Added total : ' . $counter['new'] . ' | Updated total : ' . $counter['updated'] . ' | Sleeping for ' . $antiban_pause . ' seconds');
+                $this->line('Gogetlinks.ru page : ' . $page . ' | Fetched domains : ' . count($rows) . ' | Progress: '.$counter['current'].'/'.$counter['total'].' | Added total : ' . $counter['new'] . ' | Updated total : ' . $counter['updated'] . ' | Sleeping for ' . $antiban_pause . ' seconds');
                 sleep($antiban_pause);
 
                 $page++;
@@ -268,6 +273,7 @@ class GoggetlinksCommand extends Command {
             CURLOPT_TIMEOUT => 30,
             CURLOPT_COOKIEJAR => public_path(env('GOGETLINKS_COOKIE_FILE')),
             CURLOPT_COOKIEFILE => public_path(env('GOGETLINKS_COOKIE_FILE')),
+            CURLOPT_COOKIE => 'in_page_search_sites=100',
             CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
             CURLOPT_CUSTOMREQUEST => "POST",
             CURLOPT_POSTFIELDS => "compaing_id_list=583393&page=".$page."&order_by=&order_direction=desc&condition=%7B%22type_search_engine%22%3A2%2C%22is_link%22%3Atrue%2C%22is_post%22%3Atrue%2C%22is_paper%22%3Atrue%2C%22tic_from%22%3Afalse%2C%22tic_to%22%3Afalse%2C%22sqi_from%22%3Afalse%2C%22sqi_to%22%3Afalse%2C%22da_from%22%3Afalse%2C%22da_to%22%3Afalse%2C%22trust_flow%22%3Afalse%2C%22ignore_sape_links%22%3Atrue%2C%22only_exclusive%22%3Afalse%2C%22in_any_catalog%22%3Afalse%2C%22in_yandex_catalog%22%3Afalse%2C%22in_news_aggregator%22%3Afalse%2C%22reviewing_long%22%3A5%2C%22reviewing_long_na%22%3Atrue%2C%22indexation%22%3Afalse%2C%22indexation_na%22%3Atrue%2C%22from_white_list%22%3A%5B%5D%2C%22hide_black_list%22%3Atrue%2C%22ignore_rejected_sites%22%3Atrue%2C%22backreferencing%22%3Afalse%2C%22traffic_host%22%3Afalse%2C%22traffic_with_no_data%22%3Atrue%2C%22price_type%22%3A1%2C%22price_paper%22%3Afalse%2C%22price_post%22%3Afalse%2C%22price_link%22%3Afalse%2C%22avg_price_less%22%3Afalse%2C%22subjects%22%3A%7B%22all%22%3Atrue%7D%2C%22lang_ru%22%3Atrue%2C%22lang_ua%22%3Atrue%2C%22keywords%22%3Afalse%2C%22url%22%3Afalse%2C%22not_contains_link%22%3Afalse%2C%22domains%22%3A%7B%22all%22%3Atrue%7D%2C%22added_days%22%3A%22all%22%2C%22search_type%22%3A%22%22%2C%22quick_filter%22%3A%22%22%2C%22quick_filter_default_sort%22%3A%22%22%7D&anchor_token=e3d6486b38d4ca1860364611a5f5c258&from_ses=1&count_in_page=false",
@@ -304,6 +310,12 @@ class GoggetlinksCommand extends Command {
             return $response;
         }
     }
+
+    private function convertToNumber($string) : int
+    {
+        return preg_replace('/[^0-9]/', '', $string);
+    }
+
 
 }
 

@@ -40,6 +40,9 @@ class PrnewsCommand extends Command {
      * @return mixed
      */
     public function handle() {
+
+        $log_folder = storage_path('logs/debug/prnews');
+
         $this->line('prnews.io parsing');
         $page = 1;
 
@@ -50,37 +53,42 @@ class PrnewsCommand extends Command {
             'updated' => 0,
         );
 
-        $url = '/<div class="card_url">(.*)<\/div>/';
-        $price = '/<div class="card_price">(.*)<\/div>/';
-        $audience = '/<div class="card_audience">(.*)<\/div>/';
+
+        //Курс гривны к рублю
+        $exchange_rates = json_decode(file_get_contents('https://api.privatbank.ua/p24api/pubinfo?exchange&json&coursid=11'));
+        foreach ($exchange_rates as $exchange_rate) {
+            if ($exchange_rate->ccy == "RUR") {
+                $uah_to_rur = $exchange_rate->buy;
+            }
+        }
+
+
 
         while ($data = $this->getData($page)) {
+
             $dom = new Crawler($data);
             $sites = $dom->filter('div.js__data-platform-click')->each(function ($content, $i) {
                     return  $content->html();
-            });;
+
+            });
 
             foreach ($sites as $site) {
+
+                $row_dom = new Crawler($site);
+
+                //file_put_contents($log_folder.'/card.html',$row_dom->html());
                 $data = [];
-                preg_match($url, $site, $matches);
-                if ($matches) {
-                    $data['url'] = utf8_encode($matches[1]);
-                    unset($matches);
-                    $data['url'] = preg_replace('/^www\./','',$data['url']);
-                }
 
-                preg_match($price, $site, $matches);
-                if ($matches) {
-                    $data['price'] = trim(preg_replace('[^0-9\.,]', '', $matches[1]));
-                    unset($matches);
-                    $data['price'] = preg_replace('/[^0-9\.,]/','',$data['price']);
-                }
+                $data['url'] = utf8_encode($row_dom->filter('div.card_url')->first()->text());
+                $data['url'] = preg_replace('/^www\./','',$data['url']);
 
-                preg_match($audience, $site, $matches);
-                if ($matches) {
-                    $data['audience'] = utf8_encode($matches[1]);
-                    unset($matches);
-                }
+                $data['price'] = $row_dom->filter('div.card_price')->first()->text();
+                $data['price'] = preg_replace('/[^0-9,]/','',$data['price']);
+                $data['price'] = str_ireplace(',','.',$data['price']);
+                $data['price'] = (int)round($data['price']/$uah_to_rur,0);
+
+                $data['audience'] = trim($row_dom->filter('div.card_audience')->first()->text());
+
                 if ($data) {
                     if ($domain = Domains::where('url', $data['url'])->first()) {
                         $data['domain_id'] = $domain->id;
@@ -110,7 +118,6 @@ class PrnewsCommand extends Command {
 
         $this->call('domains:finalize', [
             '--table' => 'prnews',
-            //Гогетлинкс обновляется медленно, поэтому окно обновления в часах ставим больше обычного
             '--hours' => 3
         ]);
         //dd($this->getData());
@@ -125,6 +132,18 @@ class PrnewsCommand extends Command {
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
         curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
+        curl_setopt($ch, CURLOPT_COOKIEJAR, storage_path('/app/cookies/cookie-file-prnews.txt'));
+        curl_setopt($ch, CURLOPT_COOKIEFILE, storage_path('/app/cookies/cookie-file-prnews.txt'));
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+        curl_setopt($ch, CURLOPT_USERAGENT, "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/47.0.2526.106 Safari/537.36");
+        curl_setopt($ch, CURLOPT_HTTPHEADER, array(
+            "Connection: keep-alive",
+            "accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3",
+            "accept-language: ru-RU,ru;q=0.9,en-US;q=0.8,en;q=0.7,uk;q=0.6",
+            "cache-control: no-cache,no-cache",
+        ));
 
         $curl_response = curl_exec($ch);
 
