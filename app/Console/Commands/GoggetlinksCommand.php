@@ -181,8 +181,8 @@ class GoggetlinksCommand extends Command {
         curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
         curl_setopt($ch,CURLOPT_ENCODING, '');
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
-        curl_setopt($ch, CURLOPT_COOKIEJAR, public_path(env('GOGETLINKS_COOKIE_FILE')));
-        curl_setopt($ch, CURLOPT_COOKIEFILE, public_path(env('GOGETLINKS_COOKIE_FILE')));
+        curl_setopt($ch, CURLOPT_COOKIEJAR, storage_path('/app/cookies/cookie-file-gogetlinks.txt'));
+        curl_setopt($ch, CURLOPT_COOKIEFILE, storage_path('/app/cookies/cookie-file-gogetlinks.txt'));
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
         curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
         curl_setopt($ch, CURLOPT_HTTPHEADER,array(
@@ -211,50 +211,7 @@ class GoggetlinksCommand extends Command {
 
     }
 
-    private function login() {
-        $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, env('GOGETLINKS_LOGIN_URL'));
-        curl_setopt($ch, CURLOPT_REFERER, env('GOGETLINKS_LOGIN_URL'));
-        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
-        curl_setopt($ch,CURLOPT_ENCODING, '');
-        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
-        curl_setopt($ch, CURLOPT_COOKIEJAR, public_path(env('GOGETLINKS_COOKIE_FILE')));
-        curl_setopt($ch, CURLOPT_COOKIEFILE, public_path(env('GOGETLINKS_COOKIE_FILE')));
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
-        curl_setopt($ch, CURLOPT_USERAGENT, "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/47.0.2526.106 Safari/537.36");
-        curl_setopt($ch, CURLOPT_HTTPHEADER,array(
-            "Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
-            "Accept-Encoding: gzip, deflate, br",
-            "Accept-Language: ru-RU,ru;q=0.9,en-US;q=0.8,en;q=0.7,uk;q=0.6",
-            "Cache-Control: no-cache",
-            "Connection: keep-alive",
-            "Pragma: no-cache",
-            "Sec-Fetch-Dest: document",
-            "Sec-Fetch-Mode: navigate",
-            "Sec-Fetch-Site: none",
-            "Sec-Fetch-User: ?1",
-            "Upgrade-Insecure-Requests: 1",
-            "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.97 Safari/537.36",
-        ));
 
-
-        $html = curl_exec($ch);
-
-        $postinfo = "g-recaptcha-response="
-                ."e_mail=" . env('GOGETLINKS_USERNAME')
-                . "&password=" . env('GOGETLINKS_PASSWORD')
-                . "&remember=on";
-
-        curl_setopt($ch, CURLOPT_URL, env('GOGETLINKS_LOGIN_URL_POST'));
-        curl_setopt($ch, CURLOPT_POST, 1);
-        curl_setopt($ch,CURLOPT_ENCODING, '');
-        curl_setopt($ch, CURLOPT_POSTFIELDS, $postinfo);
-
-        $html = curl_exec($ch);
-        curl_close($ch);
-
-    }
 
     private function getData($page = 0) {
         if ($page > 0) {
@@ -271,8 +228,8 @@ class GoggetlinksCommand extends Command {
             CURLOPT_ENCODING => "",
             CURLOPT_MAXREDIRS => 10,
             CURLOPT_TIMEOUT => 30,
-            CURLOPT_COOKIEJAR => public_path(env('GOGETLINKS_COOKIE_FILE')),
-            CURLOPT_COOKIEFILE => public_path(env('GOGETLINKS_COOKIE_FILE')),
+            CURLOPT_COOKIEJAR => storage_path('/app/cookies/cookie-file-gogetlinks.txt'),
+            CURLOPT_COOKIEFILE => storage_path('/app/cookies/cookie-file-gogetlinks.txt'),
             CURLOPT_COOKIE => 'in_page_search_sites=100',
             CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
             CURLOPT_CUSTOMREQUEST => "POST",
@@ -317,14 +274,4 @@ class GoggetlinksCommand extends Command {
     }
 
 
-}
-
-function get_string_between($string, $start, $end) {
-    $string = ' ' . $string;
-    $ini = strpos($string, $start);
-    if ($ini == 0)
-        return '';
-    $ini += strlen($start);
-    $len = strpos($string, $end, $ini) - $ini;
-    return substr($string, $ini, $len);
 }

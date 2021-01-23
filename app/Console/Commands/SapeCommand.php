@@ -175,8 +175,11 @@ class SapeCommand extends Command {
             //dd($resp->params->param->value->array->data, isset($resp->params->param->value->array->data));
             if (isset($resp->params->param->value->array->data)) {
                 //Это ответ с доменами
+
+                //dd($resp->params->param->value->array->data);
+
                 foreach ($resp->params->param->value->array->data->value as $entry) {
-                    $domain_data = $resp->params->param->value->array->data->value[6]->struct->member;
+                    $domain_data = $entry->struct->member;
 
                     $id = current($domain_data[0]->value->int);
 
@@ -191,6 +194,7 @@ class SapeCommand extends Command {
                     $domains[$id]['price']['double'] = intval(current($domain_data[3]->value->struct->member[0]->value->double));
                     $domains[$id]['nof_pages_in_google']['int'] = intval(current($domain_data[14]->value->int[0]));
                     $sape_success = true;
+
                 }
             } else {
                 //Пробуем получить ошибку

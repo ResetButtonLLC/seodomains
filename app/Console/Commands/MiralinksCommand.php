@@ -32,9 +32,17 @@ class MiralinksCommand extends Command {
      *
      * @return void
      */
+
+
+
+    private $logfolder;
+
     public function __construct() {
         parent::__construct();
+        $this->logfolder = storage_path('logs/debug/miralinks/');
     }
+
+
 
     /**
      * Execute the console command.
@@ -50,107 +58,121 @@ class MiralinksCommand extends Command {
             'updated' => 0,
         );
 
-        if ($this->login()) {
+        $homepage_html = $this->login();
 
-            $this->line('Auth successful');
-            $start = 0;
-            $total = 0;
-            while ($data = $this->getData($start)) {
-
-                //Progressbar init
-                if ($start == 0) {
-                    $counter['total'] = $data->iTotalRecords;
-                }
-
-                if (count($data->aaData) > 0) {
-                    $counter['current'] = $counter['current']+count($data->aaData);
-
-                    foreach ($data->aaData as $domain) {
-
-                        $lang = json_decode($domain->rowData->langCode);
-
-                        if (isset($lang[0][0])) {
-                            $lang = $lang[0][0];
-                        } else {
-                            $lang = null;
-                        }
-                        $url = mb_strtolower($domain->rowData->{"Ground.folder_url_wl"});
-                        $info = [
-                            'name' => $domain->rowData->{"Ground.name"},
-                            'site_id' => $domain->rowData->{"Ground.id"},
-                            'desc' => $domain->rowData->{"Ground.description"},
-                            'placement_price_usd' => $domain->rowData->{"Ground.price_usd"},
-                            'writing_price_usd' => $domain->rowData->{"Ground.article_price_usd"},
-                            'placement_price' => $domain->rowData->{"Ground.price_rur"},
-                            'writing_price' => $domain->rowData->{"Ground.article_price_rur"}+$domain->rowData->{"Ground.price_rur"},
-                            'region' => $domain->rowData->{"Region.title"},
-                            'theme' => $domain->rowData->subj,
-                            'google_index' => $domain->rowData->{"Ground.google_indexed_count"},
-                            'links' => $domain->rowData->{"Ground.links_in_articles"},
-                            'lang' => $lang,
-                            'traffic' => $domain->rowData->{"traffic.value"},
-                            'majestic_tf' => $domain->rowData->{"Ground.tf"},
-                            'majestic_cf' => $domain->rowData->{"Ground.cf"}
-                         ];
+        if (!$homepage_html) {
+            die();
+        }
 
 
-                        if ($domain = Domains::where('url', $url)->first()) {
-                            $info['domain_id'] = $domain->id;
-                        } else {
-                            $domain = Domains::insertGetId(['url' => $url, 'created_at' => date('Y-m-d H:i:s')]);
-                            $info['domain_id'] = $domain;
-                        }
+       //file_put_contents($this->logfolder.'/login.html',$homepage_html);
 
-                        if (Miralinks::where('domain_id', $info['domain_id'])->first()) {
-                            Miralinks::where('domain_id', $info['domain_id'])->update($info);
-                            $counter['updated']++;
-                        } else {
-                            //Добавляем updated_at при создании, чтоб в конце обновления удалить домены у которых updated_at отличается на Х часов от времени обновления
-                            $info['updated_at'] = date('Y-m-d H:i:s');
-                            Miralinks::insert($info);
-                            $counter['new']++;
-                        }
+        $start = 0;
+        $counter = array(
+            'current' => 0,
+            'total' => 0,
+            'new' => 0,
+            'updated' => 0,
+        );
+
+        while ($data = $this->getData($start)) {
+
+            //Progressbar init
+            if ($start == 0) {
+                $counter['total'] = $data->iTotalRecords;
+            }
+
+            if (count($data->aaData) > 0) {
+                $counter['current'] = $counter['current']+count($data->aaData);
+
+                foreach ($data->aaData as $domain) {
+
+                    $lang = json_decode($domain->rowData->langCode);
+
+                    if (isset($lang[0][0])) {
+                        $lang = $lang[0][0];
+                    } else {
+                        $lang = null;
                     }
-                    $this->line('Miralinks.ru | Fetched domains : ' . count($data->aaData) . ' | Progress: '.$counter['current'].'/'.$counter['total'].' | Added total : ' . $counter['new'] . ' | Updated total : ' . $counter['updated']);
-                    $start += 50;
+                    $url = mb_strtolower($domain->rowData->{"Ground.folder_url_wl"});
+                    $info = [
+                        'name' => $domain->rowData->{"Ground.name"},
+                        'site_id' => $domain->rowData->{"Ground.id"},
+                        'desc' => $domain->rowData->{"Ground.description"},
+                        'placement_price_usd' => $domain->rowData->{"Ground.price_usd"},
+                        'writing_price_usd' => $domain->rowData->{"Ground.article_price_usd"},
+                        'placement_price' => $domain->rowData->{"Ground.price_rur"},
+                        'writing_price' => $domain->rowData->{"Ground.article_price_rur"}+$domain->rowData->{"Ground.price_rur"},
+                        'region' => $domain->rowData->{"Region.title"},
+                        'theme' => $domain->rowData->subj,
+                        'google_index' => $domain->rowData->{"Ground.google_indexed_count"},
+                        'links' => $domain->rowData->{"Ground.links_in_articles"},
+                        'lang' => $lang,
+                        'traffic' => $domain->rowData->{"traffic.value"},
+                        'majestic_tf' => $domain->rowData->{"Ground.tf"},
+                        'majestic_cf' => $domain->rowData->{"Ground.cf"}
+                     ];
 
-                } else {
 
-                    $this->line('Exporting Majestic CF/TF to main table');
+                    if ($domain = Domains::where('url', $url)->first()) {
+                        $info['domain_id'] = $domain->id;
+                    } else {
+                        $domain = Domains::insertGetId(['url' => $url, 'created_at' => date('Y-m-d H:i:s')]);
+                        $info['domain_id'] = $domain;
+                    }
 
-                    /*
-                     * todo
-                    DB::table('domains')
-                        ->join('miralinks', 'id', '=', 'miralinks.domain_id')
-                        ->update(['majestic_cf' => 'miralinks.majestic_cf'])
-                        ->whereNotNull('miralinks.majestic_cf')
-                        ->get();
-                    */
-
-                    //Через Query builder не работает
-                    DB::statement('
-                      UPDATE domains 
-                      INNER JOIN miralinks ON domains.id = miralinks.domain_id 
-                      SET domains.majestic_cf = miralinks.majestic_cf, domains.majestic_updated = NOW() 
-                      WHERE miralinks.majestic_cf IS NOT NULL;
-                      ');
-
-                                DB::statement('
-                      UPDATE domains 
-                      INNER JOIN miralinks ON domains.id = miralinks.domain_id 
-                      SET domains.majestic_tf = miralinks.majestic_tf, domains.majestic_updated = NOW() 
-                      WHERE miralinks.majestic_tf IS NOT NULL;
-                      ');
-
-                    $this->call('domains:finalize', [
-                        '--table' => (new Miralinks())->getTable()
-                    ]);
-
-                    break;
-
+                    if (Miralinks::where('domain_id', $info['domain_id'])->first()) {
+                        Miralinks::where('domain_id', $info['domain_id'])->update($info);
+                        $counter['updated']++;
+                    } else {
+                        //Добавляем updated_at при создании, чтоб в конце обновления удалить домены у которых updated_at отличается на Х часов от времени обновления
+                        $info['updated_at'] = date('Y-m-d H:i:s');
+                        Miralinks::insert($info);
+                        $counter['new']++;
+                    }
                 }
+                $antiban_pause = mt_rand(20, 30);
+                $this->line('Miralinks.ru | Fetched domains : ' . count($data->aaData) . ' | Progress: '.$counter['current'].'/'.$counter['total'].' | Added total : ' . $counter['new'] . ' | Updated total : ' . $counter['updated']. ' | Sleeping '.$antiban_pause. ' seconds');
+                sleep($antiban_pause);
+                $start += 50;
+
+            } else {
+
+                $this->line('Exporting Majestic CF/TF to main table');
+
+                /*
+                 * todo
+                DB::table('domains')
+                    ->join('miralinks', 'id', '=', 'miralinks.domain_id')
+                    ->update(['majestic_cf' => 'miralinks.majestic_cf'])
+                    ->whereNotNull('miralinks.majestic_cf')
+                    ->get();
+                */
+
+                //Через Query builder не работает
+                DB::statement('
+                  UPDATE domains 
+                  INNER JOIN miralinks ON domains.id = miralinks.domain_id 
+                  SET domains.majestic_cf = miralinks.majestic_cf, domains.majestic_updated = NOW() 
+                  WHERE miralinks.majestic_cf IS NOT NULL;
+                  ');
+
+                            DB::statement('
+                  UPDATE domains 
+                  INNER JOIN miralinks ON domains.id = miralinks.domain_id 
+                  SET domains.majestic_tf = miralinks.majestic_tf, domains.majestic_updated = NOW() 
+                  WHERE miralinks.majestic_tf IS NOT NULL;
+                  ');
+
+                $this->call('domains:finalize', [
+                    '--table' => (new Miralinks())->getTable()
+                ]);
+
+                break;
+
             }
         }
+
     }
 
     private function login() {
@@ -198,18 +220,20 @@ class MiralinksCommand extends Command {
         curl_close($ch);
 
         if (strpos($html, 'Ваши проекты')) {
-            return true;
+            $this->line('Auth successful');
+            return $html;
         } else {
-            $this->error('Login not successful : saving page to '.url('/sites/miralinks/login.html').PHP_EOL);
-            file_put_contents(public_path('sites/miralinks/login.html'),$html);
-            return false;
+            $this->error('Login not successful : check cookies'.PHP_EOL);
+            return '';
         }
 
     }
 
     private function getData($start = 0) {
-        $curl = curl_init();
 
+        $response = '';
+
+        $curl = curl_init();
         curl_setopt_array($curl, array(
             CURLOPT_URL => "https://www.miralinks.ru/ajaxPort/loadDataTableDataCatalog",
             CURLOPT_RETURNTRANSFER => true,
@@ -239,14 +263,21 @@ class MiralinksCommand extends Command {
             ),
         ));
 
-        $response = curl_exec($curl);
 
-        //file_put_contents(public_path('sites/miralinks/responce.json'),$response);
+        while(!$response) {
+            $response = curl_exec($curl);
+            file_put_contents($this->logfolder.'/'.$start.'.html',$response);
+            if (!json_decode($response)) {
+                $antiban_pause = mt_rand(30, 50);
+                $this->line('Miralinks.ru | Get empty responce | sleeping for '.$antiban_pause.' seconds');
+                sleep($antiban_pause);
+            }
+        }
 
+        file_put_contents($this->logfolder.'/'.$start.'.html',$response);
         $err = curl_error($curl);
 
         curl_close($curl);
-
 
         return json_decode($response);
     }
