@@ -175,6 +175,9 @@ class SapeCommand extends Command {
             //dd($resp->params->param->value->array->data, isset($resp->params->param->value->array->data));
             if (isset($resp->params->param->value->array->data)) {
                 //Это ответ с доменами
+
+                //dd($resp->params->param->value->array->data);
+
                 foreach ($resp->params->param->value->array->data->value as $entry) {
                     $domain_data = $entry->struct->member;
 
@@ -188,9 +191,10 @@ class SapeCommand extends Command {
                     $domains[$id]['url']['string'] = idn_to_utf8($domains[$id]['url']['string'], IDNA_DEFAULT, INTL_IDNA_VARIANT_UTS46); //punycode
                     //URLS=>DOMAINS done
                     //$this->line('Sape page : ' . $page . ' ' . $domains[$id]['url']['string']);
-                    $domains[$id]['price']['double'] = intval(current($domain_data[2]->value->double[0]));
+                    $domains[$id]['price']['double'] = intval(current($domain_data[3]->value->struct->member[0]->value->double));
                     $domains[$id]['nof_pages_in_google']['int'] = intval(current($domain_data[14]->value->int[0]));
                     $sape_success = true;
+
                 }
             } else {
                 //Пробуем получить ошибку

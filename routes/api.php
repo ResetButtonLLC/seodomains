@@ -19,3 +19,4 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
 
 
 Route::get('/dr-price', ['uses' => 'DomainsController@averagePriceForDr', 'output' => 'json']);
+Route::get('/domain-data', ['uses' => 'DomainsController@getDomainData']);

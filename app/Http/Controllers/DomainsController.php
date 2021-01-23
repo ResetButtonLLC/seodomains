@@ -14,6 +14,8 @@ use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 use PhpOffice\PhpSpreadsheet\Cell;
 use PhpOffice\PhpSpreadsheet\IOFactory;
+use Illuminate\Support\Facades\Validator;
+use App\Exceptions\ApiException;
 
 class DomainsController extends Controller {
 
@@ -250,6 +252,26 @@ class DomainsController extends Controller {
                 'dr' => $dr
             ]);
         }
+
+    }
+
+    public function getDomainData(Request $request)
+    {
+
+        $validator = Validator::make($request->all(),[
+            'domain' => 'required|regex:/^[a-zA-Z0-9][a-zA-Z0-9-]{1,61}[a-zA-Z0-9]\.[a-zA-Z]{2,}$/i',
+        ]);
+
+
+        if ($validator->fails()) {
+            throw new ApiException(implode(',', $validator->errors()->all()), 422);
+        }
+
+        $domain = $request->input('domain');
+
+
+
+        return $average;
 
     }
 
