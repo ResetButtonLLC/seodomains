@@ -49,7 +49,7 @@ class GoggetlinksCommand extends Command {
             die();
         }
 
-        $log_folder = storage_path('logs/parserlogs/gogetlinks');
+        $log_folder = storage_path('parserlogs/gogetlinks');
 
         $page = 0;
         $retries = 3;

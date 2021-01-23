@@ -39,7 +39,7 @@ class MiralinksCommand extends Command {
 
     public function __construct() {
         parent::__construct();
-        $this->logfolder = storage_path('logs/parserlogs/miralinks/');
+        $this->logfolder = storage_path('parserlogs/miralinks/');
     }
 
 
