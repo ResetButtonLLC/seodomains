@@ -36,7 +36,7 @@ class PrnewsCommand extends Command {
 
     public function __construct() {
         parent::__construct();
-        $this->logfolder = storage_path('logs/debug/prnews/');
+        $this->logfolder = storage_path('logs/parserlogs/prnews/');
     }
 
     /**
