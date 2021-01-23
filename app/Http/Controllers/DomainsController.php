@@ -243,7 +243,7 @@ class DomainsController extends Controller {
         }
 
         if ($output == "json") {
-            return response()->json((object)$dr);
+            return response()->success(["dr-price" => (object)$dr]);
         } else {
             return view('domains.averagedr',[
                 'dr' => $dr
@@ -256,7 +256,7 @@ class DomainsController extends Controller {
     {
 
         $validator = Validator::make($request->all(),[
-            'domain' => 'required|regex:/^[a-zA-Z0-9][a-zA-Z0-9-]{1,61}[a-zA-Z0-9]\.[a-zA-Z]{2,}$/i',
+            'domain' => 'required|string',
         ]);
 
 
@@ -266,9 +266,25 @@ class DomainsController extends Controller {
 
         $domain = $request->input('domain');
 
+        //Получаем домен
+        //$result = Domains::with('gogetlinks','miralinks','prnews','rotapost','sape')->where('url', '=',$domain)->first();
 
+        $result = DB::table('domains')
+            ->leftjoin('gogetlinks', 'domains.id', '=', 'gogetlinks.domain_id')
+            ->leftjoin('miralinks', 'domains.id', '=', 'miralinks.domain_id')
+            ->leftjoin('prnews', 'domains.id', '=', 'prnews.domain_id')
+            ->leftjoin('rotapost', 'domains.id', '=', 'rotapost.domain_id')
+            ->leftjoin('sape', 'domains.id', '=', 'sape.domain_id')
+            ->select('domains.*', 'gogetlinks.placement_price as gogetlinks_placement_price','miralinks.placement_price as miralinks_placement_price','prnews.price as prnews_placement_price','rotapost.placement_price as rotapost_placement_price','sape.placement_price as sape_placement_price')
+            ->where('domains.url','=',$domain)
+            ->first();
 
-        return $average;
+        //Если домена нету сразу отсылаем
+        if (!$result) {
+            throw new ApiException("Domain ". $domain." not found in database", 404);
+        }
+
+        return response()->success((array)$result);
 
     }
 
