@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use http\Env\Response;
 use Illuminate\Http\Request;
 use App\Models\{
     Domains,
@@ -16,6 +15,7 @@ use PhpOffice\PhpSpreadsheet\Cell;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use Illuminate\Support\Facades\Validator;
 use App\Exceptions\ApiException;
+use App\Services\DomainsService;
 
 class DomainsController extends Controller {
 
@@ -246,7 +246,7 @@ class DomainsController extends Controller {
         }
 
         if ($output == "json") {
-            return response()->json((object)$dr);
+            return response()->success(["dr-price" => (object)$dr]);
         } else {
             return view('domains.averagedr',[
                 'dr' => $dr
@@ -258,20 +258,27 @@ class DomainsController extends Controller {
     public function getDomainData(Request $request)
     {
 
-        $validator = Validator::make($request->all(),[
-            'domain' => 'required|regex:/^[a-zA-Z0-9][a-zA-Z0-9-]{1,61}[a-zA-Z0-9]\.[a-zA-Z]{2,}$/i',
-        ]);
+        if (request()->method() == "GET") {
+            $validator = Validator::make($request->all(),[
+                'domain' => 'required|string',
+            ]);
+            $domains = [$request->input('domain','')];
+        };
 
+        if (request()->method() == "POST") {
+            $validator = Validator::make($request->all(),[
+                'domains' => 'required|array',
+            ]);
+            $domains = $request->input('domains');
+        };
 
         if ($validator->fails()) {
             throw new ApiException(implode(',', $validator->errors()->all()), 422);
         }
 
-        $domain = $request->input('domain');
+        $result = DomainsService::getDataForDomains($domains);
 
-
-
-        return $average;
+        return response()->success((array)$result);
 
     }
 
