@@ -19,4 +19,7 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
 
 
 Route::get('/dr-price', ['uses' => 'DomainsController@averagePriceForDr', 'output' => 'json']);
+//Данные для 1 домена
 Route::get('/domain-data', ['uses' => 'DomainsController@getDomainData']);
+//Данные для нескольких доменов
+Route::post('/domains-data', ['uses' => 'DomainsController@getDomainData']);

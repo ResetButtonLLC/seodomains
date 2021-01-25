@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use http\Env\Response;
 use Illuminate\Http\Request;
 use App\Models\{
     Domains,
@@ -16,6 +15,7 @@ use PhpOffice\PhpSpreadsheet\Cell;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use Illuminate\Support\Facades\Validator;
 use App\Exceptions\ApiException;
+use App\Services\DomainsService;
 
 class DomainsController extends Controller {
 
@@ -255,34 +255,25 @@ class DomainsController extends Controller {
     public function getDomainData(Request $request)
     {
 
-        $validator = Validator::make($request->all(),[
-            'domain' => 'required|string',
-        ]);
+        if (request()->method() == "GET") {
+            $validator = Validator::make($request->all(),[
+                'domain' => 'required|string',
+            ]);
+            $domains = [$request->input('domain','')];
+        };
 
+        if (request()->method() == "POST") {
+            $validator = Validator::make($request->all(),[
+                'domains' => 'required|array',
+            ]);
+            $domains = $request->input('domains');
+        };
 
         if ($validator->fails()) {
             throw new ApiException(implode(',', $validator->errors()->all()), 422);
         }
 
-        $domain = $request->input('domain');
-
-        //Получаем домен
-        //$result = Domains::with('gogetlinks','miralinks','prnews','rotapost','sape')->where('url', '=',$domain)->first();
-
-        $result = DB::table('domains')
-            ->leftjoin('gogetlinks', 'domains.id', '=', 'gogetlinks.domain_id')
-            ->leftjoin('miralinks', 'domains.id', '=', 'miralinks.domain_id')
-            ->leftjoin('prnews', 'domains.id', '=', 'prnews.domain_id')
-            ->leftjoin('rotapost', 'domains.id', '=', 'rotapost.domain_id')
-            ->leftjoin('sape', 'domains.id', '=', 'sape.domain_id')
-            ->select('domains.*', 'gogetlinks.placement_price as gogetlinks_placement_price','miralinks.placement_price as miralinks_placement_price','prnews.price as prnews_placement_price','rotapost.placement_price as rotapost_placement_price','sape.placement_price as sape_placement_price')
-            ->where('domains.url','=',$domain)
-            ->first();
-
-        //Если домена нету сразу отсылаем
-        if (!$result) {
-            throw new ApiException("Domain ". $domain." not found in database", 404);
-        }
+        $result = DomainsService::getDataForDomains($domains);
 
         return response()->success((array)$result);
 
