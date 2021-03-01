@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\{
     Builder,
     Relations\HasOne
 };
+use Illuminate\Support\Facades\DB;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Domains extends Model {
@@ -35,6 +36,40 @@ class Domains extends Model {
     
     public function prnews(): HasOne {
         return $this->hasOne('App\Models\Prnews', 'domain_id', 'id');
+    }
+
+    public static function getDomainsForExport() {
+        $sql = DB::table('domains')
+            ->leftjoin('gogetlinks', 'domains.id', '=', 'gogetlinks.domain_id')
+            ->leftjoin('miralinks', 'domains.id', '=', 'miralinks.domain_id')
+            ->leftjoin('prnews', 'domains.id', '=', 'prnews.domain_id')
+            ->leftjoin('rotapost', 'domains.id', '=', 'rotapost.domain_id')
+            ->leftjoin('sape', 'domains.id', '=', 'sape.domain_id')
+            //->select('domains.*', 'gogetlinks.placement_price as gogetlinks_placement_price','miralinks.placement_price as miralinks_placement_price','prnews.price as prnews_placement_price','rotapost.placement_price as rotapost_placement_price','sape.placement_price as sape_placement_price')
+            ->select(
+                'domains.*',
+                'gogetlinks.placement_price as gogetlinks_placement_price',
+                'miralinks.placement_price as miralinks_placement_price',
+                'miralinks.site_id as miralinks_site_id',
+                'miralinks.writing_price as miralinks_writing_price',
+                'miralinks.theme as miralinks_theme',
+                'miralinks.google_index as miralinks_google_index',
+                'miralinks.links as miralinks_links',
+                'miralinks.lang as miralinks_lang',
+                'miralinks.desc as miralinks_desc',
+                'prnews.price as prnews_placement_price',
+                'prnews.audience as prnews_audience',
+                'rotapost.placement_price as rotapost_placement_price',
+                'rotapost.writing_price as rotapost_writing_price',
+                'sape.placement_price as sape_placement_price')
+            ->whereNull('domains.deleted_at')
+            ->orderBy('url');
+            //Сортировка сохраняет порядок $domains
+            //Оставлю на память, но так не работает - если домена не существует, то пропуска не будет
+            //->orderByRaw('FIELD(domains.url, '.'"'.implode('","',$domains).'"'.')')
+
+
+        return $sql;
     }
 
 }

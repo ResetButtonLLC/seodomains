@@ -21,7 +21,7 @@
                     <div class="control-group col-md-3">
                         {!! Form::label('resource['.$stockname.']', $stockname, [ 'class' => 'control-label' ]) !!}
                         <div class="controls">
-                            {!! Form::checkbox('resource['.$stockname.']', 'value', app('request')->input('resource') && isset(app('request')->input('resource')[$stockname]) ? true : false, ['class' => 'form-control']) !!}
+                            {!! Form::checkbox('resource['.$stockname.']', 'value', 'true') !!}
                             <span class="badge badge-primary">{{$update_date}}</span>
                         </div>
                     </div>
