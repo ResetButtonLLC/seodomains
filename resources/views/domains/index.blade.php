@@ -35,7 +35,9 @@
             <div class="col-md-2">{!! Form::text('theme', null, ['class' => 'form-control', 'placeholder' => 'Тематика']); !!}</div>
             <div class="col-md-2"> {!! Form::submit('Поиск', ['class'=>'btn btn-primary']) !!}</div>
 
-            <div class="col-md-2"> {!! Form::submit('Экспорт', ['class'=>'btn btn-primary', 'name' => 'export']) !!}</div>
+            <div class="col-md-2"> {!! Form::submit('Экспорт, ', ['class'=>'btn btn-primary', 'name' => 'export']) !!}
+            <div>Выполняется 1-2 минуты! не нужно перегружать страницу.</div>
+            </div>
             {!! Form::close() !!}
         </div>
         <table class="table table-hover">
