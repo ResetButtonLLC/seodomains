@@ -20,7 +20,7 @@ class GenerateXLSCommand extends Command
      *
      * @var string
      */
-    protected $description = 'Command description';
+    protected $description = 'Create new XLS file';
 
     /**
      * Create a new command instance.
