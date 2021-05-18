@@ -12,7 +12,9 @@ Vagrant.configure("2") do |config|
 
     config.vm.hostname = "seodomains.local"
     config.vm.synced_folder ".", "/var/www/site", :mount_options => ["dmode=777", "fmode=777"], owner: "vagrant", group: "vagrant"  #возможно owner = www-data
-	
+
     config.vm.provision :shell, path: "script.sh"
-    
+
+    config.vm.boot_timeout = 1000
+
 end

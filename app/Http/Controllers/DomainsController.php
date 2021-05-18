@@ -20,7 +20,7 @@ use App\Services\DomainsService;
 class DomainsController extends Controller {
 
     public function index(Request $request) {
-        $domains = Domains::whereNotNull('url')->whereNull('deleted_at');
+        $domains = Domains::where('url', '<>', '')->whereNull('deleted_at');
 
         if ($request->resource) {
             $sources = $request->resource;
@@ -50,16 +50,7 @@ class DomainsController extends Controller {
         }
 
         if (isset($request->export)) {
-            ini_set('max_execution_time', 0);
-            ini_set('memory_limit', '2048M');
-
-            $domains = Domains::getDomainsForExport()->get();
-            //$domains = Domains::getDomainsForExport()->get();
-            //dd($domains);
-            $filename = DomainsService::exportXLS($request,$domains );
-            return response()->download($filename)->deleteFileAfterSend();
-
-            // Call writer methods here
+            return response()->download(storage_path('app/domains.xlsx'), 'domains-' . date('Y-m-d-H-i-s') . '.xlsx');
         } else {
 
             $domains = $domains->orderBy('url')->paginate(env('PAGE_COUNT'));
