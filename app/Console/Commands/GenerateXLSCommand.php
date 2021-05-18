@@ -13,7 +13,7 @@ class GenerateXLSCommand extends Command
      *
      * @var string
      */
-    protected $signature = 'domains:storage';
+    protected $signature = 'domains:generate';
 
     /**
      * The console command description.
@@ -42,7 +42,9 @@ class GenerateXLSCommand extends Command
         ini_set('max_execution_time', 0);
         ini_set('memory_limit', '2048M');
 
-        $domains = Domains::getDomainsForExport()->limit(70000)->get();
+        $domains = Domains::getDomainsForExport()->get();
+
+        //57700 ошибка
 
         return DomainsService::exportXLS(NULL, $domains);
     }
