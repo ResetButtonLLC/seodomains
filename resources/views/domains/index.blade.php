@@ -14,14 +14,14 @@
         <h1>Seo Domains</h1>
         <div class="col-md-12">
             {!! Form::open(array('method' => 'GET', 'route' => ['domains'], 'class' => 'form form-row')) !!}
-            <div class="col-md-4">
+            <div class="col-md-10">
                 <div class="row">
                     @isset ($update_dates)
                     @foreach ($update_dates as $stockname => $update_date)
-                    <div class="control-group col-md-3">
+                    <div class="control-group col-md-2">
                         {!! Form::label('resource['.$stockname.']', $stockname, [ 'class' => 'control-label' ]) !!}
                         <div class="controls">
-                            {!! Form::checkbox('resource['.$stockname.']', 'value', 'true') !!}
+                            {{-- Form::checkbox('resource['.$stockname.']', 'value', 'true') --}}
                             <span class="badge badge-primary">{{$update_date}}</span>
                         </div>
                     </div>
@@ -30,13 +30,13 @@
                 </div>
             </div>
 
-            <div class="col-md-1">{!! Form::text('price_from', null, ['class' => 'form-control', 'placeholder' => 'Цена от']); !!}</div>
-            <div class="col-md-1">{!! Form::text('price_to', null, ['class' => 'form-control', 'placeholder' => 'Цена до']); !!}</div>
-            <div class="col-md-2">{!! Form::text('theme', null, ['class' => 'form-control', 'placeholder' => 'Тематика']); !!}</div>
-            <div class="col-md-2"> {!! Form::submit('Поиск', ['class'=>'btn btn-primary']) !!}</div>
+{{--            <div class="col-md-1">{!! Form::text('price_from', null, ['class' => 'form-control', 'placeholder' => 'Цена от']); !!}</div>--}}
+{{--            <div class="col-md-1">{!! Form::text('price_to', null, ['class' => 'form-control', 'placeholder' => 'Цена до']); !!}</div>--}}
+{{--            <div class="col-md-2">{!! Form::text('theme', null, ['class' => 'form-control', 'placeholder' => 'Тематика']); !!}</div>--}}
+{{--            <div class="col-md-2"> {!! Form::submit('Поиск', ['class'=>'btn btn-primary']) !!}</div>--}}
 
-            <div class="col-md-2"> {!! Form::submit('Экспорт, ', ['class'=>'btn btn-primary', 'name' => 'export']) !!}
-            <div>Выполняется 1-2 минуты! не нужно перегружать страницу.</div>
+            <div class="col-md-2"> {!! Form::submit('Экспорт', ['class'=>'btn btn-primary', 'name' => 'export']) !!}
+            {{-- <div>Выполняется 1-2 минуты! не нужно перегружать страницу.</div> --}}
             </div>
             {!! Form::close() !!}
         </div>
@@ -69,7 +69,7 @@
                     <td><a href="http://{{ $value->url }}">{{ $value->url }}</a></td>
                     <td id="stocklink">
                         @if($value->miralinks && $value->miralinks->placement_price)
-                        <img src="https://www.miralinks.ru/favicon.ico"> 
+                        <img src="https://www.miralinks.ru/favicon.ico">
                         @if(isset($value->miralinks->site_id))
                         <a href="https://www.miralinks.ru/catalog/profileView/{{ $value->miralinks->site_id }}" target="_blank">Miralinks - {{$value->miralinks->placement_price}}</a><br>
                         @else
@@ -103,7 +103,7 @@
                         @if($value->gogetlinks && $value->gogetlinks->writing_price)
                         <img src="https://www.gogetlinks.net/favicon.ico"> Gogetlinks - {{$value->gogetlinks->writing_price}}
                         @endif
-                    </td>   
+                    </td>
                     <td>{{$value->ahrefs_dr ? $value->ahrefs_dr : ''}}</td>
                     <td>{{$value->ahrefs_inlinks ? $value->ahrefs_inlinks : ''}}</td>
                     <td class="ahrefs_positions_top10">{{$value->ahrefs_positions_top10 ? $value->ahrefs_positions_top10 : ''}}</td>
