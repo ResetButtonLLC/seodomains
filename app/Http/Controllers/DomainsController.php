@@ -14,7 +14,6 @@ use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 use PhpOffice\PhpSpreadsheet\Cell;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use Illuminate\Support\Facades\Validator;
-use Illuminate\Support\Facades\Storage;
 use App\Exceptions\ApiException;
 use App\Services\DomainsService;
 
@@ -51,7 +50,7 @@ class DomainsController extends Controller {
         }
 
         if (isset($request->export)) {
-            return response()->download(Storage::path(DomainsService::lastDomainsXlsxfile()));
+            return response()->download(storage_path('app/domains.xlsx'), 'domains-' . date('Y-m-d-H-i-s') . '.xlsx');
         } else {
 
             $domains = $domains->orderBy('url')->paginate(env('PAGE_COUNT'));

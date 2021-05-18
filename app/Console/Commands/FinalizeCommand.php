@@ -78,7 +78,7 @@ class FinalizeCommand extends Command
 
         $this->line("Create new XLS file");
 
-        $this->call('domains:storage');
+        $this->call('domains:generate');
 
         $this->line("Job done");
 

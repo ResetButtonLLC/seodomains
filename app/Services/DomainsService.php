@@ -80,6 +80,29 @@ class DomainsService
         //$headers_placeholder['sape'] = isset($request->resource['sape']) ? ['PR.Sape.ru цена размещения'] : [];
         //$headers_placeholder['prnews'] = isset($request->resource['prnews']) ? ['Prnews цена размещения', 'Prnews посещаемость'] : [];
 
+//        $sheet->fromArray(
+//            array_merge(
+//                [
+//                    'URL',
+//                    'Ahrefs DR',
+//                    'Ahrefs Outlinks',
+//                    'Ahrefs Positions Top10',
+//                    'Ahrefs Traffic Top10'], $headers_placeholder['miralinks'], $headers_placeholder['gogetlinks'], $headers_placeholder['rotapost'], $headers_placeholder['sape'], $headers_placeholder['prnews'], ['страна',
+//                'тематика',
+//                'Google Index',
+//                'Количество размещаемых ссылок (Миралинкс)',
+//                'Ahrefs Inlinks',
+//                'язык',
+//                'Majestic CF',
+//                'Majestic TF',
+//                'описание',
+            //]), // The data to set
+            //NULL, // Array values with this value will not be set
+            //'A1'         // Top left coordinate of the worksheet range where
+        //    we want to set these values (default is A1)
+        //);
+
+
         $sheet->fromArray(
             array_merge(
                 [
@@ -151,7 +174,7 @@ class DomainsService
             //if (isset($request->resource['rotapost'])) {
                 $sheet->setCellValueByColumnAndRow($column, $row, $data->rotapost_placement_price);
                 if ($data->url) {
-                    $sheet->getCellByColumnAndRow($column, $row)->getHyperlink()->setUrl('https://anonym.to/?"https://www.rotapost.ru/buy/site/?' . $data->url . '"');
+                    $sheet->getCellByColumnAndRow($column, $row)->getHyperlink()->setUrl('https://www.rotapost.ru/buy/site/?' . $data->url);
                     $sheet->getStyleByColumnAndRow($column, $row)->getFont()->getColor()->setARGB(\PhpOffice\PhpSpreadsheet\Style\Color::COLOR_BLUE);
                 }
                 $column++;
@@ -212,29 +235,9 @@ class DomainsService
         }
 
         $writer = new Xlsx($spreadsheet);
-        $filename = storage_path('app/domains/domains-' . date('Y-m-d-H-i-s') . '.xlsx');
+        $filename = storage_path('app/domains.xlsx');
         $writer->save($filename);
 
         return $filename;
     }
-
-    public static function lastDomainsXlsxfile() {
-
-        $lastFileModifiedPath = "";
-        $lastFileModified = 0;
-
-        $files = Storage::files('domains');
-        foreach ($files as $file) {
-            if (pathinfo(storage_path($file), PATHINFO_EXTENSION) == 'xlsx') {
-                $lastModifiedFile = Storage::lastModified($file);
-                if ($lastModifiedFile > $lastFileModified) {
-                    $lastFileModified = $lastModifiedFile;
-                    $lastFileModifiedPath = $file;
-                }
-            }
-        }
-        return $lastFileModifiedPath;
-    }
-
-
 }
