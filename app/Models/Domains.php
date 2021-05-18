@@ -49,6 +49,7 @@ class Domains extends Model {
             ->select(
                 'domains.*',
                 'gogetlinks.placement_price as gogetlinks_placement_price',
+                'gogetlinks.domain_id as gogetlinks_domain_id',
                 'miralinks.placement_price as miralinks_placement_price',
                 'miralinks.site_id as miralinks_site_id',
                 'miralinks.writing_price as miralinks_writing_price',
@@ -61,8 +62,10 @@ class Domains extends Model {
                 'prnews.audience as prnews_audience',
                 'rotapost.placement_price as rotapost_placement_price',
                 'rotapost.writing_price as rotapost_writing_price',
-                'sape.placement_price as sape_placement_price')
-            ->whereNull('domains.deleted_at')
+                'sape.placement_price as sape_placement_price',
+                'sape.domain_id as sape_domain_id'
+                )
+            ->whereNull('domains.deleted_at')->where('domains.url', '<>', '')
             ->orderBy('url');
             //Сортировка сохраняет порядок $domains
             //Оставлю на память, но так не работает - если домена не существует, то пропуска не будет

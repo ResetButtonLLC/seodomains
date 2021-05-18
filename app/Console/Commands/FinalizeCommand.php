@@ -76,6 +76,10 @@ class FinalizeCommand extends Command
             Update::setLinkExchangeUpdated($child_table);
         }
 
+        $this->line("Create new XLS file");
+
+        $this->call('domains:storage');
+
         $this->line("Job done");
 
     }
