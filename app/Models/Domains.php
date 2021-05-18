@@ -39,8 +39,7 @@ class Domains extends Model {
     }
 
     public static function getDomainsForExport() {
-        $sql = DB::table('domains')
-            ->leftjoin('gogetlinks', 'domains.id', '=', 'gogetlinks.domain_id')
+        $domains = Domains::leftjoin('gogetlinks', 'domains.id', '=', 'gogetlinks.domain_id')
             ->leftjoin('miralinks', 'domains.id', '=', 'miralinks.domain_id')
             ->leftjoin('prnews', 'domains.id', '=', 'prnews.domain_id')
             ->leftjoin('rotapost', 'domains.id', '=', 'rotapost.domain_id')
@@ -65,14 +64,13 @@ class Domains extends Model {
                 'sape.placement_price as sape_placement_price',
                 'sape.domain_id as sape_domain_id'
                 )
-            ->whereNull('domains.deleted_at')->where('domains.url', '<>', '')
-            ->orderBy('url');
+            ->whereNull('domains.deleted_at')->where('domains.url', '<>', '')->orderBy('url')->get();
+
             //Сортировка сохраняет порядок $domains
             //Оставлю на память, но так не работает - если домена не существует, то пропуска не будет
             //->orderByRaw('FIELD(domains.url, '.'"'.implode('","',$domains).'"'.')')
 
-
-        return $sql;
+        return $domains;
     }
 
 }
