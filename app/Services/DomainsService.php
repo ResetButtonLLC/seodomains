@@ -143,7 +143,8 @@ class DomainsService
             //URL
             $sheet->setCellValueByColumnAndRow($column, $row, $data->url);
             $sheet->getCellByColumnAndRow($column, $row)->getHyperlink()->setUrl('http://' . $data->url);
-            $sheet->getStyleByColumnAndRow($column++, $row)->getFont()->getColor()->setARGB(\PhpOffice\PhpSpreadsheet\Style\Color::COLOR_BLUE);
+            $sheet->getStyleByColumnAndRow($column, $row)->getFont()->getColor()->setARGB(\PhpOffice\PhpSpreadsheet\Style\Color::COLOR_BLUE);
+            $column++;
 
             //MIRALINKS (какой то баг с ссылкой - не работает прямая)
             //if (isset($request->resource['miralinks'])) {
@@ -229,8 +230,10 @@ class DomainsService
 
             //Описание
             $sheet->setCellValueByColumnAndRow($column++, $row, $data->miralinks_desc);
+
             //Serpstat
             //$sheet->setCellValueByColumnAndRow($column++, $row, $data->serpstat_traffic);
+
             $row++;
         }
 

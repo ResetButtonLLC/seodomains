@@ -42,9 +42,7 @@ class GenerateXLSCommand extends Command
         ini_set('max_execution_time', 0);
         ini_set('memory_limit', '2048M');
 
-        $domains = Domains::getDomainsForExport()->get();
-
-        //57700 ошибка
+        $domains = Domains::getDomainsForExport();
 
         return DomainsService::exportXLS(NULL, $domains);
     }
