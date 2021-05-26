@@ -13,7 +13,7 @@ use PhpXmlRpc\Value;
 use PhpXmlRpc\Request;
 use PhpXmlRpc\Client;
 
-class SapeCommand extends Command {
+class SapeCommand extends ParserCommand {
 
     /**
      * The name and signature of the console command.
@@ -48,6 +48,8 @@ class SapeCommand extends Command {
      * @return mixed
      */
     public function handle() {
+        $this->initLog('sape');
+
         if ($this->sapeAuth()) {
             $page = 0;
             $added = 0;
@@ -79,7 +81,7 @@ class SapeCommand extends Command {
                                 $added++;
                             }
                         }
-                        $this->line('Sape.ru page : ' . $page . ' | Fetched domains : ' . count($domains) . ' | Added total :  ' . $added . ' | Updated total : ' . $updated . ' | Sleeping for 20 seconds');
+                        $this->writeLog('Sape.ru page : ' . $page . ' | Fetched domains : ' . count($domains) . ' | Added total :  ' . $added . ' | Updated total : ' . $updated . ' | Sleeping for 20 seconds');
                         $page++;
                         sleep(20);
 
@@ -98,14 +100,14 @@ class SapeCommand extends Command {
         $resp = $this->client->send(new Request('sape_pr.login', [new Value(env('SAPE_LOGIN')), new Value(env('SAPE_TOKEN'))]));
 
         if ($resp->errno > 0) {
-            $this->error('Auth not successful : saving responce to ' . url('sites/sape/auth.txt') . PHP_EOL);
-            file_put_contents(public_path('sites/sape/auth.txt'), $resp);
+            $this->writeLog('Auth not successful : saving responce to ' . url('sites/sape/auth.txt'));
+            $this->writeLogFile('auth.txt', $resp);
             return false;
         } else {
             $this->accountId = $resp->value();
             $cookies = $resp->cookies();
             $this->client->setcookie('PR', $resp->cookies()["PR"]["value"]);
-            $this->line('Auth successfull');
+            $this->writeLog('Auth successfull');
             return $this->accountId;
         }
     }
@@ -129,11 +131,11 @@ class SapeCommand extends Command {
         $resp = $this->makeRequest($payload);
         $result = simplexml_load_string($resp);
         if (isset($result->params->param->value->int)) {
-            $this->line('Auth successful');
+            $this->writeLog('Auth successful');
             return true;
         } else {
-            $this->error('Responce not successful : saving responce to ' . url('sites/sape/auth.txt') . PHP_EOL);
-            file_put_contents(public_path('sites/sape/auth.txt'), $resp);
+            $this->writeLog('Responce not successful : saving responce to ' . url('sites/sape/auth.txt'));
+            $this->writeLogFile('auth.txt', $resp);
             return false;
         }
     }
@@ -190,7 +192,7 @@ class SapeCommand extends Command {
                     $domains[$id]['url']['string'] = preg_replace('/^www\./', '', $domains[$id]['url']['string']);
                     $domains[$id]['url']['string'] = idn_to_utf8($domains[$id]['url']['string'], IDNA_DEFAULT, INTL_IDNA_VARIANT_UTS46); //punycode
                     //URLS=>DOMAINS done
-                    //$this->line('Sape page : ' . $page . ' ' . $domains[$id]['url']['string']);
+                    //$this->writeLog('Sape page : ' . $page . ' ' . $domains[$id]['url']['string']);
                     $domains[$id]['price']['double'] = intval(current($domain_data[3]->value->struct->member[0]->value->double));
                     $domains[$id]['nof_pages_in_google']['int'] = intval(current($domain_data[14]->value->int[0]));
                     $sape_success = true;
@@ -206,7 +208,7 @@ class SapeCommand extends Command {
                 }
 
                 $retry++;
-                $this->line('Sape page : ' . $page . ' | Problem fetching page #'.$retry.' | '.$error.' | Sleeping for 30 seconds ');
+                $this->writeLog('Sape page : ' . $page . ' | Problem fetching page #'.$retry.' | '.$error.' | Sleeping for 30 seconds ');
                 sleep(30);
                 $sape_success = false;
 

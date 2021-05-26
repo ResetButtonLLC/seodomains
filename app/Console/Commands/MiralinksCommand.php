@@ -5,7 +5,6 @@ namespace App\Console\Commands;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
-use Log;
 use App\Models\{
     Domains,
     Miralinks
@@ -19,8 +18,6 @@ class MiralinksCommand extends ParserCommand {
      * @var string
      */
     protected $signature = 'domains:miralinks';
-
-    protected $log_name = 'miralinks';
 
     /**
      * The console command description.
@@ -52,6 +49,7 @@ class MiralinksCommand extends ParserCommand {
      * @return mixed
      */
     public function handle() {
+        $this->initLog('miralinks');
 
         $counter = array(
             'current' => 0,
@@ -225,7 +223,7 @@ class MiralinksCommand extends ParserCommand {
             $this->writeLog('Auth successful');
             return $html;
         } else {
-            $this->error('Login not successful : check cookies'.PHP_EOL);
+            $this->writeLog('Login not successful : check cookies');
             return '';
         }
 
@@ -277,7 +275,7 @@ class MiralinksCommand extends ParserCommand {
             }
         }
 
-        file_put_contents($this->logfolder.'/'.$start.'.html',$response);
+        $this->writeLogFile($start.'.html', $response);
         $err = curl_error($curl);
 
         curl_close($curl);

@@ -11,7 +11,7 @@ use App\Models\{
 use Carbon\Carbon;
 use Symfony\Component\DomCrawler\Crawler;
 
-class GoggetlinksCommand extends Command {
+class GoggetlinksCommand extends ParserCommand {
 
     /**
      * The name and signature of the console command.
@@ -44,6 +44,7 @@ class GoggetlinksCommand extends Command {
      */
     public function handle()
     {
+        $this->initLog('gogetlinks');
 
         if (!$this->checkLogin()) {
             die();
@@ -72,7 +73,7 @@ class GoggetlinksCommand extends Command {
 
         //Получим количество сайтов
         $data = $this->getData($page);
-        file_put_contents(storage_path('gogetlinks.page.html'),$data);
+        $this->writeLogFile('gogetlinks.page.html', $data);
 
         $crawler = new Crawler($data);
 
@@ -87,7 +88,7 @@ class GoggetlinksCommand extends Command {
             //Эту строку нельзя использовать в условии выше, т.к. она иногда отдает пустой ответ и скан заканчивается
             $data = $this->getData($page);
 
-            file_put_contents($log_folder.'/'.$counter['total'].'.html',$data);
+            $this->writeLogFile($counter['total'] . '.html', $data);
 
             $page_valid = (boolean)stripos($data,'<tbody id="body_table_content">');
             $current_retry = $retries;
@@ -107,7 +108,7 @@ class GoggetlinksCommand extends Command {
                 foreach ($rows as $row) {
                     $data = [];
 
-                    file_put_contents(storage_path('row.dom.html'),$row);
+                    $this->writeLogFile('row.dom.html', $row);
 
                     $row_dom = new Crawler($row);
 
@@ -150,7 +151,7 @@ class GoggetlinksCommand extends Command {
                 }
 
                 $antiban_pause = mt_rand(30, 50);
-                $this->line('Gogetlinks.ru page : ' . $page . ' | Fetched domains : ' . count($rows) . ' | Progress: '.$counter['current'].'/'.$counter['total'].' | Added total : ' . $counter['new'] . ' | Updated total : ' . $counter['updated'] . ' | Sleeping for ' . $antiban_pause . ' seconds');
+                $this->writeLog('Gogetlinks.ru page : ' . $page . ' | Fetched domains : ' . count($rows) . ' | Progress: '.$counter['current'].'/'.$counter['total'].' | Added total : ' . $counter['new'] . ' | Updated total : ' . $counter['updated'] . ' | Sleeping for ' . $antiban_pause . ' seconds');
                 sleep($antiban_pause);
 
                 $page++;
@@ -158,7 +159,7 @@ class GoggetlinksCommand extends Command {
             } else {
                 //Если страница так и не прогрузилась, то пропускаем ее
                 $antiban_pause = mt_rand(30, 50);
-                $this->line('Gogetlinks.ru page : ' . $page . ' | Problem fetching page, retrying | Sleeping for ' . $antiban_pause . ' seconds');
+                $this->writeLog('Gogetlinks.ru page : ' . $page . ' | Problem fetching page, retrying | Sleeping for ' . $antiban_pause . ' seconds');
                 sleep($antiban_pause);
             }
 
@@ -200,12 +201,12 @@ class GoggetlinksCommand extends Command {
         $html = curl_exec($ch);
 
         if (!strpos($html, '<li class="header-authorized__nav-item">')) {
-            file_put_contents(public_path('sites/gogetlinks/debug.html'),$html);
-            $this->error('Login not successful : saving page to '.url('/sites/gogetlinks/debug.html').PHP_EOL);
-            $this->error('Most likely that the cookies has expired'.PHP_EOL);
+            $this->writeLogFile('debug.html', $html);
+            $this->writeLog('Login not successful : saving page to ' . url('/sites/gogetlinks/debug.html'));
+            $this->writeLog('Most likely that the cookies has expired');
             return false;
         } else {
-            $this->line('Auth successfull');
+            $this->writeLog('Auth successfull');
             return true;
         }
 

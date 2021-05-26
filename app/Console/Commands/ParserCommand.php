@@ -16,16 +16,19 @@ class ParserCommand extends Command
 
     protected $message;
 
-    protected $log_name;
     protected $log_path;
+
+    private $log_name;
 
     public function __construct() {
         parent::__construct();
+    }
 
+    public function initLog($name)
+    {
+        $this->log_name = $name;
         $this->log_path = storage_path('logs/parsers/' . $this->log_name . '/' . $this->log_name . '.log');
-
         config(['logging.channels.parser.path' => $this->log_path]);
-
         file_put_contents($this->log_path, "");
     }
 

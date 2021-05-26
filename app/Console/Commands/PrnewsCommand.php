@@ -10,7 +10,7 @@ use App\Models\{
 use Symfony\Component\DomCrawler\Crawler;
 use App\Helpers\DomainsHelper;
 
-class PrnewsCommand extends Command {
+class PrnewsCommand extends ParserCommand {
 
     /**
      * The name and signature of the console command.
@@ -45,8 +45,9 @@ class PrnewsCommand extends Command {
      * @return mixed
      */
     public function handle() {
+        $this->initLog('prnews');
 
-        $this->line('prnews.io');
+        $this->writeLog('prnews.io');
         $page = 1;
 
         $counter = array(
@@ -130,7 +131,7 @@ class PrnewsCommand extends Command {
                 //dd($data);
             }
             $antiban_pause = mt_rand(0, 0);
-            $this->line('prnews.io page : ' . $page . ' | Fetched domains : ' . count($sites) . ' | Progress '.$counter['current'].'/'.$counter['total'].' | Added total : ' . $counter['new'] . ' | Updated total : ' . $counter['updated'].' | Sleeping for ' . $antiban_pause . ' seconds');
+            $this->writeLog('prnews.io page : ' . $page . ' | Fetched domains : ' . count($sites) . ' | Progress '.$counter['current'].'/'.$counter['total'].' | Added total : ' . $counter['new'] . ' | Updated total : ' . $counter['updated'].' | Sleeping for ' . $antiban_pause . ' seconds');
             sleep($antiban_pause);
 
             $page++;
@@ -173,7 +174,7 @@ class PrnewsCommand extends Command {
             $page_valid = stripos($curl_response,'<div class="cards-meta">');
             if (!$page_valid) {
                 $antiban_pause = mt_rand(30, 50);
-                $this->line('Prnews.ru | Get empty responce | sleeping for '.$antiban_pause.' seconds');
+                $this->writeLog('Prnews.ru | Get empty responce | sleeping for '.$antiban_pause.' seconds');
                 sleep($antiban_pause);
             }
         }
@@ -208,11 +209,11 @@ class PrnewsCommand extends Command {
         $html = curl_exec($ch);
 
         if (!strpos($html, 'https://prnews.io/api/logout')) {
-            $this->error('Prnews : Login not successful : Most likely that the cookies has expired'.PHP_EOL);
+            $this->writeLog('Prnews : Login not successful : Most likely that the cookies has expired');
             file_put_contents($this->logfolder.'/login.html',$html);
             return false;
         } else {
-            $this->line('Auth successfull');
+            $this->writeLog('Auth successfull');
             return $html;
         }
 
@@ -221,7 +222,7 @@ class PrnewsCommand extends Command {
     private function checkLoggedIn($page_content) : bool
     {
         if (strpos($page_content, 'link-signup')) {
-            $this->error('Prnews : Login not successful : Most likely that the cookies has expired'.PHP_EOL);
+            $this->writeLog('Prnews : Login not successful : Most likely that the cookies has expired');
             file_put_contents($this->logfolder.'/bad_page.html',$page_content);
             return false;
         } else {

@@ -9,7 +9,7 @@ use App\Models\{
     Rotapost
 };
 
-class RotapostCommand extends Command {
+class RotapostCommand extends ParserCommand {
 
     /**
      * The name and signature of the console command.
@@ -41,8 +41,10 @@ class RotapostCommand extends Command {
      * @return mixed
      */
     public function handle() {
+        $this->initLog('rotapost');
+
         if ($this->login()) {
-            $this->line('Auth successful');
+            $this->writeLog('Auth successful');
             $sites = $this->getSites();
 
 
@@ -82,7 +84,7 @@ class RotapostCommand extends Command {
 
                 $counter['current']++;
 
-                $this->line('Rotapost | Progress: '.$counter['current'].'/'.$counter['total'].' | Added total : ' . $counter['new'] . ' | Updated total : ' . $counter['updated']);
+                $this->writeLog('Rotapost | Progress: '.$counter['current'].'/'.$counter['total'].' | Added total : ' . $counter['new'] . ' | Updated total : ' . $counter['updated']);
             }
 
             $this->call('domains:finalize', [
