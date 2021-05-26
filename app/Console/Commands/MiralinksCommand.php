@@ -5,13 +5,12 @@ namespace App\Console\Commands;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
-use Log;
 use App\Models\{
     Domains,
     Miralinks
 };
 
-class MiralinksCommand extends Command {
+class MiralinksCommand extends ParserCommand {
 
     /**
      * The name and signature of the console command.
@@ -50,6 +49,7 @@ class MiralinksCommand extends Command {
      * @return mixed
      */
     public function handle() {
+        $this->initLog('miralinks');
 
         $counter = array(
             'current' => 0,
@@ -132,13 +132,13 @@ class MiralinksCommand extends Command {
                     }
                 }
                 $antiban_pause = mt_rand(20, 30);
-                $this->line('Miralinks.ru | Fetched domains : ' . count($data->aaData) . ' | Progress: '.$counter['current'].'/'.$counter['total'].' | Added total : ' . $counter['new'] . ' | Updated total : ' . $counter['updated']. ' | Sleeping '.$antiban_pause. ' seconds');
+                $this->writeLog('Miralinks.ru | Fetched domains : ' . count($data->aaData) . ' | Progress: '.$counter['current'].'/'.$counter['total'].' | Added total : ' . $counter['new'] . ' | Updated total : ' . $counter['updated']. ' | Sleeping '.$antiban_pause. ' seconds');
                 sleep($antiban_pause);
                 $start += 50;
 
             } else {
 
-                $this->line('Exporting Majestic CF/TF to main table');
+                $this->writeLog('Exporting Majestic CF/TF to main table');
 
                 /*
                  * todo
@@ -220,10 +220,10 @@ class MiralinksCommand extends Command {
         curl_close($ch);
 
         if (strpos($html, 'Ваши проекты')) {
-            $this->line('Auth successful');
+            $this->writeLog('Auth successful');
             return $html;
         } else {
-            $this->error('Login not successful : check cookies'.PHP_EOL);
+            $this->writeLog('Login not successful : check cookies');
             return '';
         }
 
@@ -266,15 +266,16 @@ class MiralinksCommand extends Command {
 
         while(!$response) {
             $response = curl_exec($curl);
-            file_put_contents($this->logfolder.'/'.$start.'.html',$response);
+            $this->writeLogFile($start.'.html', $response);
+            //file_put_contents($this->logfolder.'/'.$start.'.html',$response);
             if (!json_decode($response)) {
                 $antiban_pause = mt_rand(30, 50);
-                $this->line('Miralinks.ru | Get empty responce | sleeping for '.$antiban_pause.' seconds');
+                $this->writeLog('Miralinks.ru | Get empty responce | sleeping for '.$antiban_pause.' seconds');
                 sleep($antiban_pause);
             }
         }
 
-        file_put_contents($this->logfolder.'/'.$start.'.html',$response);
+        $this->writeLogFile($start.'.html', $response);
         $err = curl_error($curl);
 
         curl_close($curl);

@@ -39,8 +39,6 @@ class GenerateXLSCommand extends Command
      */
     public function handle()
     {
-        ini_set('max_execution_time', 0);
-        ini_set('memory_limit', '2048M');
 
         $domains = Domains::getDomainsForExport();
 
