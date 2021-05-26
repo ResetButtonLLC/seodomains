@@ -16,30 +16,27 @@ class ParserCommand extends Command
 
     protected $message;
 
+    protected $log_name;
+    protected $log_path;
+
     public function __construct() {
         parent::__construct();
+
+        $this->log_path = storage_path('logs/parsers/' . $this->log_name . '/' . $this->log_name . '.log');
+
+        config(['logging.channels.parser.path' => $this->log_path]);
+
+        file_put_contents($this->log_path, "");
     }
 
-    public function clearLog($command)
+    public function writeLog($message)
     {
-        $log_name = explode(':', $command)[1];
-        $log_path = storage_path('logs/parsers/' . $log_name . '/' . $log_name . '.log');
-        config(['logging.channels.parser.path' => $log_path]);
-        file_put_contents($log_path, "");
-    }
-
-    public function writeLog($command, $message)
-    {
-        $log_name = explode(':', $command)[1];
-        $log_path = storage_path('logs/parsers/' . $log_name . '/' . $log_name . '.log');
-        config(['logging.channels.parser.path' => $log_path]);
         $this->line($message);
         Log::channel('parser')->info($message);
     }
 
-    public function writeLogFile($command, $file_name, $data)
+    public function writeLogFile($file_name, $data)
     {
-        $log_name = explode(':', $command)[1];
-        file_put_contents(storage_path('logs/parsers/' . $log_name . '/' . $file_name), $data);
+        file_put_contents(storage_path('logs/parsers/' . $this->log_name . '/' . $file_name), $data);
     }
 }

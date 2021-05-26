@@ -20,6 +20,8 @@ class MiralinksCommand extends ParserCommand {
      */
     protected $signature = 'domains:miralinks';
 
+    protected $log_name = 'miralinks';
+
     /**
      * The console command description.
      *
@@ -50,7 +52,6 @@ class MiralinksCommand extends ParserCommand {
      * @return mixed
      */
     public function handle() {
-        $this->clearLog($this->getName());
 
         $counter = array(
             'current' => 0,
@@ -133,13 +134,13 @@ class MiralinksCommand extends ParserCommand {
                     }
                 }
                 $antiban_pause = mt_rand(20, 30);
-                $this->writeLog($this->getName(), 'Miralinks.ru | Fetched domains : ' . count($data->aaData) . ' | Progress: '.$counter['current'].'/'.$counter['total'].' | Added total : ' . $counter['new'] . ' | Updated total : ' . $counter['updated']. ' | Sleeping '.$antiban_pause. ' seconds');
+                $this->writeLog('Miralinks.ru | Fetched domains : ' . count($data->aaData) . ' | Progress: '.$counter['current'].'/'.$counter['total'].' | Added total : ' . $counter['new'] . ' | Updated total : ' . $counter['updated']. ' | Sleeping '.$antiban_pause. ' seconds');
                 sleep($antiban_pause);
                 $start += 50;
 
             } else {
 
-                $this->writeLog($this->getName(), 'Exporting Majestic CF/TF to main table');
+                $this->writeLog('Exporting Majestic CF/TF to main table');
 
                 /*
                  * todo
@@ -221,7 +222,7 @@ class MiralinksCommand extends ParserCommand {
         curl_close($ch);
 
         if (strpos($html, 'Ваши проекты')) {
-            $this->writeLog($this->getName(), 'Auth successful');
+            $this->writeLog('Auth successful');
             return $html;
         } else {
             $this->error('Login not successful : check cookies'.PHP_EOL);
@@ -267,11 +268,11 @@ class MiralinksCommand extends ParserCommand {
 
         while(!$response) {
             $response = curl_exec($curl);
-            $this->writeLogFile($this->getName(), $start.'.html', $response);
+            $this->writeLogFile($start.'.html', $response);
             //file_put_contents($this->logfolder.'/'.$start.'.html',$response);
             if (!json_decode($response)) {
                 $antiban_pause = mt_rand(30, 50);
-                $this->writeLog($this->getName(), 'Miralinks.ru | Get empty responce | sleeping for '.$antiban_pause.' seconds');
+                $this->writeLog('Miralinks.ru | Get empty responce | sleeping for '.$antiban_pause.' seconds');
                 sleep($antiban_pause);
             }
         }
