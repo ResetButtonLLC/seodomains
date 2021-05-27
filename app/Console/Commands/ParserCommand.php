@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Models\Cookie;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Log;
 
@@ -42,4 +43,13 @@ class ParserCommand extends Command
     {
         file_put_contents(storage_path('logs/parsers/' . $this->log_name . '/' . $file_name), $data);
     }
+
+    public function getCookie()
+    {
+        $cookie = Cookie::whereName($this->log_name)->first();
+        if ($cookie != null) {
+            return $cookie->cookie;
+        }
+    }
+
 }

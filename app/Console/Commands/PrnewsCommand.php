@@ -3,7 +3,7 @@
 namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
-use App\Models\{Cookie, Domains, Prnews};
+use App\Models\{Domains, Prnews};
 use Symfony\Component\DomCrawler\Crawler;
 use App\Helpers\DomainsHelper;
 
@@ -29,11 +29,8 @@ class PrnewsCommand extends ParserCommand {
      * @return void
      */
 
-    protected $cookie;
-
     public function __construct() {
         parent::__construct();
-        $this->cookie = Cookie::whereName('prnews')->first()->cookie;
     }
 
     /**
@@ -151,7 +148,7 @@ class PrnewsCommand extends ParserCommand {
         curl_setopt($ch, CURLOPT_HEADER, 0);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-        curl_setopt($ch, CURLOPT_COOKIE, $this->cookie);
+        curl_setopt($ch, CURLOPT_COOKIE, $this->getCookie());
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
         curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
@@ -189,7 +186,7 @@ class PrnewsCommand extends ParserCommand {
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
         curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
-        curl_setopt($ch, CURLOPT_COOKIE, $this->cookie);
+        curl_setopt($ch, CURLOPT_COOKIE, $this->getCookie());
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
         curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
