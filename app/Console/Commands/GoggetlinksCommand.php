@@ -4,10 +4,7 @@ namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
 use Log;
-use App\Models\{
-    Domains,
-    Gogetlinks
-};
+use App\Models\{Cookie, Domains, Gogetlinks};
 use Carbon\Carbon;
 use Symfony\Component\DomCrawler\Crawler;
 
@@ -27,7 +24,7 @@ class GoggetlinksCommand extends ParserCommand {
      */
     protected $description = 'Load domains from gogetlinks.net';
     protected $count;
-
+    protected $cookie;
     /**
      * Create a new command instance.
      *
@@ -35,6 +32,7 @@ class GoggetlinksCommand extends ParserCommand {
      */
     public function __construct() {
         parent::__construct();
+        $this->cookie = Cookie::whereName('gogetlinks')->first()->cookie;
     }
 
     /**
@@ -182,8 +180,7 @@ class GoggetlinksCommand extends ParserCommand {
         curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
         curl_setopt($ch,CURLOPT_ENCODING, '');
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
-        curl_setopt($ch, CURLOPT_COOKIEJAR, storage_path('/app/cookies/cookie-file-gogetlinks.txt'));
-        curl_setopt($ch, CURLOPT_COOKIEFILE, storage_path('/app/cookies/cookie-file-gogetlinks.txt'));
+        curl_setopt($ch, CURLOPT_COOKIE, $this->cookie);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
         curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
         curl_setopt($ch, CURLOPT_HTTPHEADER,array(
@@ -231,6 +228,7 @@ class GoggetlinksCommand extends ParserCommand {
             CURLOPT_TIMEOUT => 30,
             CURLOPT_COOKIEJAR => storage_path('/app/cookies/cookie-file-gogetlinks.txt'),
             CURLOPT_COOKIEFILE => storage_path('/app/cookies/cookie-file-gogetlinks.txt'),
+            CURLOPT_COOKIE => $this->cookie,
             CURLOPT_COOKIE => 'in_page_search_sites=100',
             CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
             CURLOPT_CUSTOMREQUEST => "POST",
