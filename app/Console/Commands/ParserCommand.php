@@ -41,7 +41,7 @@ class ParserCommand extends Command
 
     public function writeHtmlLogFile($file_name, $data)
     {
-        file_put_contents(storage_path('logs/parsers/' . $this->parser_name . '/' . $file_name), $data);
+        file_put_contents(storage_path('logs/parsers/' . $this->parser_name . '/html/' . $file_name), $data);
     }
 
     public function getCookie()
