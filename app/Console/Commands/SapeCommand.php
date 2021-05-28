@@ -60,32 +60,32 @@ class SapeCommand extends ParserCommand {
             do  {
                 $domains = $this->sapeGetSitesFromPage($page, $domains_per_request);
 
-                        foreach ($domains as $domain) {
-                            $url = mb_strtolower($domain['url']['string']);
-                            $data['placement_price'] = $domain['price']['double'];
-                            $data['google_index'] = $domain['nof_pages_in_google']['int'];
+                foreach ($domains as $domain) {
+                    $url = mb_strtolower($domain['url']['string']);
+                    $data['placement_price'] = $domain['price']['double'];
+                    $data['google_index'] = $domain['nof_pages_in_google']['int'];
 
-                            if ($domain = Domains::where('url', $url)->first()) {
-                                $data['domain_id'] = $domain->id;
-                            } else {
-                                $domain = Domains::insertGetId(['url' => $url, 'created_at' => date('Y-m-d H:i:s')]);
-                                $data['domain_id'] = $domain;
-                            }
+                    if ($domain = Domains::where('url', $url)->first()) {
+                        $data['domain_id'] = $domain->id;
+                    } else {
+                        $domain = Domains::insertGetId(['url' => $url, 'created_at' => date('Y-m-d H:i:s')]);
+                        $data['domain_id'] = $domain;
+                    }
 
-                            if (Sape::where('domain_id', $data['domain_id'])->first()) {
-                                Sape::where('domain_id', $data['domain_id'])->update($data);
-                                $updated++;
-                            } else {
-                                $data['updated_at'] = date('Y-m-d H:i:s');
-                                Sape::insert($data);
-                                $added++;
-                            }
-                        }
-                        $this->writeLog('Sape.ru page : ' . $page . ' | Fetched domains : ' . count($domains) . ' | Added total :  ' . $added . ' | Updated total : ' . $updated . ' | Sleeping for 20 seconds');
-                        $page++;
-                        sleep(20);
+                    if (Sape::where('domain_id', $data['domain_id'])->first()) {
+                        Sape::where('domain_id', $data['domain_id'])->update($data);
+                        $updated++;
+                    } else {
+                        $data['updated_at'] = date('Y-m-d H:i:s');
+                        Sape::insert($data);
+                        $added++;
+                    }
+                }
+                $this->writeLog('Sape.ru page : ' . $page . ' | Fetched domains : ' . count($domains) . ' | Added total :  ' . $added . ' | Updated total : ' . $updated . ' | Sleeping for 20 seconds');
+                $page++;
+                sleep(20);
 
-                    //работаем пока доменов больше нуля
+                //работаем пока доменов больше нуля
 
             } while (count($domains)>0);
 
@@ -101,7 +101,7 @@ class SapeCommand extends ParserCommand {
 
         if ($resp->errno > 0) {
             $this->writeLog('Auth not successful : saving responce to ' . url('sites/sape/auth.txt'));
-            $this->writeLogFile('auth.txt', $resp);
+            $this->writeHtmlLogFile('auth.txt', $resp);
             return false;
         } else {
             $this->accountId = $resp->value();
@@ -135,7 +135,7 @@ class SapeCommand extends ParserCommand {
             return true;
         } else {
             $this->writeLog('Responce not successful : saving responce to ' . url('sites/sape/auth.txt'));
-            $this->writeLogFile('auth.txt', $resp);
+            $this->writeHtmlLogFile('auth.txt', $resp);
             return false;
         }
     }
@@ -236,8 +236,8 @@ class SapeCommand extends ParserCommand {
             CURLOPT_TIMEOUT => 30,
             CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
             CURLOPT_POST => true,
-            CURLOPT_COOKIEJAR => storage_path(env('SAPE_COOKIE_FILE')),
-            CURLOPT_COOKIEFILE => storage_path(env('SAPE_COOKIE_FILE')),
+            CURLOPT_COOKIEJAR => tempnam(sys_get_temp_dir(), 'SAPE_COOKIE_FILE'),
+            CURLOPT_COOKIEFILE => $this->getCookie(),
             CURLOPT_POSTFIELDS => $payload,
             CURLOPT_HTTPHEADER => array(
                 "Content-Type: text/plain",

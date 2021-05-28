@@ -2,9 +2,9 @@
 
 namespace App\Console\Commands;
 
-use App\Models\Cookie;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 
 class ParserCommand extends Command
 {
@@ -19,7 +19,7 @@ class ParserCommand extends Command
 
     protected $log_path;
 
-    private $log_name;
+    private $parser_name;
 
     public function __construct() {
         parent::__construct();
@@ -27,8 +27,8 @@ class ParserCommand extends Command
 
     public function initLog($name)
     {
-        $this->log_name = $name;
-        $this->log_path = storage_path('logs/parsers/' . $this->log_name . '/' . $this->log_name . '.log');
+        $this->parser_name = $name;
+        $this->log_path = storage_path('logs/parsers/' . $this->parser_name . '/' . $this->parser_name . '.log');
         config(['logging.channels.parser.path' => $this->log_path]);
         file_put_contents($this->log_path, "");
     }
@@ -39,17 +39,14 @@ class ParserCommand extends Command
         Log::channel('parser')->info($message);
     }
 
-    public function writeLogFile($file_name, $data)
+    public function writeHtmlLogFile($file_name, $data)
     {
-        file_put_contents(storage_path('logs/parsers/' . $this->log_name . '/' . $file_name), $data);
+        file_put_contents(storage_path('logs/parsers/' . $this->parser_name . '/' . $file_name), $data);
     }
 
     public function getCookie()
     {
-        $cookie = Cookie::whereName($this->log_name)->first();
-        if ($cookie != null) {
-            return $cookie->cookie;
-        }
+        return Storage::path('cookies/' . $this->parser_name . '.txt');
     }
 
 }

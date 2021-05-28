@@ -25,7 +25,9 @@
                         {!! ($errors->any()) ? '<span class="invalid-feedback" style="display: block">' . $errors->first('parser') . '</span>' : '' !!}
                     </div>
                         <div class="form-group">
-                            {!! Form::textarea('cookie', null, array('class' => 'form-control')) !!}
+                            {!! Form::label('cookie', 'Netscape format !') !!}
+                            <a href="https://chrome.google.com/webstore/detail/get-cookiestxt/bgaddhkoddajcdgocldbbfleckgcbcid">Get cookies.txt</a><br>
+                            {!! Form::file('cookie', null, array('class' => 'form-control-file')) !!}
                             {!! ($errors->any()) ? '<span class="invalid-feedback" style="display: block">' . $errors->first('cookie') . '</span>' : '' !!}
                         </div>
                         {!! Form::submit('Send', array('class' => 'btn btn-primary')) !!}

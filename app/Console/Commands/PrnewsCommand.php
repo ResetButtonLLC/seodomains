@@ -3,7 +3,10 @@
 namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
-use App\Models\{Domains, Prnews};
+use App\Models\{
+    Domains,
+    Prnews
+};
 use Symfony\Component\DomCrawler\Crawler;
 use App\Helpers\DomainsHelper;
 
@@ -29,8 +32,11 @@ class PrnewsCommand extends ParserCommand {
      * @return void
      */
 
+    private $logfolder;
+
     public function __construct() {
         parent::__construct();
+        $this->logfolder = storage_path('parserlogs/prnews/');
     }
 
     /**
@@ -80,7 +86,7 @@ class PrnewsCommand extends ParserCommand {
 
             $dom = new Crawler($data);
             $sites = $dom->filter('div.js__data-platform-click')->each(function ($content, $i) {
-                 return  $content->html();
+                return  $content->html();
             });
 
             foreach ($sites as $site) {
@@ -148,7 +154,8 @@ class PrnewsCommand extends ParserCommand {
         curl_setopt($ch, CURLOPT_HEADER, 0);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-        curl_setopt($ch, CURLOPT_COOKIE, $this->getCookie());
+        curl_setopt($ch, CURLOPT_COOKIEJAR, tempnam(sys_get_temp_dir(), 'PRNEWS_COOKIE_FILE'));
+        curl_setopt($ch, CURLOPT_COOKIEFILE, $this->getCookie());
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
         curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
@@ -164,6 +171,7 @@ class PrnewsCommand extends ParserCommand {
 
         while (!$page_valid) {
             $curl_response = curl_exec($ch);
+
             $page_valid = stripos($curl_response,'<div class="cards-meta">');
             if (!$page_valid) {
                 $antiban_pause = mt_rand(30, 50);
@@ -172,7 +180,7 @@ class PrnewsCommand extends ParserCommand {
             }
         }
 
-        $this->writeLogFile($page.'.html',$curl_response);
+        file_put_contents($this->logfolder.'/'.$page.'.html',$curl_response);
 
         curl_close($ch);
 
@@ -186,7 +194,8 @@ class PrnewsCommand extends ParserCommand {
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
         curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
-        curl_setopt($ch, CURLOPT_COOKIE, $this->getCookie());
+        curl_setopt($ch, CURLOPT_COOKIEJAR, tempnam(sys_get_temp_dir(), 'PRNEWS_COOKIE_FILE'));
+        curl_setopt($ch, CURLOPT_COOKIEFILE, $this->getCookie());
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
         curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
@@ -202,7 +211,7 @@ class PrnewsCommand extends ParserCommand {
 
         if (!strpos($html, 'https://prnews.io/api/logout')) {
             $this->writeLog('Prnews : Login not successful : Most likely that the cookies has expired');
-            $this->writeLogFile('login.html',$html);
+            file_put_contents($this->logfolder.'/login.html',$html);
             return false;
         } else {
             $this->writeLog('Auth successfull');
@@ -215,7 +224,7 @@ class PrnewsCommand extends ParserCommand {
     {
         if (strpos($page_content, 'link-signup')) {
             $this->writeLog('Prnews : Login not successful : Most likely that the cookies has expired');
-            $this->writeLogFile('bad_page.html', $page_content);
+            file_put_contents($this->logfolder.'/bad_page.html',$page_content);
             return false;
         } else {
             return true;
