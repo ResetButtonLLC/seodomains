@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Cookie;
+use Storage;
 
 use Illuminate\Http\Request;
 
@@ -20,10 +20,7 @@ class CookieController extends Controller
             'cookie' => 'required',
         ]);
 
-        $cookie = Cookie::updateOrCreate(
-            ['name' => $request->input('name')],
-            ['cookie' => $request->input('cookie')]
-        );
+        Storage::putFileAs('cookies', $request->file('cookie'), $request->input('name') . '.txt');
 
         return redirect()->back()->with('success','Cookies успешно добавлены!');
     }
