@@ -5,9 +5,9 @@ Route::get('/login', '\App\Http\Middleware\AppAzure@azure')->name('login'); //О
 Route::get('/logout', '\App\Http\Middleware\AppAzure@logout')->name('logout');
 Route::get('/login/azurecallback', '\App\Http\Middleware\AppAzure@azurecallback');
 
-
-
 Route::group(['middleware' => ['azure']], function () {
     Route::get('/domains', 'DomainsController@index')->name('domains');
     Route::get('/dr-price', 'DomainsController@averagePriceForDr')->name('dr-price');
+    Route::get('/cookies', 'CookieController@show')->name('cookies.show');
+    Route::post('/cookies', 'CookieController@update')->name('cookies.update');
 });
