@@ -86,7 +86,7 @@ class PrnewsCommand extends ParserCommand {
 
             $dom = new Crawler($data);
             $sites = $dom->filter('div.js__data-platform-click')->each(function ($content, $i) {
-                 return  $content->html();
+                return  $content->html();
             });
 
             foreach ($sites as $site) {
@@ -154,8 +154,8 @@ class PrnewsCommand extends ParserCommand {
         curl_setopt($ch, CURLOPT_HEADER, 0);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-        curl_setopt($ch, CURLOPT_COOKIEJAR, storage_path('/app/cookies/cookie-file-prnews-jar.txt'));
-        curl_setopt($ch, CURLOPT_COOKIEFILE, storage_path('/app/cookies/cookie-file-prnews.txt'));
+        curl_setopt($ch, CURLOPT_COOKIEJAR, tempnam(sys_get_temp_dir(), 'PRNEWS_COOKIE_FILE'));
+        curl_setopt($ch, CURLOPT_COOKIEFILE, $this->getCookie());
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
         curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
@@ -171,6 +171,7 @@ class PrnewsCommand extends ParserCommand {
 
         while (!$page_valid) {
             $curl_response = curl_exec($ch);
+
             $page_valid = stripos($curl_response,'<div class="cards-meta">');
             if (!$page_valid) {
                 $antiban_pause = mt_rand(30, 50);
@@ -193,8 +194,8 @@ class PrnewsCommand extends ParserCommand {
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
         curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
-        curl_setopt($ch, CURLOPT_COOKIEJAR, storage_path('/app/cookies/cookie-file-prnews.txt'));
-        curl_setopt($ch, CURLOPT_COOKIEFILE, storage_path('/app/cookies/cookie-file-prnews.txt'));
+        curl_setopt($ch, CURLOPT_COOKIEJAR, tempnam(sys_get_temp_dir(), 'PRNEWS_COOKIE_FILE'));
+        curl_setopt($ch, CURLOPT_COOKIEFILE, $this->getCookie());
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
         curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
