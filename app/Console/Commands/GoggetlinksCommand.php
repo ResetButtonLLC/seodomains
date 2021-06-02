@@ -72,8 +72,16 @@ class GoggetlinksCommand extends ParserCommand {
 
         $crawler = new Crawler($data);
 
-        $counter['total'] = $crawler->filter('body > div > table tr td')->first()->text();
+        //dd($crawler->filter('body > div > table tr td')->first());
+
+        $counter['total'] = $crawler->filter('.table__before strong')->first()->text();
+
         $counter['total'] = $this->convertToNumber($counter['total']);
+
+
+
+        //dd($counter['total']);
+
 
         //$counter['total'] = $crawler->filterXPath('//*[@id="link_hint_232330"]');
         $counter['current'] = 0;
@@ -85,7 +93,8 @@ class GoggetlinksCommand extends ParserCommand {
 
             $this->writeHtmlLogFile($counter['total'] . '.html', $data);
 
-            $page_valid = (boolean)stripos($data,'<tbody id="body_table_content">');
+            $page_valid = (boolean)stripos($data,'<table class="table" id="table_content">');
+
             $current_retry = $retries;
 
             if ($page_valid) {
@@ -94,7 +103,7 @@ class GoggetlinksCommand extends ParserCommand {
 
                 //Проверить Убираем зацикливание на последней странице ?
 
-                $rows = $current_page_dom->filter('tr.search_sites_row')->each(function (Crawler $node, $i) {
+                $rows = $current_page_dom->filter('.js-search-sites-tbody tr')->each(function (Crawler $node, $i) {
                     return $node->html();
                 });
 
@@ -108,12 +117,13 @@ class GoggetlinksCommand extends ParserCommand {
                     $row_dom = new Crawler($row);
 
                     $data['id'] = $row_dom->filter('input.row-id')->attr('value');
-                    $data['traffic'] = $this->convertToNumber($row_dom->filter('td.row_'.$data['id'])->eq(3)->text());
+                    $data['traffic'] = $this->convertToNumber($row_dom->filter('.tablet__td')->eq(0)->text());
                     $data['domain'] = $row_dom->filter('#link_hint_'.$data['id'])->text();
                     //На гогете 3 цены, некоторых нету - берем максимальную, обычно это статья
-                    $prices = $row_dom->filter('body label input[type=hidden]')->each(function (Crawler $node, $i) {
-                        return $node->attr('value');
-                    });
+                    $prices = [];
+                    if ($row_dom->filter("input[type=hidden]#h0_" . $data['id'])->count()) $prices[0] = $row_dom->filter("input[type=hidden]#h0_" . $data['id'])->attr('value');
+                    if ($row_dom->filter("input[type=hidden]#h1_" . $data['id'])->count()) $prices[1] = $row_dom->filter("input[type=hidden]#h1_" . $data['id'])->attr('value');
+                    if ($row_dom->filter("input[type=hidden]#h2_" . $data['id'])->count()) $prices[2] = $row_dom->filter("input[type=hidden]#h2_" . $data['id'])->attr('value');
 
                     $data['placement_price'] = max($prices);
 
@@ -219,35 +229,33 @@ class GoggetlinksCommand extends ParserCommand {
         $curl = curl_init();
 
         curl_setopt_array($curl, array(
-            CURLOPT_URL => "https://gogetlinks.net/search_sites.php?action=search&additional_action=change_count_in_page&recommend_sites_comp_id=0",
+            CURLOPT_URL => 'https://gogetlinks.net/searchSites',
             CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_ENCODING => "",
+            CURLOPT_ENCODING => '',
             CURLOPT_MAXREDIRS => 10,
             CURLOPT_TIMEOUT => 30,
+            CURLOPT_FOLLOWLOCATION => true,
             CURLOPT_COOKIEJAR => $this->getCookie(),
             CURLOPT_COOKIEFILE => $this->getCookie(),
             CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
-            CURLOPT_CUSTOMREQUEST => "POST",
-            CURLOPT_POSTFIELDS => "compaing_id_list=583393&page=".$page."&order_by=&order_direction=desc&condition=%7B%22type_search_engine%22%3A2%2C%22is_link%22%3Atrue%2C%22is_post%22%3Atrue%2C%22is_paper%22%3Atrue%2C%22tic_from%22%3Afalse%2C%22tic_to%22%3Afalse%2C%22sqi_from%22%3Afalse%2C%22sqi_to%22%3Afalse%2C%22da_from%22%3Afalse%2C%22da_to%22%3Afalse%2C%22trust_flow%22%3Afalse%2C%22ignore_sape_links%22%3Atrue%2C%22only_exclusive%22%3Afalse%2C%22in_any_catalog%22%3Afalse%2C%22in_yandex_catalog%22%3Afalse%2C%22in_news_aggregator%22%3Afalse%2C%22reviewing_long%22%3A5%2C%22reviewing_long_na%22%3Atrue%2C%22indexation%22%3Afalse%2C%22indexation_na%22%3Atrue%2C%22from_white_list%22%3A%5B%5D%2C%22hide_black_list%22%3Atrue%2C%22ignore_rejected_sites%22%3Atrue%2C%22backreferencing%22%3Afalse%2C%22traffic_host%22%3Afalse%2C%22traffic_with_no_data%22%3Atrue%2C%22price_type%22%3A1%2C%22price_paper%22%3Afalse%2C%22price_post%22%3Afalse%2C%22price_link%22%3Afalse%2C%22avg_price_less%22%3Afalse%2C%22subjects%22%3A%7B%22all%22%3Atrue%7D%2C%22lang_ru%22%3Atrue%2C%22lang_ua%22%3Atrue%2C%22keywords%22%3Afalse%2C%22url%22%3Afalse%2C%22not_contains_link%22%3Afalse%2C%22domains%22%3A%7B%22all%22%3Atrue%7D%2C%22added_days%22%3A%22all%22%2C%22search_type%22%3A%22%22%2C%22quick_filter%22%3A%22%22%2C%22quick_filter_default_sort%22%3A%22%22%7D&anchor_token=e3d6486b38d4ca1860364611a5f5c258&from_ses=1&count_in_page=false",
+            CURLOPT_CUSTOMREQUEST => 'POST',
+            CURLOPT_POSTFIELDS => array('compaing_id_list' => '583393','page' => $page,'condition' => '{"type_search_engine":2,"is_link":true,"is_post":true,"is_paper":true,"tic_from":false,"tic_to":false,"sqi_from":false,"sqi_to":false,"da_from":false,"da_to":false,"rank_from":false,"rank_to":false,"trust_flow":false,"ignore_sape_links":true,"only_exclusive":false,"in_any_catalog":false,"in_yandex_catalog":false,"in_news_aggregator":false,"reviewing_long":5,"reviewing_long_na":true,"indexation":false,"indexation_na":true,"from_white_list":[],"hide_black_list":true,"ignore_rejected_sites":true,"backreferencing":false,"traffic_host":false,"traffic_with_no_data":true,"price_type":1,"price_paper":false,"price_post":false,"price_link":false,"avg_price_less":false,"subjects":{"1":true,"2":true,"3":true,"4":true,"5":true,"6":true,"7":true,"8":true,"9":true,"10":true,"11":true,"12":true,"13":true,"14":true,"15":true,"16":true,"17":true,"18":true,"19":true,"20":true,"21":true,"22":true,"23":true,"24":true,"25":true,"26":true,"27":true,"28":true,"29":true,"30":true,"31":true,"32":true,"33":true,"34":true,"35":true,"36":true,"37":true,"38":true,"39":true,"40":true,"41":true,"42":true,"43":true,"44":true,"45":true,"46":true,"47":true,"48":true,"49":true,"50":true,"51":true,"52":true,"53":true,"54":true,"55":true,"56":true,"57":true,"58":true,"59":true,"60":true,"61":true,"62":true,"63":true,"64":true,"65":true,"66":true,"67":true,"68":true,"69":true,"70":true,"71":true,"72":true,"73":true,"74":true,"75":true,"76":true,"77":true,"78":true,"79":true,"80":true,"81":true,"82":true,"84":true,"85":true,"86":true,"87":true,"88":true,"89":true,"90":true,"91":true,"92":true,"93":true,"94":true,"95":true,"96":true,"97":true,"98":true,"99":true,"100":true,"101":true,"102":true,"103":true,"104":true,"105":true,"106":true,"107":true,"108":true,"109":true,"110":true,"111":true,"112":true,"113":true,"114":true,"115":true,"116":true,"117":true,"118":true,"119":true,"120":true,"121":true,"122":true,"123":true,"124":true,"125":true,"126":true},"lang_ru":true,"lang_ua":true,"keywords":false,"url":false,"not_contains_link":false,"domains":{"all":true},"added_days":"all","search_type":"","quick_filter":"","quick_filter_default_sort":""}'),
             CURLOPT_HTTPHEADER => array(
-                "Accept: */*",
-                "Accept-Encoding: gzip, deflate",
-                "Accept-Language: ru-RU,ru;q=0.8,en-US;q=0.5,en;q=0.3",
-                "Cache-Control: no-cache",
-                "Connection: keep-alive",
-                "Content-Length: 1377",
+                "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.97 Safari/537.36",
+                "Accept:  */*",
+                "Accept-Encoding:  gzip, deflate",
+                "Accept-Language:  ru-RU,ru;q=0.8,en-US;q=0.5,en;q=0.3",
+                "Cache-Control:  no-cache",
+                "Connection:  keep-alive",
                 "Content-Type: application/x-www-form-urlencoded",
-                "Referer: https://gogetlinks.net/search_sites.php",
-                "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:67.0) Gecko/20100101 Firefox/67.0",
-                "X-Requested-With: XMLHttpRequest",
-                "cache-control: no-cache,no-cache"
+                "Referer:  https://gogetlinks.net",
+                "cache-control:  no-cache",
             ),
         ));
 
-
         $response = curl_exec($curl);
-        $response = mb_convert_encoding($response, "utf-8", "windows-1251");
 
+        $response = mb_convert_encoding($response, "utf-8", "windows-1251");
         //file_put_contents(public_path('sites/gogetlinks/page'.$page.'.html'),$response);
 
 
