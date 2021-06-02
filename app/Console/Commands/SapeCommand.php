@@ -236,7 +236,7 @@ class SapeCommand extends ParserCommand {
             CURLOPT_TIMEOUT => 30,
             CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
             CURLOPT_POST => true,
-            CURLOPT_COOKIEJAR => tempnam(sys_get_temp_dir(), 'SAPE_COOKIE_FILE'),
+            CURLOPT_COOKIEJAR => $this->getCookie(),
             CURLOPT_COOKIEFILE => $this->getCookie(),
             CURLOPT_POSTFIELDS => $payload,
             CURLOPT_HTTPHEADER => array(
