@@ -88,7 +88,10 @@
                         @if($value->prnews && $value->prnews->price)
                         <img style="width:16px" src="https://www.prnews.ru/favicon.ico"> PR News - {{$value->prnews->price}}
                         @endif
-
+                        @if($value->collaborator && $value->collaborator->price)
+                        <img src="https://collaborator.pro/favicon.ico">
+                        <a href="https://collaborator.pro/creator/article/view?id={{ $value->collaborator->site_id }}" target="_blank">Collaborator - {{ $value->collaborator->price }}</a><br>
+                        @endif
                     </td>
                     <td>
                         @if($value->miralinks && $value->miralinks->writing_price)
@@ -108,7 +111,13 @@
                     <td>{{$value->ahrefs_inlinks ? $value->ahrefs_inlinks : ''}}</td>
                     <td class="ahrefs_positions_top10">{{$value->ahrefs_positions_top10 ? $value->ahrefs_positions_top10 : ''}}</td>
                     <td class="ahrefs_traffic_top10">{{$value->ahrefs_traffic_top100 ? $value->ahrefs_traffic_top100 : ''}}</td>
-                    <td>{{$value->miralinks ? $value->miralinks->theme : ''}}</td>
+                    <td>
+                    @if ($value->miralinks && $value->miralinks->theme)
+                        {{ $value->miralinks->theme  }}
+                    @elseif ($value->collaborator && $value->collaborator->theme)
+                            {{ $value->collaborator->theme  }}
+                    @endif
+                    </td>
                     <td>{{$value->miralinks ? $value->miralinks->region : ''}}</td>
                     <td>{{$value->miralinks ? $value->miralinks->google_index : ''}}</td>
                     <td class="text-center">{{$value->miralinks ? $value->miralinks->links : ''}}</td>
