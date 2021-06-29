@@ -38,6 +38,10 @@ class Domains extends Model {
         return $this->hasOne('App\Models\Prnews', 'domain_id', 'id');
     }
 
+    public function collaborator(): HasOne {
+        return $this->hasOne('App\Models\Collaborator', 'domain_id', 'id');
+    }
+
     public static function getDomainsForExport() {
         $domains = Domains::leftjoin('gogetlinks', 'domains.id', '=', 'gogetlinks.domain_id')
             ->leftjoin('miralinks', 'domains.id', '=', 'miralinks.domain_id')
