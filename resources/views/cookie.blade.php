@@ -21,7 +21,7 @@
                 {!! Form::open(array('method' => 'POST', 'files' => true, 'route' => ['cookies.update'], 'class' => 'form mt-3')) !!}
                     <div class="form-group">
                         {!! Form::label('parser', 'Select parser') !!}
-                        {!! Form::select("name", array( 'sape' => 'Sape', 'miralinks' => 'Miralinks', 'gogetlinks' => 'Gogetlinks', 'rotapost' => 'Rotapost', 'prnews' => 'Prnews'), null, array('class' => 'form-control')) !!}
+                        {!! Form::select("name", array( 'sape' => 'Sape', 'miralinks' => 'Miralinks', 'gogetlinks' => 'Gogetlinks', 'rotapost' => 'Rotapost', 'prnews' => 'Prnews', 'collaborator' => 'Collaborator'), null, array('class' => 'form-control')) !!}
                         {!! ($errors->any()) ? '<span class="invalid-feedback" style="display: block">' . $errors->first('parser') . '</span>' : '' !!}
                     </div>
                         <div class="form-group">
