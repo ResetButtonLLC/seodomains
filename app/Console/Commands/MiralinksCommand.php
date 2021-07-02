@@ -185,11 +185,9 @@ class MiralinksCommand extends ParserCommand {
         curl_setopt($ch, CURLOPT_HTTPHEADER, array(
             "Connection: keep-alive",
             "Content-Type: application/x-www-form-urlencoded",
-            "Cookie: __ddg1=5CE752BC9961495604D84875B7E50B17DE5D1A18; Miralinks[guest3]=Q2FrZQ%3D%3D.htQWsCJcD%2F2CGh4usgfr9LlBl%2FDVzuafZ7ac2t%2BBSOM%3D; Miralinks[sometopsecretvalue]=Q2FrZQ%3D%3D.voItjykKDs6%2BRhhunDTB66wRzujt0dTIbeKc1ZmCGrtrtGLV3wQ0xDaq57I44XmkBLxPOrc6; Miralinks[someunknownvalue]=Q2FrZQ%3D%3D.s4cjj2VfDon1RQ4vxzXG%2FLhBlv%2B2yYCQMeSeg8uBSLQ%3D; MIRALINKS_LIVE=116a5a04769338138dacc0184230ce35",
             "Postman-Token: 35270faf-569e-4a30-a508-1dfb926ccc94,5a3d62cb-fc51-4915-96cf-452f2b0569f7",
             "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/77.0.3865.120 Safari/537.36",
             "accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3",
-            //"accept-encoding: gzip, deflate, br",
             "accept-language: ru-RU,ru;q=0.9,en-US;q=0.8,en;q=0.7,uk;q=0.6",
             "cache-control: no-cache,no-cache",
             "referer: https://www.miralinks.ru/users/login,https://www.miralinks.ru/",
