@@ -115,6 +115,7 @@ class DomainsService
                     'PR.Sape.ru цена размещения',
                     'Prnews цена размещения',
                     'Prnews посещаемость',
+                    'Collaborator цена размещения',
                     'Страна',
                     'Тематика',
                     'Ahrefs DR',
@@ -199,6 +200,14 @@ class DomainsService
                 $sheet->setCellValueByColumnAndRow($column++, $row, $data->prnews_placement_price);
                 $sheet->setCellValueByColumnAndRow($column++, $row, $data->prnews_audience);
             //}
+
+            //COLLABORATOR
+            $sheet->setCellValueByColumnAndRow($column, $row, $data->collaborators_placement_price);
+            if ($data->id) {
+                $sheet->getCellByColumnAndRow($column, $row)->getHyperlink()->setUrl('https://collaborator.pro/creator/article/view?id=' . $data->id);
+                $sheet->getStyleByColumnAndRow($column, $row)->getFont()->getColor()->setARGB(\PhpOffice\PhpSpreadsheet\Style\Color::COLOR_BLUE);
+            }
+            $column++;
 
             //Регион
             $sheet->setCellValueByColumnAndRow($column++, $row, $data->country);

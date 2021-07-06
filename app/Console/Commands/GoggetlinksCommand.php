@@ -5,6 +5,7 @@ namespace App\Console\Commands;
 use Illuminate\Console\Command;
 use App\Models\{Domains, Gogetlinks};
 use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Model;
 use Symfony\Component\DomCrawler\Crawler;
 
 class GoggetlinksCommand extends ParserCommand {
@@ -127,7 +128,7 @@ class GoggetlinksCommand extends ParserCommand {
 
                     $data['placement_price'] = max($prices);
 
-                       if ($domain = Domains::where('url', $data['domain'])->first()) {
+                    if ($domain = Domains::where('url', $data['domain'])->first()) {
                         $data['domain_id'] = $domain->id;
                     } else {
                         $domain = Domains::insertGetId(['url' => $data['domain']]);
@@ -220,40 +221,48 @@ class GoggetlinksCommand extends ParserCommand {
 
 
     private function getData($page = 0) {
-        if ($page > 0) {
-            $params = 'action=search&additional_action=change_count_in_page&page=' . $page;
-        } else {
-            $params = 'action=search';
-        }
+//        if ($page > 0) {
+//            $params = 'action=search&additional_action=change_count_in_page&page=' . $page;
+//        } else {
+//            $params = 'action=search';
+//        }
 
         $curl = curl_init();
 
         curl_setopt_array($curl, array(
-            CURLOPT_URL => 'https://gogetlinks.net/searchSites',
+            CURLOPT_URL => 'https://gogetlinks.net/searchSites/table',
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_ENCODING => '',
             CURLOPT_MAXREDIRS => 10,
-            CURLOPT_TIMEOUT => 30,
+            CURLOPT_TIMEOUT => 0,
             CURLOPT_FOLLOWLOCATION => true,
             CURLOPT_COOKIEJAR => $this->getCookie(),
             CURLOPT_COOKIEFILE => $this->getCookie(),
             CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
             CURLOPT_CUSTOMREQUEST => 'POST',
-            CURLOPT_POSTFIELDS => array('compaing_id_list' => '583393','page' => $page,'condition' => '{"type_search_engine":2,"is_link":true,"is_post":true,"is_paper":true,"tic_from":false,"tic_to":false,"sqi_from":false,"sqi_to":false,"da_from":false,"da_to":false,"rank_from":false,"rank_to":false,"trust_flow":false,"ignore_sape_links":true,"only_exclusive":false,"in_any_catalog":false,"in_yandex_catalog":false,"in_news_aggregator":false,"reviewing_long":5,"reviewing_long_na":true,"indexation":false,"indexation_na":true,"from_white_list":[],"hide_black_list":true,"ignore_rejected_sites":true,"backreferencing":false,"traffic_host":false,"traffic_with_no_data":true,"price_type":1,"price_paper":false,"price_post":false,"price_link":false,"avg_price_less":false,"subjects":{"1":true,"2":true,"3":true,"4":true,"5":true,"6":true,"7":true,"8":true,"9":true,"10":true,"11":true,"12":true,"13":true,"14":true,"15":true,"16":true,"17":true,"18":true,"19":true,"20":true,"21":true,"22":true,"23":true,"24":true,"25":true,"26":true,"27":true,"28":true,"29":true,"30":true,"31":true,"32":true,"33":true,"34":true,"35":true,"36":true,"37":true,"38":true,"39":true,"40":true,"41":true,"42":true,"43":true,"44":true,"45":true,"46":true,"47":true,"48":true,"49":true,"50":true,"51":true,"52":true,"53":true,"54":true,"55":true,"56":true,"57":true,"58":true,"59":true,"60":true,"61":true,"62":true,"63":true,"64":true,"65":true,"66":true,"67":true,"68":true,"69":true,"70":true,"71":true,"72":true,"73":true,"74":true,"75":true,"76":true,"77":true,"78":true,"79":true,"80":true,"81":true,"82":true,"84":true,"85":true,"86":true,"87":true,"88":true,"89":true,"90":true,"91":true,"92":true,"93":true,"94":true,"95":true,"96":true,"97":true,"98":true,"99":true,"100":true,"101":true,"102":true,"103":true,"104":true,"105":true,"106":true,"107":true,"108":true,"109":true,"110":true,"111":true,"112":true,"113":true,"114":true,"115":true,"116":true,"117":true,"118":true,"119":true,"120":true,"121":true,"122":true,"123":true,"124":true,"125":true,"126":true},"lang_ru":true,"lang_ua":true,"keywords":false,"url":false,"not_contains_link":false,"domains":{"all":true},"added_days":"all","search_type":"","quick_filter":"","quick_filter_default_sort":""}'),
+            CURLOPT_POSTFIELDS =>'compaing_id_list%5B%5D=583393&page=' . $page . '&condition=%7B%22type_search_engine%22%3A2%2C%22is_link%22%3Atrue%2C%22is_post%22%3Atrue%2C%22is_paper%22%3Atrue%2C%22tic_from%22%3Afalse%2C%22tic_to%22%3Afalse%2C%22sqi_from%22%3Afalse%2C%22sqi_to%22%3Afalse%2C%22da_from%22%3Afalse%2C%22da_to%22%3Afalse%2C%22rank_from%22%3Afalse%2C%22rank_to%22%3Afalse%2C%22trust_flow%22%3Afalse%2C%22ignore_sape_links%22%3Atrue%2C%22only_exclusive%22%3Afalse%2C%22in_any_catalog%22%3Afalse%2C%22in_yandex_catalog%22%3Afalse%2C%22in_news_aggregator%22%3Afalse%2C%22reviewing_long%22%3A5%2C%22reviewing_long_na%22%3Atrue%2C%22indexation%22%3Afalse%2C%22indexation_na%22%3Atrue%2C%22from_white_list%22%3A%5B%5D%2C%22hide_black_list%22%3Atrue%2C%22ignore_rejected_sites%22%3Atrue%2C%22backreferencing%22%3Afalse%2C%22traffic_host%22%3Afalse%2C%22traffic_with_no_data%22%3Atrue%2C%22price_type%22%3A1%2C%22price_paper%22%3Afalse%2C%22price_post%22%3Afalse%2C%22price_link%22%3Afalse%2C%22avg_price_less%22%3Afalse%2C%22subjects%22%3A%7B%221%22%3Atrue%2C%222%22%3Atrue%2C%223%22%3Atrue%2C%224%22%3Atrue%2C%225%22%3Atrue%2C%226%22%3Atrue%2C%227%22%3Atrue%2C%228%22%3Atrue%2C%229%22%3Atrue%2C%2210%22%3Atrue%2C%2211%22%3Atrue%2C%2212%22%3Atrue%2C%2213%22%3Atrue%2C%2214%22%3Atrue%2C%2215%22%3Atrue%2C%2216%22%3Atrue%2C%2217%22%3Atrue%2C%2218%22%3Atrue%2C%2219%22%3Atrue%2C%2220%22%3Atrue%2C%2221%22%3Atrue%2C%2222%22%3Atrue%2C%2223%22%3Atrue%2C%2224%22%3Atrue%2C%2225%22%3Atrue%2C%2226%22%3Atrue%2C%2227%22%3Atrue%2C%2228%22%3Atrue%2C%2229%22%3Atrue%2C%2230%22%3Atrue%2C%2231%22%3Atrue%2C%2232%22%3Atrue%2C%2233%22%3Atrue%2C%2234%22%3Atrue%2C%2235%22%3Atrue%2C%2236%22%3Atrue%2C%2237%22%3Atrue%2C%2238%22%3Atrue%2C%2239%22%3Atrue%2C%2240%22%3Atrue%2C%2241%22%3Atrue%2C%2242%22%3Atrue%2C%2243%22%3Atrue%2C%2244%22%3Atrue%2C%2245%22%3Atrue%2C%2246%22%3Atrue%2C%2247%22%3Atrue%2C%2248%22%3Atrue%2C%2249%22%3Atrue%2C%2250%22%3Atrue%2C%2251%22%3Atrue%2C%2252%22%3Atrue%2C%2253%22%3Atrue%2C%2254%22%3Atrue%2C%2255%22%3Atrue%2C%2256%22%3Atrue%2C%2257%22%3Atrue%2C%2258%22%3Atrue%2C%2259%22%3Atrue%2C%2260%22%3Atrue%2C%2261%22%3Atrue%2C%2262%22%3Atrue%2C%2263%22%3Atrue%2C%2264%22%3Atrue%2C%2265%22%3Atrue%2C%2266%22%3Atrue%2C%2267%22%3Atrue%2C%2268%22%3Atrue%2C%2269%22%3Atrue%2C%2270%22%3Atrue%2C%2271%22%3Atrue%2C%2272%22%3Atrue%2C%2273%22%3Atrue%2C%2274%22%3Atrue%2C%2275%22%3Atrue%2C%2276%22%3Atrue%2C%2277%22%3Atrue%2C%2278%22%3Atrue%2C%2279%22%3Atrue%2C%2280%22%3Atrue%2C%2281%22%3Atrue%2C%2282%22%3Atrue%2C%2284%22%3Atrue%2C%2285%22%3Atrue%2C%2286%22%3Atrue%2C%2287%22%3Atrue%2C%2288%22%3Atrue%2C%2289%22%3Atrue%2C%2290%22%3Atrue%2C%2291%22%3Atrue%2C%2292%22%3Atrue%2C%2293%22%3Atrue%2C%2294%22%3Atrue%2C%2295%22%3Atrue%2C%2296%22%3Atrue%2C%2297%22%3Atrue%2C%2298%22%3Atrue%2C%2299%22%3Atrue%2C%22100%22%3Atrue%2C%22101%22%3Atrue%2C%22102%22%3Atrue%2C%22103%22%3Atrue%2C%22104%22%3Atrue%2C%22105%22%3Atrue%2C%22106%22%3Atrue%2C%22107%22%3Atrue%2C%22108%22%3Atrue%2C%22109%22%3Atrue%2C%22110%22%3Atrue%2C%22111%22%3Atrue%2C%22112%22%3Atrue%2C%22113%22%3Atrue%2C%22114%22%3Atrue%2C%22115%22%3Atrue%2C%22116%22%3Atrue%2C%22117%22%3Atrue%2C%22118%22%3Atrue%2C%22119%22%3Atrue%2C%22120%22%3Atrue%2C%22121%22%3Atrue%2C%22122%22%3Atrue%2C%22123%22%3Atrue%2C%22124%22%3Atrue%2C%22125%22%3Atrue%2C%22126%22%3Atrue%7D%2C%22lang_ru%22%3Atrue%2C%22lang_ua%22%3Atrue%2C%22keywords%22%3Afalse%2C%22url%22%3Afalse%2C%22not_contains_link%22%3Afalse%2C%22domains%22%3A%7B%22all%22%3Atrue%7D%2C%22added_days%22%3A%22all%22%2C%22search_type%22%3A%22%22%2C%22quick_filter%22%3A%22%22%2C%22quick_filter_default_sort%22%3A%22%22%2C%22order_by%22%3A%22%22%2C%22order_direction%22%3A%22desc%22%7D&count_in_page=100&additional_action=change_count_in_page&order_by=&order_direction=desc&anchor_token=2ccabd8b98e0d0bc32f17325953e943b&from_ses=1',
             CURLOPT_HTTPHEADER => array(
-                "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.97 Safari/537.36",
-                "Accept:  */*",
-                "Accept-Encoding:  gzip, deflate",
-                "Accept-Language:  ru-RU,ru;q=0.8,en-US;q=0.5,en;q=0.3",
-                "Cache-Control:  no-cache",
-                "Connection:  keep-alive",
-                "Content-Type: application/x-www-form-urlencoded",
-                "Referer:  https://gogetlinks.net",
-                "cache-control:  no-cache",
+                'Connection: keep-alive',
+                'Pragma: no-cache',
+                'Cache-Control: no-cache',
+                'sec-ch-ua: " Not;A Brand";v="99", "Google Chrome";v="91", "Chromium";v="91"',
+                'Accept: application/json, text/javascript, */*; q=0.01',
+                'X-Requested-With: XMLHttpRequest',
+                'sec-ch-ua-mobile: ?0',
+                'User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+                'Content-Type: application/x-www-form-urlencoded; charset=UTF-8',
+                'Origin: https://gogetlinks.net',
+                'Sec-Fetch-Site: same-origin',
+                'Sec-Fetch-Mode: cors',
+                'Sec-Fetch-Dest: empty',
+                'Referer: https://gogetlinks.net/searchSites',
+                'Accept-Language: ru,uk;q=0.9,ru-RU;q=0.8,en-US;q=0.7,en;q=0.6',
             ),
         ));
 
         $response = curl_exec($curl);
+
+        $response = json_decode($response, true);
 
         $response = mb_convert_encoding($response, "utf-8", "windows-1251");
         //file_put_contents(public_path('sites/gogetlinks/page'.$page.'.html'),$response);
@@ -267,7 +276,7 @@ class GoggetlinksCommand extends ParserCommand {
             Log::info(print_r($err, 1));
             return false;
         } else {
-            return $response;
+            return $response['data'];
         }
     }
 
