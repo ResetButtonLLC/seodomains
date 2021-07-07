@@ -84,11 +84,11 @@ class CollaboratorCommand extends ParserCommand
                             $data['site_id'] = intval($row_doom->filter('.grid-group-checkbox')->attr('value'));
                             $data['url'] = $row_doom->filter('.link')->text();
                             if ($row_doom->filter('.creator-price_catalog')->count() > 0) {
-                                $data['price'] = $row_doom->filter('.creator-price_catalog')->attr('data-publication');
+                                $data['price'] = DomainsHelper::getPriceFromString($row_doom->filter('.creator-price_catalog')->attr('data-publication'));
                             } else {
                                 $data['price'] = 0;
                             }
-
+                            
                             $data['traffic'] = $row_doom->filter('ul.list-traffic li')->first()->text();
                             $theme = $row_doom->filter('.c-t-theme__tags .tag')->each(function ($content) {
                                 return $content->text();

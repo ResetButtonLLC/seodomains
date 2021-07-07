@@ -18,4 +18,9 @@ class DomainsHelper
         $result = $domains_db->firstWhere('url', '=', $domain);
         return $result->id ?? null;
     }
+
+    public static function getPriceFromString(string $price)
+    {
+        return intval(preg_replace('#[^0-9\.]#', '', $price)) ?? null;
+    }
 }
