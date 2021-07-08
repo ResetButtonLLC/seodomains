@@ -49,7 +49,7 @@ class DomainsService
         $writer->writeSheetHeader('Sheet1', $header);
 
         //set styles
-        $styles = array(['color'=>'#0000FF'], ['color'=>'#0000FF'], null, null, null, null, null, null, null, ['color'=>'#0000FF'], null, null, null, null, null, null, null, null, null, null, null, null, null);
+        $styles = array(['color'=>'#0000FF'], ['color'=>'#0000FF'], null, null, ['color'=>'#0000FF'], null, null, null, null, ['color'=>'#0000FF'], null, null, null, null, null, null, null, null, null, null, null, null, null);
 
         //set rows
         foreach ($domains as $data) {
@@ -58,12 +58,12 @@ class DomainsService
                 (isset($data->miralinks_placement_price)) ? '=HYPERLINK("https://anonym.to/?https://www.miralinks.ru/catalog/profileView/' . $data->miralinks_site_id . '","' . $data->miralinks_placement_price . '")' : '',
                 $data->miralinks_writing_price,
                 $data->gogetlinks_placement_price,
-                $data->rotapost_placement_price,
+                (isset($data->rotapost_placement_price)) ? '=HYPERLINK("https://anonym.to/?https://www.rotapost.ru/buy/site/?' . $data->url . '","' . $data->rotapost_placement_price . '")' : '',
                 $data->rotapost_writing_price,
                 $data->sape_placement_price,
                 $data->prnews_placement_price,
                 $data->prnews_audience,
-                (isset($data->miralinks_placement_price)) ? '=HYPERLINK("https://collaborator.pro/creator/article/view?id=' . $data->collaborators_site_id . '","' . $data->collaborators_placement_price . '")' : '',
+                (isset($data->collaborators_placement_price)) ? '=HYPERLINK("https://collaborator.pro/creator/article/view?id=' . $data->collaborators_site_id . '","' . $data->collaborators_placement_price . '")' : '',
                 $data->country,
                 $data->miralinks_theme,
                 $data->ahrefs_dr,
