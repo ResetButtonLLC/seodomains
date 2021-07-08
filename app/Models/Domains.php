@@ -65,6 +65,7 @@ class Domains extends Model {
                 'prnews.price as prnews_placement_price',
                 'prnews.audience as prnews_audience',
                 'collaborators.price as collaborators_placement_price',
+                'collaborators.site_id as collaborators_site_id',
                 'rotapost.placement_price as rotapost_placement_price',
                 'rotapost.writing_price as rotapost_writing_price',
                 'sape.placement_price as sape_placement_price',

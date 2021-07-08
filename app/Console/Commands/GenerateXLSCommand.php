@@ -39,10 +39,9 @@ class GenerateXLSCommand extends Command
      */
     public function handle()
     {
-
         $domains = Domains::getDomainsForExport();
 
-        return DomainsService::exportXLS(NULL, $domains);
+        return DomainsService::exportXLS($domains);
     }
 
 }
