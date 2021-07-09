@@ -43,6 +43,7 @@ class BatchUpdateCommand extends Command
         $this->call('domains:rotapost');
         $this->call('domains:prnews');
         $this->call('domains:gogetlinks');
+        $this->call('domains:collaborator');
 
         //Обновляем параметры
         $this->call('domains:ahrefs',[
