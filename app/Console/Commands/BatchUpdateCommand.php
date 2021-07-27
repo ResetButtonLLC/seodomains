@@ -41,7 +41,7 @@ class BatchUpdateCommand extends Command
         $this->call('domains:sape');
         $this->call('domains:miralinks');
         $this->call('domains:rotapost');
-        $this->call('domains:prnews');
+        //$this->call('domains:prnews');
         $this->call('domains:gogetlinks');
         $this->call('domains:collaborator');
 
