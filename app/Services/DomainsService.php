@@ -8,6 +8,8 @@
 
 namespace App\Services;
 
+use Illuminate\Support\Facades\DB;
+
 class DomainsService
 {
     static public function getDataForDomains(array $domains) : array
