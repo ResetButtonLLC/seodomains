@@ -25,7 +25,16 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule)
     {
-        $schedule->command('domains:update')->weeklyOn(6, '0:10')->sendOutputTo(storage_path('logs/'.Carbon::now()->toDateString().'-run.log'));
+        $schedule->command('domains:sape')->weeklyOn(6, '0:10');
+        $schedule->command('domains:miralinks')->weeklyOn(6, '6:00');
+        $schedule->command('domains:rotapost')->weeklyOn(6, '12:00');
+        $schedule->command('domains:gogetlinks')->weeklyOn(6, '18:00');
+        $schedule->command('domains:collaborator')->weeklyOn(6, '23:00');
+
+        $schedule->command('domains:ahrefs',[
+            '--mode' => 'all',
+            '--days' => '15'
+        ])->weeklyOn(7, '6:00');
     }
 
     /**
