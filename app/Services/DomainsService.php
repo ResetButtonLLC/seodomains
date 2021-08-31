@@ -126,7 +126,7 @@ class DomainsService
                 $data->miralinks_lang,
                 $data->majestic_cf,
                 $data->majestic_tf,
-                $data->miralinks_desc
+                str_replace('=', '', $data->miralinks_desc)
             ), $styles);
         }
 
