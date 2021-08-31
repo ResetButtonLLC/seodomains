@@ -48,8 +48,10 @@ class BatchUpdateCommand extends Command
         //Обновляем параметры
         $this->call('domains:ahrefs',[
             '--mode' => 'all',
-            '--days' => '15'
+            '--days' => '30'
         ]);
+
+        //проверить сколько живих доменов
 
         /*
         $this->call('domains:serpstat');
