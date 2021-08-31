@@ -19,6 +19,7 @@
         "phpxmlrpc/phpxmlrpc": "4.*",
         "rap2hpoutre/fast-excel": "^1.2",
         "rootinc/laravel-azure-middleware": "^0.5.1",
+        "sentry/sentry-laravel": "^2.8",
         "symfony/dom-crawler": "^5.2"
     },
     "require-dev": {
