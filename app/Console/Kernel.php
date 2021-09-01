@@ -33,7 +33,7 @@ class Kernel extends ConsoleKernel
 
         $schedule->command('domains:ahrefs',[
             '--mode' => 'all',
-            '--days' => '15'
+            '--days' => '30'
         ])->weeklyOn(7, '6:00');
     }
 
