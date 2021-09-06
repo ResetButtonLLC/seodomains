@@ -47,7 +47,6 @@ class AhrefsCommand extends Command
      */
     public function handle()
     {
-
         //Option: mode
         $mode = $this->option('mode');
 
@@ -82,47 +81,51 @@ class AhrefsCommand extends Command
         $api = new ApiPromodoHelper();
 
         foreach ($domains as $domain) {
+            $result = $api->makeRequest('v2/ahrefs/get?from=domain_rating&limit=1&mode=domain&target=' . $domain);
 
-            //Ahrefs DR
-            $result = $api->makeRequest('ahrefs/public/getDomainRating',[$domain]);
-            //todo
-            /*
-            array:1 [
-                "error" => "Rate limit"
-            ]
-            */
+            if ($result) {
+               // dd($result['data'][$domain]['domain_rating']);
+               // dd($result['data'][$domain]['ahrefs_top']);
 
-            $ahrefs_data[$domain]['dr'] = isset(current($result)['domain_rating']) ? current($result)['domain_rating'] : null;
+                //todo
+                /*
+                array:1 [
+                    "error" => "Rate limit"
+                ]
+                */
 
-            //Ahrefs Inlinks
-            $result = $api->makeRequest('ahrefs/public/getDomainLinks',[$domain]);
-            $ahrefs_data[$domain]['inlinks'] = isset(current($result)["metrics"]["refdomains"]) ?  current($result)["metrics"]["refdomains"] : null;
+                $ahrefs_data[$domain]['dr'] = isset($result['data'][$domain]['domain']['domain_rating']) ? $result['data'][$domain]['domain']['domain_rating'] : null;
 
-            //Ahrefs positions & traffic
-            $result = $api->makeRequest('ahrefs/public/positions_metrics',[$domain]);
-            $ahrefs_data[$domain]['positions_top3'] = isset(current($result)["metrics"]["positions_top3"]) ? current($result)["metrics"]["positions_top3"] : null;
-            $ahrefs_data[$domain]['positions_top10'] = isset(current($result)["metrics"]["positions_top10"]) ? current($result)["metrics"]["positions_top10"] : null;
-            $ahrefs_data[$domain]['positions_top100'] = isset(current($result)["metrics"]["positions"]) ? current($result)["metrics"]["positions"] : null;
-            $ahrefs_data[$domain]['traffic_top3'] = isset(current($result)["metrics"]["traffic_top3"]) ? (int)round(current($result)["metrics"]["traffic_top3"]) : null;
-            $ahrefs_data[$domain]['traffic_top10'] = isset(current($result)["metrics"]["traffic_top10"]) ? (int)round(current($result)["metrics"]["traffic_top10"]) : null;
-            $ahrefs_data[$domain]['traffic_top100'] = isset(current($result)["metrics"]["traffic"]) ? (int)round(current($result)["metrics"]["traffic"]) : null;
+                //Ahrefs Inlinks
+                //$result = $api->makeRequest('ahrefs/public/getDomainLinks',[$domain]);
+                //$ahrefs_data[$domain]['inlinks'] = isset(current($result)["metrics"]["refdomains"]) ?  current($result)["metrics"]["refdomains"] : null;
 
-            $this->line('Ahrefs | '. $counter['current'].'/'.$counter['total'].' | Domain: '.$domain.'| DR:'.$ahrefs_data[$domain]['dr'].' Inlinks:'.$ahrefs_data[$domain]['inlinks'].' PositionsTop100:'.$ahrefs_data[$domain]['positions_top100'].' Traffic:'.$ahrefs_data[$domain]['traffic_top100']);
+                //Ahrefs positions & traffic
+                //$result = $api->makeRequest('ahrefs/public/positions_metrics',[$domain]);
+                //$ahrefs_data[$domain]['positions_top3'] = isset(current($result)["metrics"]["positions_top3"]) ? current($result)["metrics"]["positions_top3"] : null;
+                //$ahrefs_data[$domain]['positions_top10'] = isset(current($result)["metrics"]["positions_top10"]) ? current($result)["metrics"]["positions_top10"] : null;
+                //$ahrefs_data[$domain]['positions_top100'] = isset(current($result)["metrics"]["positions"]) ? current($result)["metrics"]["positions"] : null;
+                //$ahrefs_data[$domain]['traffic_top3'] = isset(current($result)["metrics"]["traffic_top3"]) ? (int)round(current($result)["metrics"]["traffic_top3"]) : null;
+                //$ahrefs_data[$domain]['traffic_top10'] = isset(current($result)["metrics"]["traffic_top10"]) ? (int)round(current($result)["metrics"]["traffic_top10"]) : null;
+                //$ahrefs_data[$domain]['traffic_top100'] = isset(current($result)["metrics"]["traffic"]) ? (int)round(current($result)["metrics"]["traffic"]) : null;
 
-            //Import into DB
-            Domains::where('url',$domain)->update([
-                'ahrefs_dr' =>$ahrefs_data[$domain]['dr'],
-                'ahrefs_inlinks' => $ahrefs_data[$domain]['inlinks'],
-                'ahrefs_positions_top3' => $ahrefs_data[$domain]['positions_top3'],
-                'ahrefs_positions_top10' => $ahrefs_data[$domain]['positions_top10'],
-                'ahrefs_positions_top100' => $ahrefs_data[$domain]['positions_top100'],
-                'ahrefs_traffic_top3' => $ahrefs_data[$domain]['traffic_top3'],
-                'ahrefs_traffic_top10' => $ahrefs_data[$domain]['traffic_top10'],
-                'ahrefs_traffic_top100' => $ahrefs_data[$domain]['traffic_top100'],
-                'ahrefs_updated_at' => Carbon::now()]);
+                //$this->line('Ahrefs | '. $counter['current'].'/'.$counter['total'].' | Domain: '.$domain.'| DR:'.$ahrefs_data[$domain]['dr'].' Inlinks:'.$ahrefs_data[$domain]['inlinks'].' PositionsTop100:'.$ahrefs_data[$domain]['positions_top100'].' Traffic:'.$ahrefs_data[$domain]['traffic_top100']);
+                $this->line('Ahrefs | '. $counter['current'].'/'.$counter['total'].' | Domain: '.$domain.'| DR:'.$ahrefs_data[$domain]['dr']);
 
-            $counter['current']++;
+                //Import into DB
+                Domains::where('url', $domain)->update([
+                    'ahrefs_dr' => $ahrefs_data[$domain]['dr'],
+                    //'ahrefs_inlinks' => $ahrefs_data[$domain]['inlinks'],
+                    //'ahrefs_positions_top3' => $ahrefs_data[$domain]['positions_top3'],
+                    //'ahrefs_positions_top10' => $ahrefs_data[$domain]['positions_top10'],
+                    //'ahrefs_positions_top100' => $ahrefs_data[$domain]['positions_top100'],
+                    //'ahrefs_traffic_top3' => $ahrefs_data[$domain]['traffic_top3'],
+                    //'ahrefs_traffic_top10' => $ahrefs_data[$domain]['traffic_top10'],
+                    //'ahrefs_traffic_top100' => $ahrefs_data[$domain]['traffic_top100'],
+                    'ahrefs_updated_at' => Carbon::now()]);
 
+                $counter['current']++;
+            }
         }
 
         $this->info("Process complete");

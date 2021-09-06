@@ -13,26 +13,18 @@ class ApiPromodoHelper
         $this->retries = $retries;
     }
 
-    public function makeRequest(string $endpoint, array $domains)
+    public function makeRequest(string $endpoint)
     {
-
-        $payload = array(
-            'req' =>$domains
-        );
-
-        $curl = curl_init('https://api.promodo.dev/'.$endpoint);
+        $curl = curl_init('https://api.promodo.dev/' . $endpoint);
         curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, 0);
         curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, 0);
         curl_setopt($curl, CURLOPT_RETURNTRANSFER,true);
         curl_setopt($curl, CURLOPT_FOLLOWLOCATION,true);
         curl_setopt($curl, CURLOPT_CONNECTTIMEOUT,30);
-        curl_setopt($curl, CURLOPT_POST, 1);
         curl_setopt($curl, CURLOPT_HTTPHEADER, array(
-            'Api-Token:'.$this->api_token,
+            'Api-Token:' . $this->api_token,
             'Content-Type:application/json'
         ));
-
-        curl_setopt($curl, CURLOPT_POSTFIELDS,json_encode($payload));
 
         //Т.к сервис почему то иногда не отвечает, сделаем несколько попыток обращения к нему
         do {
