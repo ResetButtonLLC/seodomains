@@ -7,10 +7,8 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Gogetlinks extends Model {
 
-    use SoftDeletes;
-
     protected $fillable = [
-        'id', 'domain_id', 'placement_price', 'traffic', 'created_at', 'updated_at' , 'deleted_at'
+        'id', 'domain_id', 'placement_price', 'traffic', 'created_at', 'updated_at'
     ];
 
 }

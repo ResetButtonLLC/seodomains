@@ -8,13 +8,11 @@ use Illuminate\Database\Eloquent\{
     Relations\HasOne
 };
 use Illuminate\Support\Facades\DB;
-use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Domains extends Model {
 
     public $timestamps = ['created_at'];
     const UPDATED_AT = null;
-    use SoftDeletes;
 
     protected $guarded = [];
 
@@ -71,7 +69,7 @@ class Domains extends Model {
                 'sape.placement_price as sape_placement_price',
                 'sape.domain_id as sape_domain_id'
                 )
-            ->whereNull('domains.deleted_at')->where('domains.url', '<>', '')->orderBy('url')->get();
+            ->where('domains.url', '<>', '')->get();
 
             //Сортировка сохраняет порядок $domains
             //Оставлю на память, но так не работает - если домена не существует, то пропуска не будет

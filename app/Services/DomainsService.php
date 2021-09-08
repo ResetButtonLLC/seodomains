@@ -37,7 +37,6 @@ class DomainsService
             ->leftjoin('rotapost', 'domains.id', '=', 'rotapost.domain_id')
             ->leftjoin('sape', 'domains.id', '=', 'sape.domain_id')
             ->select('domains.*', 'gogetlinks.placement_price as gogetlinks_placement_price','miralinks.placement_price as miralinks_placement_price','prnews.price as prnews_placement_price','rotapost.placement_price as rotapost_placement_price','sape.placement_price as sape_placement_price')
-            ->whereNull('domains.deleted_at')
             ->whereIn('domains.url', $domains)
             //Сортировка сохраняет порядок $domains
             //Оставлю на память, но так не работает - если домена не существует, то пропуска не будет

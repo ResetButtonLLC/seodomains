@@ -14,28 +14,44 @@
         <h1>Seo Domains</h1>
         <div class="col-md-12">
             {!! Form::open(array('method' => 'GET', 'route' => ['domains'], 'class' => 'form form-row')) !!}
+            {{--
             <div class="col-md-2 mb-4">{!! Form::text('price_from', request()->get('price_from'), ['class' => 'form-control', 'placeholder' => 'Цена от']); !!}</div>
             <div class="col-md-2 mb-4">{!! Form::text('price_to', request()->get('price_to'), ['class' => 'form-control', 'placeholder' => 'Цена до']); !!}</div>
             <div class="col-md-2 mb-4">{!! Form::text('theme', request()->get('theme'), ['class' => 'form-control', 'placeholder' => 'Тематика']); !!}</div>
             <div class="col-md-2 mb-4"> {!! Form::submit('Поиск', ['class'=>'btn btn-primary']) !!}</div>
+            --}}
             <div class="col-md-10">
-                <div class="row">
-                    @isset ($update_dates)
-                    @foreach ($update_dates as $stockname => $update_date)
-                    <div class="control-group col-md-2">
-                        {!! Form::label('resource['.$stockname.']', $stockname, [ 'class' => 'control-label' ]) !!}
-                        <div class="controls">
-                            {{-- Form::checkbox('resource['.$stockname.']', 'value', 'true') --}}
-                            <span class="badge badge-primary">{{$update_date}}</span>
+                <div class="row justify-content-md-center">
+                    @isset ($link_stocks)
+                        <div class="col-md-3">
+                            <table class="table table-striped">
+                                <thead>
+                                <tr>
+                                    <th scope="col">Биржа</th>
+                                    <th scope="col">Доменов</th>
+                                    <th scope="col">Обновлено</th>
+                                </tr>
+                                </thead>
+                            <tbody>
+                            @foreach ($link_stocks as $link_stock_name => $link_stock_data)
+                                <tr>
+                                    <th scope="row">{{$link_stock_name}}</th>
+                                    <td>{{$link_stock_data['count']}}</td>
+                                    <td>{{$link_stock_data['update_date']}}</td>
+                                </tr>
+                            @endforeach
+                            </table>
+                            <hr />
+                            <div class="col-md-12"> {!! Form::submit('Скачать базу из '.$domains_count.' доменов в XLS ', ['class'=>'btn btn-primary', 'name' => 'export']) !!}</div>
                         </div>
-                    </div>
-                    @endforeach
+
                     @endisset
                 </div>
             </div>
-            <div class="col-md-2"> {!! Form::submit('Экспорт', ['class'=>'btn btn-primary', 'name' => 'export']) !!}</div>
+
             {!! Form::close() !!}
         </div>
+        {{--
         <table class="table table-hover">
             <thead class="thead-light">
                 <tr>
@@ -126,10 +142,13 @@
                 @endforeach
             </tbody>
         </table>
+        --}}
     </div>
+    {{--
     <div class="container">
         {{ $domains->appends(request()->input())->links("pagination::bootstrap-4") }}
     </div>
+    --}}
 
 </section>
 @endsection
