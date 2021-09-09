@@ -17,10 +17,9 @@
         "mk-j/php_xlsxwriter": "^0.38.0",
         "phpoffice/phpspreadsheet": "1.17.1",
         "phpxmlrpc/phpxmlrpc": "4.*",
-        "promodo/laravel-azure-auth": "^1.0",
         "rap2hpoutre/fast-excel": "^1.2",
         "rootinc/laravel-azure-middleware": "^0.5.1",
-        "sentry/sentry-laravel": "^2.8",
+        "sentry/sentry-laravel": "1.5",
         "symfony/dom-crawler": "^5.2"
     },
     "require-dev": {
@@ -68,11 +67,5 @@
         "preferred-install": "dist",
         "sort-packages": true,
         "optimize-autoloader": true
-    },
-    "repositories": [
-        {
-            "type": "vcs",
-            "url": "https://dennikolenko@bitbucket.org/promododev/laravel-azure-auth.git"
-        }
-    ]
+    }
 }

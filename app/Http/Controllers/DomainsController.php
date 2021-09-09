@@ -20,7 +20,7 @@ use App\Services\DomainsService;
 class DomainsController extends Controller {
 
     public function index(Request $request) {
-        $domains = Domains::where('url', '<>', '')->whereNull('deleted_at');
+        $domains = Domains::where('url', '<>', '')->get();
 
         if ($request->resource) {
             $sources = $request->resource;
@@ -82,13 +82,18 @@ class DomainsController extends Controller {
             return response()->download(storage_path('app/domains.xlsx'), 'domains-' . date('Y-m-d-H-i-s') . '.xlsx');
         } else {
 
-            $domains = $domains->orderBy('url')->paginate(env('PAGE_COUNT'));
+            $domains_count = count($domains);
 
+            $link_stocks = [];
             foreach (Update::all() as $update_date) {
-                $update_dates[$update_date->name] = date('d-m-Y', strtotime($update_date->updated_at));
+                $link_stocks[$update_date->name]['update_date'] = date('d-m-Y', strtotime($update_date->updated_at));
+                $model = 'App\\Models\\' . ucfirst($update_date->name);
+                $link_stocks[$update_date->name]['count'] = $model::count();
             }
 
-            return view('domains.index', compact(['domains', 'update_dates']));
+            //dd($link_stocks);
+
+            return view('domains.index', compact(['domains_count', 'link_stocks']));
         }
     }
 
@@ -106,7 +111,6 @@ class DomainsController extends Controller {
             ->leftjoin('rotapost', 'domains.id', '=', 'rotapost.domain_id')
             ->leftjoin('sape', 'domains.id', '=', 'sape.domain_id')
             ->select('domains.id','domains.url', 'domains.ahrefs_dr', 'gogetlinks.placement_price as gogetlinks_placement_price','miralinks.placement_price as miralinks_placement_price','prnews.price as prnews_placement_price','rotapost.placement_price as rotapost_placement_price','sape.placement_price as sape_placement_price')
-            ->whereNull('domains.deleted_at')
             ->whereNotNull('domains.ahrefs_dr')
         //    ->limit(50)
             ->orderBy('domains.id')
