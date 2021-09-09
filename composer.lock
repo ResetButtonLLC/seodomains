@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "49a716258581a586b1c4d209dafc3e69",
+    "content-hash": "e86fdc6bf3463ccd32ccddd0f44dc826",
     "packages": [
         {
             "name": "box/spout",
@@ -1885,6 +1885,55 @@
             "time": "2021-01-23T16:37:31+00:00"
         },
         {
+            "name": "microsoft/microsoft-graph",
+            "version": "1.29.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/microsoftgraph/msgraph-sdk-php.git",
+                "reference": "e95c2536189996a6ffd3ba191bc9548cb1c59f15"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/microsoftgraph/msgraph-sdk-php/zipball/e95c2536189996a6ffd3ba191bc9548cb1c59f15",
+                "reference": "e95c2536189996a6ffd3ba191bc9548cb1c59f15",
+                "shasum": ""
+            },
+            "require": {
+                "ext-json": "*",
+                "guzzlehttp/guzzle": "^6.0 || ^7.0",
+                "php": "^8.0 || ^7.1"
+            },
+            "require-dev": {
+                "mikey179/vfsstream": "^1.2",
+                "phpunit/phpunit": "^7.5 || ^8.0"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Beta\\Microsoft\\Graph\\": "src/Beta/Microsoft/Graph/",
+                    "Microsoft\\Graph\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Microsoft Graph Client Tooling",
+                    "email": "graphtooling@service.microsoft.com",
+                    "role": "Developer"
+                }
+            ],
+            "description": "The Microsoft Graph SDK for PHP",
+            "homepage": "https://developer.microsoft.com/en-us/graph",
+            "support": {
+                "issues": "https://github.com/microsoftgraph/msgraph-sdk-php/issues",
+                "source": "https://github.com/microsoftgraph/msgraph-sdk-php/tree/1.29.0"
+            },
+            "time": "2021-03-13T01:24:22+00:00"
+        },
+        {
             "name": "mk-j/php_xlsxwriter",
             "version": "0.38",
             "source": {
@@ -2881,6 +2930,39 @@
                 "xmlrpc"
             ],
             "time": "2021-01-11T09:22:31+00:00"
+        },
+        {
+            "name": "promodo/laravel-azure-auth",
+            "version": "1.0.0",
+            "source": {
+                "type": "git",
+                "url": "https://dennikolenko@bitbucket.org/promododev/laravel-azure-auth.git",
+                "reference": "6cc66d0f5c08d3f979789eefe6e679349c5270f3"
+            },
+            "require": {
+                "guzzlehttp/guzzle": ">=6.2",
+                "laravel/framework": ">=5.4.0",
+                "microsoft/microsoft-graph": "^1.5",
+                "php": ">=5.6.4"
+            },
+            "type": "library",
+            "extra": {
+                "laravel": {
+                    "providers": [
+                        "Promodo\\LaravelAzureAuth\\AzureServiceProvider"
+                    ]
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Promodo\\LaravelAzureAuth\\": "src/"
+                }
+            },
+            "license": [
+                "MIT"
+            ],
+            "description": "Azure Middleware Auth for Promodo",
+            "time": "2021-08-26T10:36:44+00:00"
         },
         {
             "name": "psr/container",
