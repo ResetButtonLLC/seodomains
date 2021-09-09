@@ -57,6 +57,6 @@ class Kernel extends HttpKernel
         'can' => \Illuminate\Auth\Middleware\Authorize::class,
         'guest' => \App\Http\Middleware\RedirectIfAuthenticated::class,
         'throttle' => \Illuminate\Routing\Middleware\ThrottleRequests::class,
-        'azure' =>  \App\Http\Middleware\AppAzure::class,
+        'azure' => \Promodo\LaravelAzureAuth\Azure::class,
     ];
 }
