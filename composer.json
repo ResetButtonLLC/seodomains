@@ -71,8 +71,8 @@
     },
     "repositories": [
         {
-             "type": "vcs",
-            "url": "https://dennikolenko@bitbucket.org/promododev/laravel-azure-auth.git"
+            "type": "vcs",
+            "url": "git@bitbucket.org:promododev/laravel-azure-auth.git"
         }
     ]
 }
