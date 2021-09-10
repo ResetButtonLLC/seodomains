@@ -2,6 +2,8 @@
 
 return [
 
+    'promodo_api_token' => env('PROMODO_API_TOKEN',''),
+
     /*
     |--------------------------------------------------------------------------
     | Application Name

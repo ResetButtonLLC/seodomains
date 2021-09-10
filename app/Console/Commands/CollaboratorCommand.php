@@ -131,7 +131,7 @@ class CollaboratorCommand extends ParserCommand
             }
 
             $this->call('domains:finalize', [
-                '--table' => 'collaborators'
+                '--table' => 'collaborator'
             ]);
 
         }

@@ -20,7 +20,7 @@
         "promodo/laravel-azure-auth": "^1.0",
         "rap2hpoutre/fast-excel": "^1.2",
         "rootinc/laravel-azure-middleware": "^0.5.1",
-        "sentry/sentry-laravel": "^2.8",
+        "sentry/sentry-laravel": "1.5",
         "symfony/dom-crawler": "^5.2"
     },
     "require-dev": {
@@ -72,7 +72,7 @@
     "repositories": [
         {
             "type": "vcs",
-            "url": "https://dennikolenko@bitbucket.org/promododev/laravel-azure-auth.git"
+            "url": "git@bitbucket.org:promododev/laravel-azure-auth.git"
         }
     ]
 }

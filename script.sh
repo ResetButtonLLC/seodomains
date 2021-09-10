@@ -75,6 +75,10 @@ sudo apt install -y php-intl
 
 # install Composer
 sudo apt-get -y install composer
+sudo php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"
+sudo php composer-setup.php --quiet --install-dir /usr/bin --filename composer
+sudo php -r "unlink('composer-setup.php');"
+
 #curl -s https://getcomposer.org/installer | php
 #sudo mv composer.phar /usr/local/bin/composer
 
