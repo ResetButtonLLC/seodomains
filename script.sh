@@ -23,8 +23,8 @@ sudo mysql -h127.0.0.1 -uroot -ppromodo33 -e "create database seodomains;"
 
 #Удаленный доступ
 #Закомментировать #bind-address and #skip-external-locking in my.cnf
-#Залогинится в mysql ->  mysql -u root -33 и выполнить
-#GRANT ALL PRIVILEGES ON *.* TO 'root'@'%ppromodo' IDENTIFIED BY 'promodo33';
+#Залогинится в mysql ->  mysql -u root -ppromodo33 и выполнить
+#GRANT ALL PRIVILEGES ON *.* TO 'root'@'%' IDENTIFIED BY 'promodo33';
 #GRANT ALL PRIVILEGES ON *.* TO 'root'@'localhost' IDENTIFIED BY 'promodo33';
 #sudo /etc/init.d/mysql restart
 #
