@@ -27,7 +27,6 @@ sudo mysql -h127.0.0.1 -uroot -ppromodo33 -e "create database seodomains;"
 #GRANT ALL PRIVILEGES ON *.* TO 'root'@'%' IDENTIFIED BY 'promodo33';
 #GRANT ALL PRIVILEGES ON *.* TO 'root'@'localhost' IDENTIFIED BY 'promodo33';
 #sudo /etc/init.d/mysql restart
-#
 #Если наблюдает ошибка доступа root@localhost, то нужно залогинится в mysql и посмотреть через что идет авторизация ->  select user, host, plugin from mysql.user;
 #Если  root | auth_socket, то нужно сменить на mysql_native_password
 #https://stackoverflow.com/questions/39281594/error-1698-28000-access-denied-for-user-rootlocalhost
