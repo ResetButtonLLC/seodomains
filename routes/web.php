@@ -4,7 +4,7 @@ Route::get('/', 'CommonController@main')->name('main'); //Страница с ф
 
 Route::get('/login', [\Promodo\LaravelAzureAuth\Azure::class, 'azure'])->name('login');
 Route::get('/logout', [\Promodo\LaravelAzureAuth\Azure::class, 'azurelogout'])->name('logout');
-Route::get('/login/callback-seodomains', [\Promodo\LaravelAzureAuth\Azure::class, 'azurecallback']);
+Route::get('/login/azurecallback', [\Promodo\LaravelAzureAuth\Azure::class, 'azurecallback']);
 
 Route::group(['middleware' => ['auth']], function () {
     Route::get('/domains', 'DomainsController@index')->name('domains');

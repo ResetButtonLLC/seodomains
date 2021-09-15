@@ -3227,11 +3227,11 @@
         },
         {
             "name": "promodo/laravel-azure-auth",
-            "version": "1.0.1",
+            "version": "1.1.0",
             "source": {
                 "type": "git",
                 "url": "git@bitbucket.org:promododev/laravel-azure-auth.git",
-                "reference": "78b30b74b7490acdf658d502858adb397dfcfffc"
+                "reference": "688d5fdd3a9d1518f08ac8bb0475e56e1e8d8ae6"
             },
             "require": {
                 "guzzlehttp/guzzle": ">=6.2",
@@ -3256,7 +3256,7 @@
                 "MIT"
             ],
             "description": "Azure Middleware Auth for Promodo",
-            "time": "2021-09-09T10:11:17+00:00"
+            "time": "2021-09-15T13:03:21+00:00"
         },
         {
             "name": "psr/container",
