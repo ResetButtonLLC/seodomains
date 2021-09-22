@@ -91,6 +91,7 @@ class MiralinksCommand extends ParserCommand {
                         $lang = null;
                     }
                     $url = mb_strtolower($domain->rowData->{"Ground.folder_url_wl"});
+
                     $info = [
                         'name' => $domain->rowData->{"Ground.name"},
                         'site_id' => $domain->rowData->{"Ground.id"},
@@ -106,9 +107,10 @@ class MiralinksCommand extends ParserCommand {
                         'lang' => $lang,
                         'traffic' => $domain->rowData->{"traffic.value"},
                         'majestic_tf' => $domain->rowData->{"Ground.tf"},
-                        'majestic_cf' => $domain->rowData->{"Ground.cf"}
+                        'majestic_cf' => $domain->rowData->{"Ground.cf"},
+                        'last_placement' => $domain->rowData->{"last_placement_str"},
+                        'placement_time' => $domain->rowData->{"placement_time_str"},
                      ];
-
 
                     if ($domain = Domains::where('url', $url)->first()) {
                         $info['domain_id'] = $domain->id;

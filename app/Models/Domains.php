@@ -60,6 +60,8 @@ class Domains extends Model {
                 'miralinks.links as miralinks_links',
                 'miralinks.lang as miralinks_lang',
                 'miralinks.desc as miralinks_desc',
+                'miralinks.last_placement as miralinks_last_placement',
+                'miralinks.placement_time as miralinks_placement_time',
                 'prnews.price as prnews_placement_price',
                 'prnews.audience as prnews_audience',
                 'collaborator.price as collaborator_placement_price',
