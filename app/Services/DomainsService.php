@@ -73,6 +73,8 @@ class DomainsService
             'URL'=>'string',
             'Miralinks цена размещения'=>'integer',
             'Miralinks цена написания'=>'integer',
+            'Miralinks последнее посещение владельцем'=>'string',
+            'Miralinks дата размещения последней статьи'=>'string',
             'Gogetlinks цена размещения'=>'integer',
             'Rotapost цена размещения'=>'integer',
             'Rotapost цена написания'=>'integer',
@@ -97,7 +99,7 @@ class DomainsService
         $writer->writeSheetHeader('Sheet1', $header);
 
         //set styles
-        $styles = array(['color'=>'#0000FF'], ['color'=>'#0000FF'], null, null, ['color'=>'#0000FF'], null, null, null, null, ['color'=>'#0000FF'], null, null, null, null, null, null, null, null, null, null, null);
+        $styles = array(['color'=>'#0000FF'], ['color'=>'#0000FF'], null, null, null, null, ['color'=>'#0000FF'], null, null, null, null, ['color'=>'#0000FF'], null, null, null, null, null, null, null, null, null, null, null);
 
         //set rows
         foreach ($domains as $data) {
@@ -105,6 +107,8 @@ class DomainsService
                 '=HYPERLINK("http://' . $data->url . '","' . $data->url . '")',
                 (isset($data->miralinks_placement_price)) ? '=HYPERLINK("https://anonym.to/?https://www.miralinks.ru/catalog/profileView/' . $data->miralinks_site_id . '","' . $data->miralinks_placement_price . '")' : '',
                 $data->miralinks_writing_price,
+                $data->miralinks_last_placement,
+                $data->miralinks_placement_time,
                 $data->gogetlinks_placement_price,
                 (isset($data->rotapost_placement_price)) ? '=HYPERLINK("https://anonym.to/?https://www.rotapost.ru/buy/site/?' . $data->url . '","' . $data->rotapost_placement_price . '")' : '',
                 $data->rotapost_writing_price,
