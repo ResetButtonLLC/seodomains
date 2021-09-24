@@ -108,8 +108,8 @@ class MiralinksCommand extends ParserCommand {
                         'traffic' => $domain->rowData->{"traffic.value"},
                         'majestic_tf' => $domain->rowData->{"Ground.tf"},
                         'majestic_cf' => $domain->rowData->{"Ground.cf"},
-                        'last_placement' => $domain->rowData->{"last_placement_str"},
-                        'placement_time' => $domain->rowData->{"placement_time_str"},
+                        'last_placement' => isset($domain->rowData->{"last_placement_str"}) ? $domain->rowData->{"last_placement_str"} : '1',
+                        'placement_time' => isset($domain->rowData->{"placement_time_str"}) ? $domain->rowData->{"placement_time_str"} : '1',
                      ];
 
                     if ($domain = Domains::where('url', $url)->first()) {
