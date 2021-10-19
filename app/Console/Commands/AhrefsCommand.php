@@ -105,7 +105,6 @@ class AhrefsCommand extends Command
             //Если где то в массиве есть null значит это ошибка запроса и в БД это писать не надо
             if (in_array(null,$ahrefs_data[$domain],true)) {
                 $this->error('Ошибка получения данных от API для домена '.$domain);
-                dd($result);
             } else {
                 //Import into DB
                 Domains::where('url',$domain)->update([
