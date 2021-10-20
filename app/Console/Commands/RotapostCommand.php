@@ -101,6 +101,7 @@ class RotapostCommand extends ParserCommand {
             $this->apikey = (string) $xml->ApiKey;
             return $this->apikey;
         } else {
+            $this->sendErrorNotification('auth error most likely that the cookies has expired');
             return false;
         }
     }

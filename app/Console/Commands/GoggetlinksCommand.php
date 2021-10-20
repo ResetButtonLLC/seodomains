@@ -210,6 +210,7 @@ class GoggetlinksCommand extends ParserCommand {
             $this->writeHtmlLogFile('debug.html', $html);
             $this->writeLog('Login not successful : saving page to ' . url('/sites/gogetlinks/debug.html'));
             $this->writeLog('Most likely that the cookies has expired');
+            $this->sendErrorNotification('auth error most likely that the cookies has expired');
             return false;
         } else {
             $this->writeLog('Auth successfull');

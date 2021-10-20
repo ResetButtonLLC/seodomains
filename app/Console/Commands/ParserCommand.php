@@ -49,4 +49,8 @@ class ParserCommand extends Command
         return Storage::path('cookies/' . $this->parser_name . '.txt');
     }
 
+    public function sendErrorNotification(string $errorMessage) : void {
+        \Sentry\captureMessage($this->parser_name . ': ' . $errorMessage);
+    }
+
 }

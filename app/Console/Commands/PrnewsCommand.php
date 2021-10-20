@@ -225,6 +225,7 @@ class PrnewsCommand extends ParserCommand {
         if (strpos($page_content, 'link-signup')) {
             $this->writeLog('Prnews : Login not successful : Most likely that the cookies has expired');
             file_put_contents($this->logfolder.'/bad_page.html',$page_content);
+            $this->sendErrorNotification('auth error most likely that the cookies has expired');
             return false;
         } else {
             return true;

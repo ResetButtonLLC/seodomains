@@ -154,6 +154,7 @@ class CollaboratorCommand extends ParserCommand
         if (!strpos($html, 'Пополнить баланс')) {
             $this->writeHtmlLogFile('auth.html', $html);
             $this->writeLog('Auth fail');
+            $this->sendErrorNotification('auth error most likely that the cookies has expired');
             return false;
         } else {
             $this->writeLog('Auth successfull');

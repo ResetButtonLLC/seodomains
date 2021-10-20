@@ -136,6 +136,7 @@ class SapeCommand extends ParserCommand {
         } else {
             $this->writeLog('Responce not successful : saving responce to ' . url('sites/sape/auth.txt'));
             $this->writeHtmlLogFile('auth.txt', $resp);
+            $this->sendErrorNotification('auth error most likely that the cookies has expired');
             return false;
         }
     }
