@@ -94,7 +94,7 @@ class GoggetlinksCommand extends ParserCommand {
 
             $this->writeHtmlLogFile($counter['total'] . '.html', $data);
 
-            $page_valid = (boolean)stripos($data,'<table class="table" id="table_content">');
+            $page_valid = (boolean)stripos($data,'<table class="table table_compact" id="table_content">');
 
             $current_retry = $retries;
 
