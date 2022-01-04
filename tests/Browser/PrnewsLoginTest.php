@@ -2,8 +2,6 @@
 
 namespace Tests\Browser;
 
-use Facebook\WebDriver\Chrome\ChromeOptions;
-use Facebook\WebDriver\Remote\RemoteWebDriver;
 use Facebook\WebDriver\WebDriverBy;
 
 use Tests\DuskTestCase;
@@ -89,26 +87,5 @@ class PrnewsLoginTest extends DuskTestCase
             ->screenshot('prnews-registration')
             ->visit($this::homeUrl . '/account')
             ->assertSee('Dashboard');
-    }
-
-    /**
-     * Set remote web driver
-     *
-     * @return RemoteWebDriver
-     */
-    protected function driver()
-    {
-        $ua = 'Mozilla/5.0 (iPhone; CPU iPhone OS 9_1 like Mac OS X) AppleWebKit/601.1.46 (KHTML, like Gecko) Version/9.0 Mobile/13B143 Safari/601.1';
-        $options = new ChromeOptions;
-        $options->setExperimentalOption('mobileEmulation', ['userAgent' => $ua]);
-        $options->addArguments([
-            '--disable-gpu',
-            '--headless',
-            '--no-sandbox',
-        ]);
-
-        return RemoteWebDriver::create(
-            'http://localhost:9515', $options->toCapabilities()
-        );
     }
 }
