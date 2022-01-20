@@ -97,19 +97,21 @@ class PrnewsTest extends DuskTestCase
         $cardPrice = $card->findElement(WebDriverBy::className('card_price'))->getText();
         $cardAudience = $card->findElement(WebDriverBy::className('card_audience'))->getText();
 
-        if (!$domainId = DomainsHelper::getIdByUrl($this->domains, $cardName)) {
-            $domainId = Domains::insertGetId(['url' => mb_strtolower($cardName), 'created_at' => date('Y-m-d H:i:s')]);
-        }
+        if ($cardName && $cardPrice) {
+            if (!$domainId = DomainsHelper::getIdByUrl($this->domains, $cardName)) {
+                $domainId = Domains::insertGetId(['url' => mb_strtolower($cardName), 'created_at' => date('Y-m-d H:i:s')]);
+            }
 
-        $domain = Prnews::updateOrCreate(
-            ['domain_id' => $domainId],
-            ['url' => mb_strtolower($cardName), 'price' => DomainsHelper::getPriceFromString($cardPrice), 'audience' => $cardAudience]
-        );
+            $domain = Prnews::updateOrCreate(
+                ['domain_id' => $domainId],
+                ['url' => mb_strtolower($cardName), 'price' => DomainsHelper::getPriceFromString($cardPrice), 'audience' => $cardAudience]
+            );
 
-        if($domain->updated_at == $domain->created_at) {
-            $this->counters['newDomains']++;
-        } else {
-            $this->counters['updatedDomains']++;
+            if($domain->updated_at == $domain->created_at) {
+                $this->counters['newDomains']++;
+            } else {
+                $this->counters['updatedDomains']++;
+            }
         }
     }
 
