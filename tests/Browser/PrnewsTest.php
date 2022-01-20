@@ -59,7 +59,7 @@ class PrnewsTest extends DuskTestCase
             $this->setCookie();
             $this->setTotalPages();
 
-            while ($this->counters['currentPage'] < 5) {
+            while ($this->counters['currentPage'] < $this->counters['countPages']) {
                 $cards = $this->getCards($this->counters['currentPage']);
 
                 foreach ($cards as $card) {

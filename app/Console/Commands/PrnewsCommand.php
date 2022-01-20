@@ -2,13 +2,7 @@
 
 namespace App\Console\Commands;
 
-use App\Models\{
-    Domains,
-    Prnews
-};
 use Illuminate\Support\Facades\Artisan;
-use Symfony\Component\DomCrawler\Crawler;
-use App\Helpers\DomainsHelper;
 
 class PrnewsCommand extends ParserCommand {
 
