@@ -10,3 +10,4 @@
 /public/adwordsscripts/*
 /public/sites/*
 cookie-*
+/test/Browser/screenshots/*
