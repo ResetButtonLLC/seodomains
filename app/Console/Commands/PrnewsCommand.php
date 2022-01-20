@@ -39,13 +39,17 @@ class PrnewsCommand extends ParserCommand {
 
         $this->writeLog('prnews get with dusk test');
 
-        Artisan::call('dusk', [
+        $testResult = Artisan::call('dusk', [
             ' --filter' => 'PrnewsTest',
         ]);
 
-        $this->call('domains:finalize', [
-            '--table' => 'prnews',
-        ]);
+        if ($testResult == 0) {
+            $this->call('domains:finalize', [
+                '--table' => 'prnews',
+            ]);
+        } else {
+            $this->writeLog('prnews test has error');
+        }
 
         return true;
     }
