@@ -30,7 +30,7 @@ class Kernel extends ConsoleKernel
         $schedule->command('domains:rotapost')->weeklyOn(6, '12:00');
         $schedule->command('domains:gogetlinks')->weeklyOn(7, '00:00');
         $schedule->command('domains:collaborator')->weeklyOn(7, '06:00');
-        $schedule->command('domains:prnews')->weeklyOn(7, '12:00');
+        //$schedule->command('domains:prnews')->weeklyOn(7, '12:00');
 
         $schedule->command('domains:ahrefs',[
             '--mode' => 'all',
