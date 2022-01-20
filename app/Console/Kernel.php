@@ -25,11 +25,12 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule)
     {
-        $schedule->command('domains:sape')->weeklyOn(6, '0:10');
-        $schedule->command('domains:miralinks')->weeklyOn(6, '6:00');
+        $schedule->command('domains:sape')->weeklyOn(6, '0:00');
+        $schedule->command('domains:miralinks')->weeklyOn(6, '06:00');
         $schedule->command('domains:rotapost')->weeklyOn(6, '12:00');
-        $schedule->command('domains:gogetlinks')->weeklyOn(6, '18:00');
-        $schedule->command('domains:collaborator')->weeklyOn(6, '23:00');
+        $schedule->command('domains:gogetlinks')->weeklyOn(7, '00:00');
+        $schedule->command('domains:collaborator')->weeklyOn(7, '06:00');
+        $schedule->command('domains:prnews')->weeklyOn(7, '12:00');
 
         $schedule->command('domains:ahrefs',[
             '--mode' => 'all',
