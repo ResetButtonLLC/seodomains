@@ -35,6 +35,7 @@ abstract class DuskTestCase extends BaseTestCase
             '--disable-gpu',
             '--headless',
             '--no-sandbox',
+            '--proxy-server=p.webshare.io:9999'
         ]);
 
         return RemoteWebDriver::create(
