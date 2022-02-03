@@ -38,8 +38,6 @@ abstract class DuskTestCase extends BaseTestCase
             '--proxy-server=p.webshare.io:9999'
         ]);
 
-        return RemoteWebDriver::create(
-            'http://localhost:9515', $options->toCapabilities()
-        );
+        return RemoteWebDriver::create('http://localhost:9515', $options->toCapabilities(),300000,300000);
     }
 }
