@@ -44,7 +44,6 @@ class FinalizeCommand extends Command
      */
     public function handle()
     {
-
         $this->line ('Run finalize command');
         //Если передана дочерняя таблица, то удаляем из нее домены для которых время обновления больше переданного в параметре hours, т.к. это значит что они не были обновлены при последнем обновлении и в бирже их больше нету
         $child_table= $this->option('table');
@@ -60,6 +59,9 @@ class FinalizeCommand extends Command
         $this->line("Deleting domains, that doesn't exist in any service");
 
         Domains::doesntHave('miralinks')->doesntHave('gogetlinks','and')->doesntHave('sape','and')->doesntHave('rotapost','and')->doesntHave('prnews','and')->doesntHave('collaborator','and')->delete();
+
+        //Удаляем домены с блек листа
+        $this->removeBlackListDomains();
 
         //Присваиваем регион в зависимости от доменной зоны, если его нету
         $domains_without_country = Domains::select('id', 'url')->whereNull('country')->get();
@@ -109,5 +111,16 @@ class FinalizeCommand extends Command
     {
         $needle = '.'.$needle;
         return substr_compare($haystack, $needle, -strlen($needle), true) === 0;
+    }
+
+    private function removeBlackListDomains(): void
+    {
+        $this->line("remove domains from black list");
+
+        $domains = DB::table('blacklist_domains')->pluck('url');
+
+        $countRemovedDomains = Domains::whereIn('url', $domains)->delete();
+
+        $this->line($countRemovedDomains . " domains remove from black list");
     }
 }
