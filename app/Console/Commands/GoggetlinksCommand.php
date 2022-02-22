@@ -2,10 +2,7 @@
 
 namespace App\Console\Commands;
 
-use Illuminate\Console\Command;
 use App\Models\{Domains, Gogetlinks};
-use Carbon\Carbon;
-use Illuminate\Database\Eloquent\Model;
 use Symfony\Component\DomCrawler\Crawler;
 
 class GoggetlinksCommand extends ParserCommand {
@@ -69,6 +66,12 @@ class GoggetlinksCommand extends ParserCommand {
 
         //Получим количество сайтов
         $data = $this->getData($page);
+
+        if ($data) {
+            $this->writeLog('Ошибка получения кол-ва сайтов');
+            return false;
+        }
+
         $this->writeHtmlLogFile('gogetlinks.page.html', $data);
 
         $crawler = new Crawler($data);
@@ -91,6 +94,12 @@ class GoggetlinksCommand extends ParserCommand {
 
             //Эту строку нельзя использовать в условии выше, т.к. она иногда отдает пустой ответ и скан заканчивается
             $data = $this->getData($page);
+
+            if ($data === null) {
+                $this->writeLog('Пропуск страницы ' . $page);
+                $page++;
+                continue;
+            }
 
             $this->writeHtmlLogFile($counter['total'] . '.html', $data);
 
@@ -274,10 +283,9 @@ class GoggetlinksCommand extends ParserCommand {
         curl_close($curl);
 
         if ($err) {
-            Log::info(print_r($err, 1));
             return false;
         } else {
-            return $response['data'];
+            return data_get($response, 'data');
         }
     }
 
