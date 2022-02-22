@@ -67,7 +67,7 @@ class GoggetlinksCommand extends ParserCommand {
         //Получим количество сайтов
         $data = $this->getData($page);
 
-        if ($data) {
+        if ($data === null) {
             $this->writeLog('Ошибка получения кол-ва сайтов');
             return false;
         }
