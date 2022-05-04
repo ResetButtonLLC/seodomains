@@ -40,7 +40,9 @@ class CollaboratorCommand extends ParserCommand
      */
     public function handle()
     {
+
         $this->initLog('collaborator');
+
 
         if ($this->checkLogin()) {
             //get count pages
@@ -151,8 +153,8 @@ class CollaboratorCommand extends ParserCommand
 
         $html = curl_exec($ch);
 
-        if (!strpos($html, 'Пополнить баланс')) {
-            $this->writeHtmlLogFile('auth.html', $html);
+        if (!strpos($html, 'https://collaborator.pro/ua/logout')) {
+            $this->writeHtmlLogFile('error_login.html', $html);
             $this->writeLog('Auth fail');
             $this->sendErrorNotification('auth error most likely that the cookies has expired');
             return false;
@@ -165,7 +167,7 @@ class CollaboratorCommand extends ParserCommand
     private function makeRequest($page = 1)
     {
         $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, 'https://collaborator.pro/catalog/creator/article?page=' . $page . '&per-page=100');
+        curl_setopt($ch, CURLOPT_URL, 'https://collaborator.pro/ua/catalog/creator/article?page=' . $page . '&per-page=100');
         curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
         curl_setopt($ch,CURLOPT_ENCODING, '');
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);

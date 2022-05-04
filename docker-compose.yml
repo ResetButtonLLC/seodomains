@@ -1,0 +1,63 @@
+version: "3.7"
+services:
+  app:
+    build:
+      args:
+        user: www
+        uid: 1000
+      context: ./
+      dockerfile: ./.docker/php/Dockerfile
+    image: php
+    container_name: php-seodomains
+    restart: unless-stopped
+    working_dir: /var/www/
+    volumes:
+      - ./:/var/www
+      - ./.docker/php/local.ini:/usr/local/etc/php/conf.d/local.ini
+    networks:
+      - seodomains-network
+
+  db:
+    image: mysql:5.7
+    container_name: db-seodomains
+    restart: unless-stopped
+    command: '--secure-file-priv=NULL --bind-address=0.0.0.0'
+    ports:
+      - "3301:3306"
+    environment:
+      MYSQL_DATABASE: ${DB_DATABASE}
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+      MYSQL_USER: ${DB_USERNAME}
+      SERVICE_TAGS: dev
+      SERVICE_NAME: mysql
+    volumes:
+      - ./.docker/mysql/my.cnf:/etc/mysql/my.cnf
+      - ./.docker/mysql/docker-entrypoint-initdb.d/:/docker-entrypoint-initdb.d/
+#      - ./.docker/mysql/mysql-files:/var/lib/mysql-files
+    networks:
+      seodomains-network:
+        ipv4_address: 172.20.0.101
+
+  nginx:
+    image: nginx:alpine
+    container_name: nginx-seodomains
+    restart: unless-stopped
+    ports:
+#      - 8000:80
+       - 8000:443
+    volumes:
+      - ./:/var/www
+      - ./.docker/nginx/conf.d/:/etc/nginx/conf.d/
+      - ./.docker/nginx/ssl/:/home
+    networks:
+      seodomains-network:
+        ipv4_address: 172.20.0.100
+      
+networks:
+  seodomains-network:
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.20.0.0/24
