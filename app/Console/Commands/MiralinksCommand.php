@@ -45,6 +45,7 @@ class MiralinksCommand extends ParserCommand {
      * @return mixed
      */
     public function handle() {
+
         $this->initLog('miralinks');
 
         $counter = array(
@@ -175,8 +176,10 @@ class MiralinksCommand extends ParserCommand {
 
     private function login() {
         $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, env('MIRALINKS_LOGIN_URL'));
-        curl_setopt($ch, CURLOPT_REFERER, env('MIRALINKS_LOGIN_URL'));
+        curl_setopt($ch, CURLOPT_URL, 'https://www.miralinks.ru');
+        curl_setopt($ch, CURLOPT_REFERER, 'https://www.miralinks.ru');
+        curl_setopt($ch, CURLOPT_PROXY, 'p.webshare.io');
+        curl_setopt($ch, CURLOPT_PROXYPORT, '9999');
         curl_setopt($ch, CURLOPT_COOKIEJAR, $this->getCookie());
         curl_setopt($ch, CURLOPT_COOKIEFILE, $this->getCookie());
         curl_setopt($ch, CURLOPT_ENCODING, "");
@@ -197,17 +200,6 @@ class MiralinksCommand extends ParserCommand {
             "upgrade-insecure-requests: 1"
         ));
 
-        $postinfo = "_method=POST"
-                . "&" . urlencode("data[User][login]") . "=" . env('MIRALINKS_USERNAME')
-                . "&" . urlencode("data[User][password]") . "=" . env('MIRALINKS_PASSWORD')
-                . "&" . urlencode("data[User][remember]") . "=on"
-                . "&" . "TDS_599b49d0="
-                . "&" . "TDS_599b49d0=_fplhash=MzNlY2IxNTQ6V2luMzJAMTkyMA%3D%3D";
-
-
-        curl_setopt($ch, CURLOPT_POST, 1);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, $postinfo);
-
         $html = curl_exec($ch);
         curl_close($ch);
 
@@ -215,6 +207,7 @@ class MiralinksCommand extends ParserCommand {
             $this->writeLog('Auth successful');
             return $html;
         } else {
+            $this->writeHtmlLogFile('error_login.html', $html);
             $this->writeLog('Login not successful : check cookies');
             return '';
         }

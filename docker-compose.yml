@@ -1,25 +1,24 @@
 version: "3.7"
 services:
-  app:
+  php:
     build:
       args:
         user: www
         uid: 1000
       context: ./
       dockerfile: ./.docker/php/Dockerfile
-    image: php
-    container_name: php-seodomains
+    container_name: ${APP_NAME}-php
     restart: unless-stopped
     working_dir: /var/www/
     volumes:
       - ./:/var/www
       - ./.docker/php/local.ini:/usr/local/etc/php/conf.d/local.ini
     networks:
-      - seodomains-network
+      - network
 
   db:
     image: mysql:5.7
-    container_name: db-seodomains
+    container_name: ${APP_NAME}-db
     restart: unless-stopped
     command: '--secure-file-priv=NULL --bind-address=0.0.0.0'
     ports:
@@ -36,12 +35,11 @@ services:
       - ./.docker/mysql/docker-entrypoint-initdb.d/:/docker-entrypoint-initdb.d/
 #      - ./.docker/mysql/mysql-files:/var/lib/mysql-files
     networks:
-      seodomains-network:
-        ipv4_address: 172.20.0.101
+      - network
 
   nginx:
     image: nginx:alpine
-    container_name: nginx-seodomains
+    container_name: ${APP_NAME}-nginx
     restart: unless-stopped
     ports:
 #      - 8000:80
@@ -51,13 +49,10 @@ services:
       - ./.docker/nginx/conf.d/:/etc/nginx/conf.d/
       - ./.docker/nginx/ssl/:/home
     networks:
-      seodomains-network:
-        ipv4_address: 172.20.0.100
+      - network
       
 networks:
-  seodomains-network:
+  network:
+    name: ${APP_NAME}-network
     driver: bridge
-    ipam:
-      driver: default
-      config:
-        - subnet: 172.20.0.0/24
+

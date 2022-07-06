@@ -20,69 +20,12 @@ use App\Services\DomainsService;
 class DomainsController extends Controller {
 
     public function index(Request $request) {
-        $domains = Domains::where('url', '<>', '')->get();
-
-        if ($request->resource) {
-            $sources = $request->resource;
-            foreach (array_keys($request->resource) as $key => $source) {
-                if ($key == 0) {
-                    $domains = $domains->has($source);
-                } else {
-                    $domains = $domains->orHas($source);
-                }
-            }
-        }
-
-        if ($request->theme) {
-            $theme = $request->theme;
-            $domains = $domains->whereHas('miralinks', function (Builder $query) use ($theme) {
-                $query->where('theme', 'like', '%' . $theme . '%');
-            })->orWhereHas('rotapost', function (Builder $query) use ($theme) {
-                $query->where('theme', 'like', '%' . $theme . '%');
-            })->orWhereHas('collaborator', function (Builder $query) use ($theme) {
-                $query->where('theme', 'like', '%' . $theme . '%');
-            });
-        }
-
-        if ($request->price_from > 0) {
-            $price_from = $request->price_from;
-            $domains = $domains->whereHas('sape', function (Builder $query) use ($price_from) {
-                $query->where('placement_price','>', $price_from);
-            })->orWhereHas('miralinks', function (Builder $query) use ($price_from) {
-                $query->where('placement_price','>', $price_from);
-            })->orWhereHas('gogetlinks', function (Builder $query) use ($price_from) {
-                $query->where('placement_price','>', $price_from);
-            })->orWhereHas('rotapost', function (Builder $query) use ($price_from) {
-                $query->where('placement_price','>', $price_from);
-            })->orWhereHas('prnews', function (Builder $query) use ($price_from) {
-                $query->where('price','>', $price_from);
-            })->orWhereHas('collaborator', function (Builder $query) use ($price_from) {
-                $query->where('price','>', $price_from);
-            });
-        }
-
-        if ($request->price_to > 0) {
-            $price_to = $request->price_to;
-            $domains = $domains->whereHas('sape', function (Builder $query) use ($price_to) {
-                $query->where('placement_price','<', $price_to);
-            })->orWhereHas('miralinks', function (Builder $query) use ($price_to) {
-                $query->where('placement_price','<', $price_to);
-            })->orWhereHas('gogetlinks', function (Builder $query) use ($price_to) {
-                $query->where('placement_price','<', $price_to);
-            })->orWhereHas('rotapost', function (Builder $query) use ($price_to) {
-                $query->where('placement_price','<', $price_to);
-            })->orWhereHas('prnews', function (Builder $query) use ($price_to) {
-                $query->where('price','<', $price_to);
-            })->orWhereHas('collaborator', function (Builder $query) use ($price_to) {
-                $query->where('price','<', $price_to);
-            });
-        }
 
         if (isset($request->export)) {
             return response()->download(storage_path('app/domains.xlsx'), 'domains-' . date('Y-m-d-H-i-s') . '.xlsx');
         } else {
 
-            $domains_count = count($domains);
+            $domains_count = Domains::where('url', '<>', '')->count();
 
             $link_stocks = [];
             foreach (Update::all() as $update_date) {
@@ -96,7 +39,6 @@ class DomainsController extends Controller {
             return view('domains.index', compact(['domains_count', 'link_stocks']));
         }
     }
-
 
 
     public function averagePriceForDr()
