@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\{
 };
 use Illuminate\Support\Facades\DB;
 
-class Domains extends Model {
+class Domain extends Model {
 
     public $timestamps = ['created_at'];
     const UPDATED_AT = null;
@@ -41,7 +41,7 @@ class Domains extends Model {
     }
 
     public static function getDomainsForExport() {
-        $domains = Domains::leftjoin('gogetlinks', 'domains.id', '=', 'gogetlinks.domain_id')
+        $domains = Domain::leftjoin('gogetlinks', 'domains.id', '=', 'gogetlinks.domain_id')
             ->leftjoin('miralinks', 'domains.id', '=', 'miralinks.domain_id')
             ->leftjoin('prnews', 'domains.id', '=', 'prnews.domain_id')
             ->leftjoin('rotapost', 'domains.id', '=', 'rotapost.domain_id')

@@ -2,7 +2,7 @@
 
 namespace App\Console\Commands;
 
-use App\Models\{Domains, Gogetlinks};
+use App\Models\{Domain, Gogetlinks};
 use Symfony\Component\DomCrawler\Crawler;
 
 class GoggetlinksCommand extends ParserCommand {
@@ -137,10 +137,10 @@ class GoggetlinksCommand extends ParserCommand {
 
                     $data['placement_price'] = max($prices);
 
-                    if ($domain = Domains::where('url', $data['domain'])->first()) {
+                    if ($domain = Domain::where('url', $data['domain'])->first()) {
                         $data['domain_id'] = $domain->id;
                     } else {
-                        $domain = Domains::insertGetId(['url' => $data['domain']]);
+                        $domain = Domain::insertGetId(['url' => $data['domain']]);
                         $data['domain_id'] = $domain;
                     }
 

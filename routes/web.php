@@ -1,5 +1,6 @@
 <?php
 
+use App\Services\Parsers\Collaborator;
 use Illuminate\Support\Facades\Route;
 use Promodo\LaravelAzureAuth\Azure;
 
@@ -14,4 +15,9 @@ Route::group(['middleware' => ['auth']], function () {
     Route::get('/dr-price', 'DomainsController@averagePriceForDr')->name('dr-price');
     Route::get('/cookies', 'CookieController@show')->name('cookies.show');
     Route::post('/cookies', 'CookieController@update')->name('cookies.update');
+});
+
+Route::get('/test', function () {
+    $parser = new Collaborator();
+    $parser->parse();
 });

@@ -6,7 +6,7 @@ use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 use App\Models\{
-    Domains,
+    Domain,
     Miralinks
 };
 
@@ -113,10 +113,10 @@ class MiralinksCommand extends ParserCommand {
                         'placement_time' => isset($domain->rowData->{"placement_time_str"}) ? $domain->rowData->{"placement_time_str"} : '1',
                      ];
 
-                    if ($domain = Domains::where('url', $url)->first()) {
+                    if ($domain = Domain::where('url', $url)->first()) {
                         $info['domain_id'] = $domain->id;
                     } else {
-                        $domain = Domains::insertGetId(['url' => $url, 'created_at' => date('Y-m-d H:i:s')]);
+                        $domain = Domain::insertGetId(['url' => $url, 'created_at' => date('Y-m-d H:i:s')]);
                         $info['domain_id'] = $domain;
                     }
 

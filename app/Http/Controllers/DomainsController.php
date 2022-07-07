@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\{
-    Domains,
+    Domain,
     Update
 };
 use Illuminate\Database\Eloquent\Builder;
@@ -25,7 +25,7 @@ class DomainsController extends Controller {
             return response()->download(storage_path('app/domains.xlsx'), 'domains-' . date('Y-m-d-H-i-s') . '.xlsx');
         } else {
 
-            $domains_count = Domains::where('url', '<>', '')->count();
+            $domains_count = Domain::where('url', '<>', '')->count();
 
             $link_stocks = [];
             foreach (Update::all() as $update_date) {

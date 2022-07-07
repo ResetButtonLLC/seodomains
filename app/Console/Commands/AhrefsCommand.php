@@ -3,7 +3,7 @@
 namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
-use App\Models\Domains;
+use App\Models\Domain;
 use App\Helpers\ApiPromodoHelper;
 use Carbon\Carbon;
 
@@ -52,7 +52,7 @@ class AhrefsCommand extends Command
         $mode = $this->option('mode');
 
         if ($mode == 'fill') {
-            $domains_urls = Domains::whereNull('ahrefs_dr')->orWhereNull('ahrefs_inlinks')->get('url');
+            $domains_urls = Domain::whereNull('ahrefs_dr')->orWhereNull('ahrefs_inlinks')->get('url');
             $this->line('MODE [fill] : updating domains with empty data');
         } else {
             $this->line('MODE [all] : refreshing data for all domains');
@@ -60,9 +60,9 @@ class AhrefsCommand extends Command
             $days = $this->option('days');
             if (intval($days>0)) {
                 $this->line("OPTION: DAYS. Quering domains with data older than $days days");
-                $domains_urls = Domains::whereDate('ahrefs_updated_at','<=',Carbon::now()->subDays($days))->orwhereNull('ahrefs_updated_at')->get('url');
+                $domains_urls = Domain::whereDate('ahrefs_updated_at','<=',Carbon::now()->subDays($days))->orwhereNull('ahrefs_updated_at')->get('url');
             } else {
-                $domains_urls = Domains::all('url');
+                $domains_urls = Domain::all('url');
             }
         }
 
@@ -107,7 +107,7 @@ class AhrefsCommand extends Command
                 $this->error('Ошибка получения данных от API для домена '.$domain);
             } else {
                 //Import into DB
-                Domains::where('url',$domain)->update([
+                Domain::where('url',$domain)->update([
                     'ahrefs_dr' =>$ahrefs_data[$domain]['dr'],
                     'ahrefs_positions_top3' => $ahrefs_data[$domain]['positions_top3'],
                     'ahrefs_positions_top10' => $ahrefs_data[$domain]['positions_top10'],

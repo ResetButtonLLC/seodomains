@@ -4,7 +4,7 @@ namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
 use Illuminate\Database\Eloquent\Model;
-use App\Models\Domains;
+use App\Models\Domain;
 use App\Models\Update;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
@@ -58,18 +58,18 @@ class FinalizeCommand extends Command
         //Удаляем домены которых нету ни в одной бирже
         $this->line("Deleting domains, that doesn't exist in any service");
 
-        Domains::doesntHave('miralinks')->doesntHave('gogetlinks','and')->doesntHave('sape','and')->doesntHave('rotapost','and')->doesntHave('prnews','and')->doesntHave('collaborator','and')->delete();
+        Domain::doesntHave('miralinks')->doesntHave('gogetlinks','and')->doesntHave('sape','and')->doesntHave('rotapost','and')->doesntHave('prnews','and')->doesntHave('collaborator','and')->delete();
 
         //Удаляем домены с блек листа
         $this->removeBlackListDomains();
 
         //Присваиваем регион в зависимости от доменной зоны, если его нету
-        $domains_without_country = Domains::select('id', 'url')->whereNull('country')->get();
+        $domains_without_country = Domain::select('id', 'url')->whereNull('country')->get();
         $this->line('Setting country for '.count($domains_without_country).' domains');
 
         foreach ($domains_without_country as $no_country_domain) {
             $country = $this->detectCountryByDomain($no_country_domain->url);
-            Domains::where('id',$no_country_domain->id)->update(['country'=> $country]);
+            Domain::where('id',$no_country_domain->id)->update(['country'=> $country]);
         }
 
         if ($child_table != 'null') {
@@ -119,7 +119,7 @@ class FinalizeCommand extends Command
 
         $domains = DB::table('blacklist_domains')->pluck('url');
 
-        $countRemovedDomains = Domains::whereIn('url', $domains)->delete();
+        $countRemovedDomains = Domain::whereIn('url', $domains)->delete();
 
         $this->line($countRemovedDomains . " domains remove from black list");
     }

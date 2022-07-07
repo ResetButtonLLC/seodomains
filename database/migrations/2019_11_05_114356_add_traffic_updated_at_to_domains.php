@@ -3,7 +3,7 @@
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
-use App\Models\Domains;
+use App\Models\Domain;
 
 class AddTrafficUpdatedAtToDomains extends Migration
 {
@@ -15,7 +15,7 @@ class AddTrafficUpdatedAtToDomains extends Migration
     public function up()
     {
 
-        Domains::whereNotNull('serpstat_traffic')->update(['serpstat_traffic' => null]);
+        Domain::whereNotNull('serpstat_traffic')->update(['serpstat_traffic' => null]);
 
         Schema::table('domains', function (Blueprint $table) {
             $table->timestamp('traffic_updated_at')->after('serpstat_traffic')->nullable(); //

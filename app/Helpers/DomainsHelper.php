@@ -9,6 +9,7 @@
 namespace App\Helpers;
 
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Str;
 
 
 class DomainsHelper
@@ -23,4 +24,16 @@ class DomainsHelper
     {
         return intval(preg_replace('#[^0-9\.]#', '', $price)) ?? null;
     }
+
+    public static function getTrafficFromString(string $traffic)
+    {
+        $multiplier = 1;
+        Str::contains($traffic,'млн') ? $multiplier = 1000000 : null;
+        Str::contains($traffic,'тис') ? $multiplier = 1000 : null;
+
+        $trafficValue = intval(floatval($traffic) * $multiplier);
+
+        return $trafficValue;
+    }
+
 }

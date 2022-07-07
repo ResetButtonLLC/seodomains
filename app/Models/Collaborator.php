@@ -8,7 +8,9 @@ class Collaborator extends Model
 {
     public $table = "collaborator";
 
+    public $incrementing = false;
+
     protected $fillable = [
-        'id', 'site_id', 'url', 'price', 'theme', 'traffic', 'created_at', 'updated_at', 'domain_id'
+        'id', 'url', 'price', 'theme', 'traffic', 'domain_id', 'created_at', 'updated_at'
     ];
 }

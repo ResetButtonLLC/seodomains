@@ -3,7 +3,7 @@
 namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
-use App\Models\Domains;
+use App\Models\Domain;
 use Illuminate\Support\Facades\DB;
 use App\Helpers\ApiPromodoHelper;
 
@@ -44,7 +44,7 @@ class MajesticCommand extends Command
     public function handle()
     {
 
-        $domains_urls = Domains::whereNull('majestic_tf')->orWhereNull('majestic_tf')->get('url');
+        $domains_urls = Domain::whereNull('majestic_tf')->orWhereNull('majestic_tf')->get('url');
         foreach ($domains_urls as $domain) {
             $domains[] = $domain->url;
         }
@@ -72,7 +72,7 @@ class MajesticCommand extends Command
                     $majestic_data[$domain]['majestic_cf'] = null;
                 }
 
-                Domains::where('url', $domain)->update(['majestic_tf' => $majestic_data[$domain]['majestic_tf'], 'majestic_cf' => $majestic_data[$domain]['majestic_tf']]);
+                Domain::where('url', $domain)->update(['majestic_tf' => $majestic_data[$domain]['majestic_tf'], 'majestic_cf' => $majestic_data[$domain]['majestic_tf']]);
 
                 $bar->advance();
 

@@ -3,7 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Helpers\DomainsHelper;
-use App\Models\Domains;
+use App\Models\Domain;
 use App\Models\Collaborator;
 use Symfony\Component\DomCrawler\Crawler;
 
@@ -62,7 +62,7 @@ class CollaboratorCommand extends ParserCommand
             //get pages
             for ($page = 1; $page <= intval($pages); $page++) {
                 //get all domains
-                $domains = Domains::all('id', 'url');
+                $domains = Domain::all('id', 'url');
 
                 //set sleep time
                 $sleep = mt_rand(30, 50);
@@ -106,7 +106,7 @@ class CollaboratorCommand extends ParserCommand
                                 //find domain id or create
                                 $data['domain_id'] = DomainsHelper::getIdByUrl($domains, $data['url']);
                                 if (!$data['domain_id']) {
-                                    $data['domain_id'] = Domains::insertGetId(['url' => $data['url'], 'created_at' => date('Y-m-d H:i:s')]);
+                                    $data['domain_id'] = Domain::insertGetId(['url' => $data['url'], 'created_at' => date('Y-m-d H:i:s')]);
                                 }
 
                                 //update or create new collaborator

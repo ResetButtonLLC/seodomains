@@ -5,7 +5,7 @@ namespace App\Console\Commands;
 use Illuminate\Console\Command;
 use Log;
 use App\Models\{
-    Domains,
+    Domain,
     Sape
 };
 use Carbon\Carbon;
@@ -65,10 +65,10 @@ class SapeCommand extends ParserCommand {
                     $data['placement_price'] = $domain['price']['double'];
                     $data['google_index'] = $domain['nof_pages_in_google']['int'];
 
-                    if ($domain = Domains::where('url', $url)->first()) {
+                    if ($domain = Domain::where('url', $url)->first()) {
                         $data['domain_id'] = $domain->id;
                     } else {
-                        $domain = Domains::insertGetId(['url' => $url, 'created_at' => date('Y-m-d H:i:s')]);
+                        $domain = Domain::insertGetId(['url' => $url, 'created_at' => date('Y-m-d H:i:s')]);
                         $data['domain_id'] = $domain;
                     }
 

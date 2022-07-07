@@ -2,7 +2,7 @@
 
 namespace App\Console\Commands;
 
-use App\Models\Domains;
+use App\Models\Domain;
 use App\Services\DomainsService;
 use Illuminate\Console\Command;
 
@@ -39,7 +39,7 @@ class GenerateXLSCommand extends Command
      */
     public function handle()
     {
-        $domains = Domains::getDomainsForExport();
+        $domains = Domain::getDomainsForExport();
 
         return DomainsService::exportXLS($domains);
     }

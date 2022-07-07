@@ -3,7 +3,7 @@
 namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
-use App\Models\Domains;
+use App\Models\Domain;
 use App\Helpers\ApiPromodoHelper;
 use Carbon\Carbon;
 
@@ -47,7 +47,7 @@ class SerpstatCommand extends Command
         $mode = $this->option('mode');
 
         if ($mode == 'fill') {
-            $domains_urls = Domains::whereNull('serpstat_traffic')->get('url');
+            $domains_urls = Domain::whereNull('serpstat_traffic')->get('url');
             $this->line('MODE [fill] : updating domains with empty data');
         } else {
             $this->line('MODE [refresh] : refreshing data for all domains');
@@ -55,9 +55,9 @@ class SerpstatCommand extends Command
             $days = $this->option('days');
             if (intval($days>0)) {
                 $this->line("OPTION: DAYS. Quering domains with data older than $days days");
-                $domains_urls = Domains::whereDate('traffic_updated_at','<=',Carbon::now()->subDays($days))->orwhereNull('serpstat_traffic')->get('url');
+                $domains_urls = Domain::whereDate('traffic_updated_at','<=',Carbon::now()->subDays($days))->orwhereNull('serpstat_traffic')->get('url');
             } else {
-                $domains_urls = Domains::all('url');
+                $domains_urls = Domain::all('url');
             }
         }
 
@@ -92,7 +92,7 @@ class SerpstatCommand extends Command
             }
 
             //Import into DB
-            Domains::where('url',$domain)->update(['serpstat_traffic' =>$serpstat_data[$domain]['serpstat_traffic'], 'traffic_updated_at' => Carbon::now()]);
+            Domain::where('url',$domain)->update(['serpstat_traffic' =>$serpstat_data[$domain]['serpstat_traffic'], 'traffic_updated_at' => Carbon::now()]);
 
         }
 

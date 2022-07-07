@@ -2,13 +2,19 @@
 
 namespace App\Services\Parsers;
 
+use App\Dto\CollaboratorDomain;
+use App\Dto\ParserCounter;
+use App\Models\Domain;
 use App\Exceptions\ParserException;
+use App\Helpers\DomainsHelper;
+use Carbon\Carbon;
 use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Contracts\Filesystem\Filesystem;
 use Psr\Log\LoggerInterface;
+use Symfony\Component\DomCrawler\Crawler;
 
 class Collaborator
 {
@@ -18,6 +24,7 @@ class Collaborator
     protected LoggerInterface $logChannel;
     protected Filesystem $storage;
     protected PendingRequest $httpClient;
+    protected ParserCounter $counter;
 
     public function __construct()
     {
@@ -49,6 +56,7 @@ class Collaborator
     public function parse()
     {
         $pageNum = 0;
+        $this->initCounter();
 
         do {
             $pageNum++;
@@ -60,10 +68,89 @@ class Collaborator
                 throw new ParserException($this->parserName.' : User is not authorized', 401 );
             }
 
-            //todo extract domains and data
+            $this->fetchDomains($html);
 
-            dd('123');
+            sleep(5);
+
         } while ($this->checkNextPage($html));
+
+    }
+
+    private function fetchDomains(string $html)
+    {
+        $pageDom = new Crawler($html);
+
+        $rows = $pageDom->filter('table.c-table tbody tr')->each(function ($content) {
+            return $content->html();
+        });
+
+        foreach ($rows as $row) {
+            $domain = $this->fetchDomain($row);
+            $this->upsertDomain($domain);
+        }
+
+        dd('123');
+
+    }
+
+
+    private function fetchDomain(string $html) : CollaboratorDomain
+    {
+        $this->storage->put('row.html',$html);
+        $rowDom = new Crawler($html);
+
+        $domain = new CollaboratorDomain($rowDom->filter('.link')->text());
+
+        $domain->setId(intval($rowDom->filter('.grid-group-checkbox')->attr('value')));
+
+        if ($rowDom->filter('.creator-price_catalog')->count() > 0) {
+            $domain->setPrice($rowDom->filter('.creator-price_catalog')->attr('data-publication'));
+        }
+
+        if ($rowDom->filter('ul.list-traffic li')->count() > 0) {
+            $domain->setTraffic($rowDom->filter('ul.list-traffic li')->first()->text());
+        }
+
+        $niches = $rowDom->filter('.c-t-theme__tags .tag')->each(function ($content) {
+            return $content->text();
+        });
+        $domain->setNiches($niches);
+
+        return $domain;
+    }
+
+    public function upsertDomain(CollaboratorDomain $collaboratorDomain)
+    {
+        $domain = Domain::updateOrCreate(
+            ['url' => $collaboratorDomain->getDomain()],
+            //todo update траффик когда понятно какой брать
+            ['url' => $collaboratorDomain->getDomain()]
+        );
+
+        $collaborator = \App\Models\Collaborator::updateOrCreate(
+            [
+                'id' => $collaboratorDomain->getId()
+            ],
+            [
+                'domain_id' => $domain->id,
+                'url' => $collaboratorDomain->getDomain(),
+                'price' => $collaboratorDomain->getPrice(),
+                'theme' => $collaboratorDomain->getNiches(),
+                'traffic' => $collaboratorDomain->getTraffic(),
+                'updated_at' => Carbon::now()
+            ]
+        );
+
+        //Сравниваем время создания и апдейта, для счетчика добавленных обновленных
+        if ($collaborator->created_at == $collaborator->updated_at) {
+            $state = 'new';
+            $this->counter->incNew();
+        } else {
+            $state = 'updated';
+            $this->counter->incUpdated();
+        }
+
+        Log::stack(['stderr', $this->logChannel])->info('Domain: '.$collaboratorDomain->getDomain().' | State: '.$state.' | Progress: '.$this->counter->getCurrent().'/'.$this->counter->getTotal().' | Added: '.$this->counter->getNew().' | Updated: '.$this->counter->getUpdated());
 
     }
 
@@ -113,6 +200,14 @@ class Collaborator
     private function writeLog(string $message) : void
     {
 
+    }
+
+    private function initCounter() : void
+    {
+        $html = $this->httpClient->get('https://collaborator.pro/ua/catalog/creator/article?page=1')->body();
+        $dom = new Crawler($html);
+        $this->counter = new ParserCounter();
+        $this->counter->setTotal(DomainsHelper::getPriceFromString($dom->filter('.filter-panel b')->text()));
     }
 
     private function fetchPage(int $num) : string
