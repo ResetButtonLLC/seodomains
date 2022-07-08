@@ -3,7 +3,7 @@
 namespace App\Services\Parsers;
 
 use App\Dto\CollaboratorDomain;
-use App\Dto\ParserCounter;
+use App\Dto\ParserProgressCounter;
 use App\Models\Domain;
 use App\Exceptions\ParserException;
 use App\Helpers\DomainsHelper;
@@ -20,11 +20,12 @@ class Collaborator
 {
 
     const LOGGED_IN_NEEDLE = '/images/icons/logout.svg';
+    const NEXT_PAGE_NEEDLE = '<li class="page-item_next"><a class="page-link"';
     protected string $parserName;
     protected LoggerInterface $logChannel;
     protected Filesystem $storage;
     protected PendingRequest $httpClient;
-    protected ParserCounter $counter;
+    protected ParserProgressCounter $counter;
 
     public function __construct()
     {
@@ -65,7 +66,7 @@ class Collaborator
             $this->storage->put($pageNum.'.html',$html);
             if (!$this->isLoggedIn($html)) {
                 Log::stack(['stderr', $this->logChannel])->error('User is not authorized');
-                throw new ParserException($this->parserName.' : User is not authorized', 401 );
+                throw new ParserException($this->parserName.' : User is not authorized (most likely cookie has expired)', 401 );
             }
 
             $this->fetchDomains($html);
@@ -193,21 +194,14 @@ class Collaborator
 
     private function checkNextPage(string $html) : bool
     {
-        $needle = '<li class="page-item_next"><a class="page-link"';
-        return str_contains($html,$needle);
-    }
-
-    private function writeLog(string $message) : void
-    {
-
+        return str_contains($html,self::NEXT_PAGE_NEEDLE);
     }
 
     private function initCounter() : void
     {
         $html = $this->httpClient->get('https://collaborator.pro/ua/catalog/creator/article?page=1')->body();
         $dom = new Crawler($html);
-        $this->counter = new ParserCounter();
-        $this->counter->setTotal(DomainsHelper::getPriceFromString($dom->filter('.filter-panel b')->text()));
+        $this->counter = new ParserProgressCounter(DomainsHelper::getPriceFromString($dom->filter('.filter-panel b')->text()));
     }
 
     private function fetchPage(int $num) : string

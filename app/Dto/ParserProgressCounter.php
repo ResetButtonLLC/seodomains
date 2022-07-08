@@ -2,11 +2,16 @@
 
 namespace App\Dto;
 
-class ParserCounter
+class ParserProgressCounter
 {
-    private int $total = 0;
+    private int $total;
     private int $new = 0;
     private int $updated = 0;
+
+    public function __construct(int $total = 0)
+    {
+        $this->total = $total;
+    }
 
     public function getCurrent(): int
     {
