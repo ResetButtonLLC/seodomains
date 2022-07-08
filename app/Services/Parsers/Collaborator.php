@@ -87,13 +87,17 @@ class Collaborator
 
         foreach ($rows as $row) {
             $domain = $this->fetchDomain($row);
-            $this->upsertDomain($domain);
+            //Проверяем валидноcть спарсенных данных так как может быть "URL скрыт" или нету цены
+            if ($domain->isDataOk()) {
+                $this->upsertDomain($domain);
+            } else {
+                $this->counter->incSkipped();
+            }
+
+            Log::stack(['stderr', $this->logChannel])->info('Domain: '.$domain->getName().' | State: '.$this->counter->getLastAddedTo().' | Progress: '.$this->counter->getCurrent().'/'.$this->counter->getTotal().' | Added: '.$this->counter->getNew().' | Updated: '.$this->counter->getUpdated().' | Skipped:'. $this->counter->getSkipped());
+
         }
-
-        dd('123');
-
     }
-
 
     private function fetchDomain(string $html) : CollaboratorDomain
     {
@@ -120,12 +124,12 @@ class Collaborator
         return $domain;
     }
 
-    public function upsertDomain(CollaboratorDomain $collaboratorDomain)
+    public function upsertDomain(CollaboratorDomain $collaboratorDomain) : void
     {
         $domain = Domain::updateOrCreate(
-            ['url' => $collaboratorDomain->getDomain()],
+            ['url' => $collaboratorDomain->getName()],
             //todo update траффик когда понятно какой брать
-            ['url' => $collaboratorDomain->getDomain()]
+            ['url' => $collaboratorDomain->getName()]
         );
 
         $collaborator = \App\Models\Collaborator::updateOrCreate(
@@ -134,7 +138,7 @@ class Collaborator
             ],
             [
                 'domain_id' => $domain->id,
-                'url' => $collaboratorDomain->getDomain(),
+                'url' => $collaboratorDomain->getName(),
                 'price' => $collaboratorDomain->getPrice(),
                 'theme' => $collaboratorDomain->getNiches(),
                 'traffic' => $collaboratorDomain->getTraffic(),
@@ -144,15 +148,10 @@ class Collaborator
 
         //Сравниваем время создания и апдейта, для счетчика добавленных обновленных
         if ($collaborator->created_at == $collaborator->updated_at) {
-            $state = 'new';
             $this->counter->incNew();
         } else {
-            $state = 'updated';
             $this->counter->incUpdated();
         }
-
-        Log::stack(['stderr', $this->logChannel])->info('Domain: '.$collaboratorDomain->getDomain().' | State: '.$state.' | Progress: '.$this->counter->getCurrent().'/'.$this->counter->getTotal().' | Added: '.$this->counter->getNew().' | Updated: '.$this->counter->getUpdated());
-
     }
 
     public function isLoggedIn(string $html) : bool

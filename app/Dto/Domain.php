@@ -10,18 +10,23 @@ abstract class Domain
     const CURRENCY_USD = 'usd';
     const CURRENCY_UAH = 'uah';
 
-    protected string $domain;
-    protected int $price;
+    protected string $name;
+    protected int|null $price = null;
     protected string $currency = self::CURRENCY_USD;
 
     public function __construct(string $domain)
     {
-        $this->domain = $domain;
+        $this->name = $domain;
     }
 
-    public function getDomain() : string
+    public function isNameValid() : bool
     {
-        return $this->domain;
+        return str_contains($this->name,'.');
+    }
+
+    public function getName() : string
+    {
+        return $this->name;
     }
 
     public function getPrice(): int
@@ -33,6 +38,11 @@ abstract class Domain
     {
         //todo конверсия если гривны
         $this->price = DomainsHelper::getPriceFromString($price);
+    }
+
+    public function isDataOk() : bool
+    {
+        return ($this->isNameValid() && $this->price);
     }
 
 
