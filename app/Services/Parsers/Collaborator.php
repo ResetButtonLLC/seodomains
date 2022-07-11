@@ -2,11 +2,13 @@
 
 namespace App\Services\Parsers;
 
-use App\Dto\CollaboratorDomain;
+use App\Dto\Domain as DomainDto;
 use App\Dto\ParserProgressCounter;
+use App\Enums\Currency;
 use App\Models\Domain;
 use App\Exceptions\ParserException;
 use App\Helpers\DomainsHelper;
+use App\Models\StockDomain;
 use Carbon\Carbon;
 use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Support\Facades\Log;
@@ -36,17 +38,17 @@ class Collaborator extends Parser
         return $rows;
     }
 
-    protected function fetchDomainData(string $html) : CollaboratorDomain
+    protected function fetchDomainData(string $html) : DomainDto
     {
 
         $rowDom = new Crawler($html);
 
-        $domain = new CollaboratorDomain($rowDom->filter('.link')->text());
+        $domain = new DomainDto($rowDom->filter('.link')->text());
 
-        $domain->setId(intval($rowDom->filter('.grid-group-checkbox')->attr('value')));
+        $domain->setStockId(intval($rowDom->filter('.grid-group-checkbox')->attr('value')));
 
         if ($rowDom->filter('.creator-price_catalog')->count() > 0) {
-            $domain->setPrice($rowDom->filter('.creator-price_catalog')->attr('data-publication'));
+            $domain->setPrice($rowDom->filter('.creator-price_catalog')->attr('data-publication'), Currency::UAH);
         }
 
         if ($rowDom->filter('ul.list-traffic li')->count() > 0) {
@@ -62,34 +64,30 @@ class Collaborator extends Parser
     }
 
 
-    protected function upsertDomain(\App\Dto\Domain $collaboratorDomain) : void
+    protected function upsertDomain(DomainDto $domain) : StockDomain
     {
-        $domain = Domain::updateOrCreate(
-            ['url' => $collaboratorDomain->getName()],
+        $dBdomain = Domain::updateOrCreate(
+            ['url' => $domain->getName()],
             //todo update траффик когда понятно какой брать
-            ['url' => $collaboratorDomain->getName()]
+            ['url' => $domain->getName()]
         );
 
-        $collaborator = \App\Models\Collaborator::updateOrCreate(
+        $collaboratorDbDomain = \App\Models\Collaborator::updateOrCreate(
             [
-                'id' => $collaboratorDomain->getId()
+                'id' => $domain->getStockId()
             ],
             [
-                'domain_id' => $domain->id,
-                'url' => $collaboratorDomain->getName(),
-                'price' => $collaboratorDomain->getPrice(),
-                'theme' => $collaboratorDomain->getNiches(),
-                'traffic' => $collaboratorDomain->getTraffic(),
+                'domain_id' => $dBdomain->id,
+                'url' => $domain->getName(),
+                'price' => $domain->getPrice(),
+                'theme' => $domain->getNiches(),
+                'traffic' => $domain->getTraffic(),
                 'updated_at' => Carbon::now()
             ]
         );
 
-        //Сравниваем время создания и апдейта, для счетчика добавленных обновленных
-        if ($collaborator->created_at == $collaborator->updated_at) {
-            $this->counter->incNew();
-        } else {
-            $this->counter->incUpdated();
-        }
+        return $collaboratorDbDomain;
+
     }
 
     protected function getCounterMax() : int
@@ -99,9 +97,9 @@ class Collaborator extends Parser
         return DomainsHelper::getPriceFromString($dom->filter('.filter-panel b')->text());
     }
 
-    protected function fetchDomainsPage(int $num) : string
+    protected function fetchDomainsPage(int $pageNum) : string
     {
-        return $this->httpClient->get('https://collaborator.pro/ua/catalog/creator/article?page='.$num.'&per-page=100')->body();
+        return $this->httpClient->get('https://collaborator.pro/ua/catalog/creator/article?page='.$pageNum.'&per-page=100')->body();
     }
 
 }

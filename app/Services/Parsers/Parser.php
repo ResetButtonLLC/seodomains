@@ -5,6 +5,7 @@ namespace App\Services\Parsers;
 use App\Dto\Domain;
 use App\Dto\ParserProgressCounter;
 use App\Exceptions\ParserException;
+use App\Models\StockDomain;
 use Illuminate\Contracts\Filesystem\Filesystem;
 use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Support\Facades\Http;
@@ -17,19 +18,20 @@ abstract class Parser
     const LOGGED_IN_NEEDLE = '';
     const NEXT_PAGE_NEEDLE = '';
     protected string $parserName;
+    protected int $pause;
     protected LoggerInterface $logChannel;
     protected Filesystem $storage;
     protected PendingRequest $httpClient;
     protected ParserProgressCounter $counter;
 
-    public function __construct()
+    final public function __construct()
     {
-        $classParts = explode('\\', __CLASS__);
+        $classParts = explode('\\', get_class($this));
         $this->parserName = strtolower(array_pop($classParts));
 
         $this->logChannel = Log::build([
             'driver' => 'daily',
-            'path' => storage_path('logs/parsers/'.$this->parserName),
+            'path' => storage_path('logs/parsers/'.$this->parserName.'/'.$this->parserName.'.log'),
         ]);
 
         Log::stack(['stderr', $this->logChannel])->info('Fire up parser '.$this->parserName);
@@ -40,6 +42,7 @@ abstract class Parser
         ]);
 
         $this->setupHttpClient();
+        $this->setPause();
     }
 
     protected function setupHttpClient() : void
@@ -67,17 +70,9 @@ abstract class Parser
 
     }
 
-    protected function checkCookie() : void
-    {
-        if (!Storage::exists('cookies/'.$this->parserName.'.txt')) {
-            throw new ParserException($this->parserName.' : Missing parser cookie file '.Storage::path('cookies/'.$this->parserName.'.txt'), 404);
-        }
-    }
-
     public function parse() : void
     {
         $pageNum = 0;
-        $sleep = 5;
         $this->counter = new ParserProgressCounter($this->getCounterMax());
 
         do {
@@ -95,12 +90,21 @@ abstract class Parser
 
             foreach ($domainRows as $row) {
                 $this->storage->put('row.html',$html);
+
                 //Получаем данные домена
                 $domain = $this->fetchDomainData($row);
+
                 //Проверяем валидноcть спарсенных данных так как может быть "URL скрыт" или нету цены
                 if ($domain->isDataOk()) {
-                    $this->upsertDomain($domain);
+
+                    //Если с данными все ОК, то добавляем/обновляем домен
+                    $stockDomain = $this->upsertDomain($domain);
+
+                    //Сравниваем время создания и апдейта, (для счетчика добавленных/обновленных так как upsertDomain уникален для каждого парсера, то сравнение происходит в этом методе)
+                    //Если время совпадает, то домен новый, если нет - то домен уже был
+                    ($stockDomain->created_at == $stockDomain->updated_at) ? $this->counter->incNew() : $this->counter->incUpdated();
                 } else {
+                    //Если данные невалидны, то обновляем счетчик пропущеных
                     $this->counter->incSkipped();
                 }
 
@@ -108,10 +112,19 @@ abstract class Parser
 
             }
 
-            sleep($sleep);
+            Log::stack(['stderr', $this->logChannel])->info('Sleeping '.$this->getPause().' seconds');
+            sleep($this->getPause());
+            $this->setPause();
 
         } while ($this->checkNextPage($html));
 
+    }
+
+    protected function checkCookie() : void
+    {
+        if (!Storage::exists('cookies/'.$this->parserName.'.txt')) {
+            throw new ParserException($this->parserName.' : Missing parser cookie file '.Storage::path('cookies/'.$this->parserName.'.txt'), 404);
+        }
     }
 
     protected function isLoggedIn(string $html) : bool
@@ -124,10 +137,20 @@ abstract class Parser
         return str_contains($html,self::NEXT_PAGE_NEEDLE);
     }
 
+    protected function setPause() : void
+    {
+        $this->pause = 5;
+    }
+
+    protected function getPause() : int
+    {
+        return $this->pause;
+    }
+
     abstract protected function getCounterMax() : int;
     abstract protected function fetchDomainsPage(int $pageNum) : string;
     abstract protected function fetchDomainRows(string $html) : array;
     abstract protected function fetchDomainData(string $html) : Domain;
-    abstract protected function upsertDomain(Domain $domain) : void;
+    abstract protected function upsertDomain(Domain $domain) : StockDomain;
 
 }
