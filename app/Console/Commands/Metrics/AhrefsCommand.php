@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Console\Commands;
+namespace App\Console\Commands\Metrics;
 
 use Illuminate\Console\Command;
 use App\Models\Domain;

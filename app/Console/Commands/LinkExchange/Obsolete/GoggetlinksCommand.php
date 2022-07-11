@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Console\Commands;
+namespace App\Console\Commands\LinkExchange\Obsolete;
 
 use App\Models\{Domain, Gogetlinks};
 use Symfony\Component\DomCrawler\Crawler;

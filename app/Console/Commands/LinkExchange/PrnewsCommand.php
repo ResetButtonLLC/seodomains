@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Console\Commands;
+namespace App\Console\Commands\LinkExchange;
 
 use Illuminate\Support\Facades\Artisan;
 
-class PrnewsCommand extends ParserCommand {
+class PrnewsCommand extends \App\Console\Commands\LinkExchange\Obsolete\ParserCommand {
 
     /**
      * The name and signature of the console command.

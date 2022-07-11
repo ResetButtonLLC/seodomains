@@ -3,9 +3,10 @@
 namespace App\Dto;
 
 use App\Helpers\DomainsHelper;
+use Illuminate\Support\Str;
 use phpDocumentor\Reflection\Types\Integer;
 
-abstract class Domain
+class Domain
 {
     const CURRENCY_USD = 'usd';
     const CURRENCY_UAH = 'uah';
@@ -16,12 +17,17 @@ abstract class Domain
 
     public function __construct(string $domain)
     {
-        $this->name = $domain;
+        $this->name = strtolower($domain);
     }
 
     public function isNameValid() : bool
     {
-        return str_contains($this->name,'.');
+        $domainValid = str_contains($this->name,'.');
+        if (Str::contains($this->name,DomainsHelper::getNonvalidZones())) {
+            $domainValid = false;
+        };
+
+        return $domainValid;
     }
 
     public function getName() : string

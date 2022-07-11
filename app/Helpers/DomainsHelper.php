@@ -14,6 +14,29 @@ use Illuminate\Support\Str;
 
 class DomainsHelper
 {
+
+    public static function getNonvalidZones() : array
+    {
+        $nonValidZones = [
+            'ru',
+            '.рф',
+            '.xn--p1ai',
+            '.рус',
+            'xn--p1acf',
+            'su',
+            'moscow',
+            'москва',
+            'xn--80adxhks',
+            'tatar'
+        ];
+
+        $nonValidZones = array_map(function ($zone) {
+            return '.'.$zone;
+            }, $nonValidZones);
+
+        return $nonValidZones;
+    }
+
     public static function getIdByUrl(Collection $domains_db, string $domain)
     {
         $result = $domains_db->firstWhere('url', '=', $domain);

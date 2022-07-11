@@ -18,17 +18,6 @@ class DomainsService
         //Получаем домен
         //$result = Domains::with('gogetlinks','miralinks','prnews','rotapost','sape')->where('url', '=',$domain)->first();
         //Старый вариант для одного домена
-        /*
-        $result = DB::table('domains')
-            ->leftjoin('gogetlinks', 'domains.id', '=', 'gogetlinks.domain_id')
-            ->leftjoin('miralinks', 'domains.id', '=', 'miralinks.domain_id')
-            ->leftjoin('prnews', 'domains.id', '=', 'prnews.domain_id')
-            ->leftjoin('rotapost', 'domains.id', '=', 'rotapost.domain_id')
-            ->leftjoin('sape', 'domains.id', '=', 'sape.domain_id')
-            ->select('domains.*', 'gogetlinks.placement_price as gogetlinks_placement_price','miralinks.placement_price as miralinks_placement_price','prnews.price as prnews_placement_price','rotapost.placement_price as rotapost_placement_price','sape.placement_price as sape_placement_price')
-            ->where('domains.url','=',$domain)
-            ->first();
-        */
 
         $dbresult = DB::table('domains')
             ->leftjoin('gogetlinks', 'domains.id', '=', 'gogetlinks.domain_id')
@@ -62,13 +51,8 @@ class DomainsService
 
     public static function exportXLS($domains)
     {
-        //include xlsxwriter class
-        include_once("vendor/mk-j/php_xlsxwriter/xlsxwriter.class.php");
-
-        //new class instance
         $writer = new \XLSXWriter();
 
-        //create header
         $header = array(
             'URL'=>'string',
             'Miralinks цена размещения'=>'integer',

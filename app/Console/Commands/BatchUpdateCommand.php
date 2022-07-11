@@ -38,18 +38,20 @@ class BatchUpdateCommand extends Command
     public function handle()
     {
         //Обновляем домены из бирж
-        $this->call('domains:sape');
-        $this->call('domains:miralinks');
-        $this->call('domains:rotapost');
-        $this->call('domains:gogetlinks');
+//        $this->call('domains:sape');
+//        $this->call('domains:miralinks');
+//        $this->call('domains:rotapost');
+//        $this->call('domains:gogetlinks');
         $this->call('domains:collaborator');
         //$this->call('domains:prnews');
 
         //Обновляем параметры
+        /*
         $this->call('domains:ahrefs',[
             '--mode' => 'all',
             '--days' => '30'
         ]);
+        //
 
         //проверить сколько живих доменов
 
