@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use Storage;
+use Illuminate\Support\Facades\Storage;
 
 use Illuminate\Http\Request;
 
@@ -20,7 +20,7 @@ class CookieController extends Controller
             'cookie' => 'required',
         ]);
 
-        Storage::putFileAs('cookies', $request->file('cookie'), $request->input('name') . '.txt');
+        Storage::put('cookies/'.$request->input('name') . '.txt', trim($request->input('cookie')));
 
         return redirect()->back()->with('success','Cookies успешно добавлены!');
     }

@@ -6,8 +6,10 @@ use App\Dto\Domain;
 use App\Dto\ParserProgressCounter;
 use App\Exceptions\ParserException;
 use App\Models\StockDomain;
+use App\Models\Update;
 use Illuminate\Contracts\Filesystem\Filesystem;
 use Illuminate\Http\Client\PendingRequest;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
@@ -26,6 +28,7 @@ abstract class Parser
 
     final public function __construct()
     {
+        //Имя парсера - должно совпадать с названием таблицы
         $classParts = explode('\\', get_class($this));
         $this->parserName = strtolower(array_pop($classParts));
 
@@ -77,13 +80,11 @@ abstract class Parser
         $this->counter = new ParserProgressCounter($this->getDomainsTotal());
 
         do {
-            Log::stack(['stderr', $this->logChannel])->info('Parse page #'.$pageNum++);
+            $pageNum++;
+            Log::stack(['stderr', $this->logChannel])->info('Parse page #'.$pageNum);
             $html = $this->fetchDomainsPage($pageNum);
             $this->storage->put($pageNum.'.html',$html);
-            if (!$this->isLoggedIn($html)) {
-                Log::stack(['stderr', $this->logChannel])->error('User is not authorized');
-                throw new ParserException($this->parserName.' : User is not authorized (most likely cookie has expired)', 401 );
-            }
+            $this->checkLoggedIn($html);
 
             //Получаем блоки DOM содержащие информацию о доменах
             $domainRows = $this->fetchDomainRows($html);
@@ -116,7 +117,12 @@ abstract class Parser
             sleep($this->getPause());
             $this->setPause();
 
-        } while ($this->checkNextPage($html));
+        } while ($this->isNextPage($html));
+
+        Log::stack(['stderr', $this->logChannel])->info('Finished');
+        Update::setUpdatedTime($this->parserName);
+        //Удаляем домены которых больше нету в базе
+        DB::table($this->parserName)->whereDate('updated_at', '<=', now()->subDays(2)->toDateTimeString())->delete();
 
     }
 
@@ -132,7 +138,7 @@ abstract class Parser
         return str_contains($html,static::LOGGED_IN_NEEDLE);
     }
 
-    protected function checkNextPage(string $html) : bool
+    protected function isNextPage(string $html) : bool
     {
         return str_contains($html,static::NEXT_PAGE_NEEDLE);
     }
@@ -142,11 +148,18 @@ abstract class Parser
         $this->pause = 5;
     }
 
+    protected function checkLoggedIn(string $html) : void
+    {
+        if (!$this->isLoggedIn($html)) {
+            Log::stack(['stderr', $this->logChannel])->error('User is not authorized');
+            throw new ParserException($this->parserName.' : User is not authorized (most likely cookie has expired)', 401 );
+        }
+    }
+
     protected function getPause() : int
     {
         return $this->pause;
     }
-
 
     abstract protected function getDomainsTotal() : int;
     abstract protected function fetchDomainsPage(int $pageNum) : string;

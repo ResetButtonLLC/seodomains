@@ -11,10 +11,10 @@ class Update extends Model
 
     protected $fillable = ['name','updated_at'];
 
-    public static function setLinkExchangeUpdated ($link_exchange_name)
+    public static function setUpdatedTime ($stockName)
     {
         self::updateOrCreate(
-            ['name' => $link_exchange_name],
+            ['name' => $stockName],
             ['updated_at' => Carbon::now()]
         );
     }

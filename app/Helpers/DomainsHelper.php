@@ -45,7 +45,7 @@ class DomainsHelper
 
     public static function getPriceFromString(string $price)
     {
-        return intval(preg_replace('#[^0-9\.]#', '', $price)) ?? null;
+        return floatval(preg_replace('#[^0-9\.]#', '', $price)) ?? null;
     }
 
     public static function getTrafficFromString(string $traffic)

@@ -18,6 +18,6 @@ Route::group(['middleware' => ['auth']], function () {
 });
 
 Route::get('/test', function () {
-    $parser = new Collaborator();
+    $parser = new \App\Services\Parsers\Prposting();
     $parser->parse();
 });

@@ -18,20 +18,33 @@
                         {{ $message }}
                     </div>
                 @endif
-                {!! Form::open(array('method' => 'POST', 'files' => true, 'route' => ['cookies.update'], 'class' => 'form mt-3')) !!}
+                <form method="POST" class="form mt-3" action="{{route('cookies.update')}}">
+                    @csrf
                     <div class="form-group">
-                        {!! Form::label('parser', 'Select parser') !!}
-                        {!! Form::select("name", array( 'sape' => 'Sape', 'miralinks' => 'Miralinks', 'gogetlinks' => 'Gogetlinks', 'rotapost' => 'Rotapost', 'prnews' => 'Prnews', 'collaborator' => 'Collaborator'), null, array('class' => 'form-control')) !!}
-                        {!! ($errors->any()) ? '<span class="invalid-feedback" style="display: block">' . $errors->first('parser') . '</span>' : '' !!}
-                    </div>
-                        <div class="form-group">
-                            {!! Form::label('cookie', 'Netscape format !') !!}
-                            <a href="https://chrome.google.com/webstore/detail/get-cookiestxt/bgaddhkoddajcdgocldbbfleckgcbcid">Get cookies.txt</a><br>
-                            {!! Form::file('cookie', null, array('class' => 'form-control-file')) !!}
-                            {!! ($errors->any()) ? '<span class="invalid-feedback" style="display: block">' . $errors->first('cookie') . '</span>' : '' !!}
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="name" value="collaborator">
+                            <label class="form-check-label" for="exampleRadios2">
+                                Collaborator
+                            </label>
                         </div>
-                        {!! Form::submit('Send', array('class' => 'btn btn-primary')) !!}
-                {!! Form::close() !!}
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="name" value="prposting">
+                            <label class="form-check-label" for="exampleRadios2">
+                                PrPosting
+                            </label>
+                        </div>
+
+                    </div>
+
+                    <div class="form-group">
+                        <label for="cookie">Cookie из вкладки Network одной строкой, Copy Value по правой кнопке не использовать</label>
+                        <input type="text" class="form-control" id="cookie" name="cookie">
+                    </div>
+
+                    <input class="btn btn-primary" type="submit" value="Send">
+                </form>
+
+
             </div>
         </div>
     </section>

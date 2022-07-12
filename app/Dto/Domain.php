@@ -11,7 +11,7 @@ class Domain
 {
 
     protected string $name;
-    protected int|null $price = null;
+    protected float|null $price = null;
     protected int|null $traffic = null;
     protected Currency $currency;
     protected string $niches;
@@ -82,9 +82,9 @@ class Domain
         return $this->niches;
     }
 
-    public function setNiches(array $niches): void
+    public function setNiches(string $niches): void
     {
-        $this->niches = implode("; ", $niches);
+        $this->niches = $niches;
     }
 
     public function compareCreatedAndUpdated() : bool

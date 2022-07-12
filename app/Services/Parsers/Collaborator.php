@@ -27,6 +27,27 @@ class Collaborator extends Parser
         return true;
     }
 
+    protected function getDomainsTotal() : int
+    {
+        $html = $this->httpClient->get('https://collaborator.pro/ua/catalog/creator/article')->body();
+        $this->storage->put('TotalCount.html',$html);
+        $this->checkLoggedIn($html);
+        $dom = new Crawler($html);
+        if ($dom->filter('.filter-panel b')->count() > 0) {
+            $domainsCount = DomainsHelper::getPriceFromString($dom->filter('.filter-panel b')->text());
+        } else {
+            Log::stack(['stderr', $this->logChannel])->warning('Domain total count not found');
+            $domainsCount = 0;
+        }
+
+        return $domainsCount;
+    }
+
+    protected function fetchDomainsPage(int $pageNum) : string
+    {
+        return $this->httpClient->get('https://collaborator.pro/ua/catalog/creator/article?page='.$pageNum.'&per-page=100&sort=url')->body();
+    }
+
     protected function fetchDomainRows(string $html) : array
     {
         $pageDom = new Crawler($html);
@@ -58,7 +79,7 @@ class Collaborator extends Parser
         $niches = $rowDom->filter('.c-t-theme__tags .tag')->each(function ($content) {
             return $content->text();
         });
-        $domain->setNiches($niches);
+        $domain->setNiches(implode("; ", $niches));
 
         return $domain;
     }
@@ -88,18 +109,6 @@ class Collaborator extends Parser
 
         return $collaboratorDbDomain;
 
-    }
-
-    protected function getDomainsTotal() : int
-    {
-        $html = $this->httpClient->get('https://collaborator.pro/ua/catalog/creator/article?page=1')->body();
-        $dom = new Crawler($html);
-        return DomainsHelper::getPriceFromString($dom->filter('.filter-panel b')->text());
-    }
-
-    protected function fetchDomainsPage(int $pageNum) : string
-    {
-        return $this->httpClient->get('https://collaborator.pro/ua/catalog/creator/article?page='.$pageNum.'&per-page=100&sort=url')->body();
     }
 
 }
