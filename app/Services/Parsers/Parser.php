@@ -15,8 +15,8 @@ use Psr\Log\LoggerInterface;
 
 abstract class Parser
 {
-    const LOGGED_IN_NEEDLE = '';
-    const NEXT_PAGE_NEEDLE = '';
+    const LOGGED_IN_NEEDLE = 'replace this with your needle';
+    const NEXT_PAGE_NEEDLE = 'replace this with your needle';
     protected string $parserName;
     protected int $pause;
     protected LoggerInterface $logChannel;
@@ -72,12 +72,12 @@ abstract class Parser
 
     public function parse() : void
     {
+
         $pageNum = 0;
-        $this->counter = new ParserProgressCounter($this->getCounterMax());
+        $this->counter = new ParserProgressCounter($this->getDomainsTotal());
 
         do {
-            $pageNum++;
-            Log::stack(['stderr', $this->logChannel])->info('Parse page #'.$pageNum);
+            Log::stack(['stderr', $this->logChannel])->info('Parse page #'.$pageNum++);
             $html = $this->fetchDomainsPage($pageNum);
             $this->storage->put($pageNum.'.html',$html);
             if (!$this->isLoggedIn($html)) {
@@ -134,7 +134,7 @@ abstract class Parser
 
     protected function checkNextPage(string $html) : bool
     {
-        return str_contains($html,self::NEXT_PAGE_NEEDLE);
+        return str_contains($html,static::NEXT_PAGE_NEEDLE);
     }
 
     protected function setPause() : void
@@ -147,7 +147,8 @@ abstract class Parser
         return $this->pause;
     }
 
-    abstract protected function getCounterMax() : int;
+
+    abstract protected function getDomainsTotal() : int;
     abstract protected function fetchDomainsPage(int $pageNum) : string;
     abstract protected function fetchDomainRows(string $html) : array;
     abstract protected function fetchDomainData(string $html) : Domain;

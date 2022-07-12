@@ -90,7 +90,7 @@ class Collaborator extends Parser
 
     }
 
-    protected function getCounterMax() : int
+    protected function getDomainsTotal() : int
     {
         $html = $this->httpClient->get('https://collaborator.pro/ua/catalog/creator/article?page=1')->body();
         $dom = new Crawler($html);
@@ -99,7 +99,7 @@ class Collaborator extends Parser
 
     protected function fetchDomainsPage(int $pageNum) : string
     {
-        return $this->httpClient->get('https://collaborator.pro/ua/catalog/creator/article?page='.$pageNum.'&per-page=100')->body();
+        return $this->httpClient->get('https://collaborator.pro/ua/catalog/creator/article?page='.$pageNum.'&per-page=100&sort=url')->body();
     }
 
 }
