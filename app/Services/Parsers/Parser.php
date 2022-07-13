@@ -28,7 +28,6 @@ abstract class Parser
 
     final public function __construct()
     {
-        //Имя парсера - должно совпадать с названием таблицы
         $classParts = explode('\\', get_class($this));
         $this->parserName = strtolower(array_pop($classParts));
 
@@ -73,15 +72,13 @@ abstract class Parser
 
     }
 
-    public function parse() : void
+    public function parse($pageNum = 1) : void
     {
 
-        $pageNum = 0;
         $this->counter = new ParserProgressCounter($this->getDomainsTotal());
 
         do {
-            $pageNum++;
-            Log::stack(['stderr', $this->logChannel])->info('Parse page #'.$pageNum);
+             Log::stack(['stderr', $this->logChannel])->info('Parse page #'.$pageNum);
             $html = $this->fetchDomainsPage($pageNum);
             $this->storage->put($pageNum.'.html',$html);
             $this->checkLoggedIn($html);
@@ -93,36 +90,36 @@ abstract class Parser
                 $this->storage->put('row.html',$html);
 
                 //Получаем данные домена
-                $domain = $this->fetchDomainData($row);
+                $domainDto = $this->fetchDomainData($row);
 
-                //Проверяем валидноcть спарсенных данных так как может быть "URL скрыт" или нету цены
-                if ($domain->isDataOk()) {
+                //Проверяем валидноcть спарсенных данных так как может быть "URL скрыт", нету цены и т.д.
+                if ($domainDto->isDataOk()) {
 
                     //Если с данными все ОК, то добавляем/обновляем домен
-                    $stockDomain = $this->upsertDomain($domain);
+                    $stockDomain = $this->upsertDomain($domainDto);
 
-                    //Сравниваем время создания и апдейта, (для счетчика добавленных/обновленных так как upsertDomain уникален для каждого парсера, то сравнение происходит в этом методе)
-                    //Если время совпадает, то домен новый, если нет - то домен уже был
+                    //Сравниваем время создания и апдейта, Если время совпадает, то домен новый, если нет - то домен уже был.
                     ($stockDomain->created_at == $stockDomain->updated_at) ? $this->counter->incNew() : $this->counter->incUpdated();
                 } else {
                     //Если данные невалидны, то обновляем счетчик пропущеных
                     $this->counter->incSkipped();
                 }
 
-                Log::stack(['stderr', $this->logChannel])->info('Domain: '.$domain->getName().' | State: '.$this->counter->getLastAddedTo().' | Progress: '.$this->counter->getCurrent().'/'.$this->counter->getTotal().' | Added: '.$this->counter->getNew().' | Updated: '.$this->counter->getUpdated().' | Skipped:'. $this->counter->getSkipped());
+                Log::stack(['stderr', $this->logChannel])->info('Domain: '.$domainDto->getName().' | State: '.$this->counter->getLastAddedTo().' | Progress: '.$this->counter->getCurrent().'/'.$this->counter->getTotal().' | Added: '.$this->counter->getNew().' | Updated: '.$this->counter->getUpdated().' | Skipped:'. $this->counter->getSkipped());
 
             }
 
             Log::stack(['stderr', $this->logChannel])->info('Sleeping '.$this->getPause().' seconds');
             sleep($this->getPause());
             $this->setPause();
+            $pageNum++;
 
         } while ($this->isNextPage($html));
 
         Log::stack(['stderr', $this->logChannel])->info('Finished');
         Update::setUpdatedTime($this->parserName);
-        //Удаляем домены которых больше нету в базе
-        DB::table($this->parserName)->whereDate('updated_at', '<=', now()->subDays(2)->toDateTimeString())->delete();
+
+        $this->postUpdateActions();
 
     }
 
@@ -166,5 +163,6 @@ abstract class Parser
     abstract protected function fetchDomainRows(string $html) : array;
     abstract protected function fetchDomainData(string $html) : Domain;
     abstract protected function upsertDomain(Domain $domain) : StockDomain;
+    abstract protected function postUpdateActions() : void;
 
 }

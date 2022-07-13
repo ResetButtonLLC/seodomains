@@ -3,17 +3,12 @@
 namespace App\Services\Parsers;
 
 use App\Dto\Domain as DomainDto;
-use App\Dto\ParserProgressCounter;
+use App\Models\CollaboratorDomain;
 use App\Enums\Currency;
 use App\Models\Domain;
-use App\Exceptions\ParserException;
 use App\Helpers\DomainsHelper;
 use App\Models\StockDomain;
-use Carbon\Carbon;
-use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Facades\Http;
 use Symfony\Component\DomCrawler\Crawler;
 
 class Collaborator extends Parser
@@ -69,7 +64,8 @@ class Collaborator extends Parser
         $domain->setStockId(intval($rowDom->filter('.grid-group-checkbox')->attr('value')));
 
         if ($rowDom->filter('.creator-price_catalog')->count() > 0) {
-            $domain->setPrice($rowDom->filter('.creator-price_catalog')->attr('data-publication'), Currency::UAH);
+            $price = DomainsHelper::getPriceFromString($rowDom->filter('.creator-price_catalog')->attr('data-publication'));
+            $domain->setPrice($price, Currency::UAH);
         }
 
         if ($rowDom->filter('ul.list-traffic li')->count() > 0) {
@@ -79,36 +75,40 @@ class Collaborator extends Parser
         $niches = $rowDom->filter('.c-t-theme__tags .tag')->each(function ($content) {
             return $content->text();
         });
-        $domain->setNiches(implode("; ", $niches));
+        $domain->setTheme(implode("; ", $niches));
 
         return $domain;
     }
 
 
-    protected function upsertDomain(DomainDto $domain) : StockDomain
+    protected function upsertDomain(DomainDto $domainDto) : StockDomain
     {
-        $dBdomain = Domain::updateOrCreate(
-            ['url' => $domain->getName()],
+        $domain = Domain::updateOrCreate(
+            ['url' => $domainDto->getName()],
             //todo update траффик когда понятно какой брать
-            ['url' => $domain->getName()]
+            ['url' => $domainDto->getName()]
         );
 
-        $collaboratorDbDomain = \App\Models\Collaborator::updateOrCreate(
+        $collaboratorDomain = CollaboratorDomain::updateOrCreate(
             [
-                'id' => $domain->getStockId()
+                'id' => $domainDto->getStockId()
             ],
             [
-                'domain_id' => $dBdomain->id,
-                'url' => $domain->getName(),
-                'price' => $domain->getPrice(),
-                'theme' => $domain->getNiches(),
-                'traffic' => $domain->getTraffic(),
-                'updated_at' => Carbon::now()
+                'domain_id' => $domain->id,
+                'domain' => $domainDto->getName(),
+                'price' => $domainDto->getPrice(),
+                'theme' => $domainDto->getTheme(),
+                'traffic' => $domainDto->getTraffic(),
+                'updated_at' => now()
             ]
         );
 
-        return $collaboratorDbDomain;
+        return $collaboratorDomain;
 
     }
 
+    protected function postUpdateActions(): void
+    {
+        CollaboratorDomain::query()->whereDate('updated_at', '<=', now()->subDays(1)->toDateTimeString())->delete();
+    }
 }

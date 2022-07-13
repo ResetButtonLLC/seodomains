@@ -14,15 +14,14 @@ class Domain
     protected float|null $price = null;
     protected int|null $traffic = null;
     protected Currency $currency;
-    protected string $niches;
+    protected string $theme;
     protected int $stockId = 0;
-    protected Carbon|null $created_at;
-    protected Carbon|null $updated_at;
 
     public function __construct(string $domain)
     {
         $this->name = strtolower($domain);
-        $this->currency = Currency::USD;
+        $this->name = preg_replace('/^www\./','',$this->name);
+        $this->currency = Currency::UAH;
     }
 
     public function isNameValid() : bool
@@ -40,16 +39,16 @@ class Domain
         return $this->name;
     }
 
-    public function getPrice(): int
+    public function getPrice(): float
     {
         return $this->price;
     }
 
-    public function setPrice(string|int $price, Currency $currency): void
+    public function setPrice(float $price, Currency $currency): void
     {
-        //todo конверсия если гривны
+        //todo конверсия в гривны, если доллар
         $this->currency = $currency;
-        $this->price = DomainsHelper::getPriceFromString($price);
+        $this->price = $price;
     }
 
     public function isDataOk() : bool
@@ -77,21 +76,14 @@ class Domain
         $this->stockId = $stockId;
     }
 
-    public function getNiches(): string
+    public function getTheme(): string
     {
-        return $this->niches;
+        return $this->theme;
     }
 
-    public function setNiches(string $niches): void
+    public function setTheme(string $theme): void
     {
-        $this->niches = $niches;
+        $this->theme = $theme;
     }
-
-    public function compareCreatedAndUpdated() : bool
-    {
-        return $this->created_at == $this->updated_at;
-    }
-
-
 
 }

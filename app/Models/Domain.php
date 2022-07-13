@@ -37,17 +37,19 @@ class Domain extends Model {
     }
 
     public function collaborator(): HasOne {
-        return $this->hasOne('App\Models\Collaborator', 'domain_id', 'id');
+        return $this->hasOne('App\Models\CollaboratorDomain', 'domain_id', 'id');
     }
 
     public static function getDomainsForExport() {
+
+
         $domains = Domain::query()
 //            ->leftjoin('gogetlinks', 'domains.id', '=', 'gogetlinks.domain_id')
 //            ->leftjoin('miralinks', 'domains.id', '=', 'miralinks.domain_id')
             ->leftjoin('prnews', 'domains.id', '=', 'prnews.domain_id')
 //            ->leftjoin('rotapost', 'domains.id', '=', 'rotapost.domain_id')
 //            ->leftjoin('sape', 'domains.id', '=', 'sape.domain_id')
-            ->leftjoin('collaborator', 'domains.id', '=', 'collaborator.domain_id')
+            ->leftjoin('collaborator_domains', 'domains.id', '=', 'collaborator_domains.domain_id')
             //->select('domains.*', 'gogetlinks.placement_price as gogetlinks_placement_price','miralinks.placement_price as miralinks_placement_price','prnews.price as prnews_placement_price','rotapost.placement_price as rotapost_placement_price','sape.placement_price as sape_placement_price')
             ->select(
                 'domains.*',
@@ -71,8 +73,8 @@ class Domain extends Model {
 */
                 'prnews.price as prnews_placement_price',
                 'prnews.audience as prnews_audience',
-                'collaborator.price as collaborator_placement_price',
-                'collaborator.id as collaborator_site_id',
+                'collaborator_domains.price as collaborator_placement_price',
+                'collaborator_domains.id as collaborator_site_id',
                 )
             ->where('domains.url', '<>', '')->get();
 

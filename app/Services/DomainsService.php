@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\DB;
 
 class DomainsService
 {
+    //Устаревший метод
     static public function getDataForDomains(array $domains) : array
     {
 

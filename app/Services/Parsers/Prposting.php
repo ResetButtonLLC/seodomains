@@ -6,8 +6,8 @@ use App\Dto\Domain as DomainDto;
 use App\Enums\Currency;
 use App\Helpers\DomainsHelper;
 use App\Models\Domain;
+use App\Models\PrpostingDomain;
 use App\Models\StockDomain;
-use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
 use Symfony\Component\DomCrawler\Crawler;
 
@@ -34,7 +34,7 @@ class Prposting extends Parser
 
     protected function fetchDomainsPage(int $pageNum) : string
     {
-        return $this->httpClient->get('https://prposting.com/ru/publishers?page='.$pageNum)->body();
+        return $this->httpClient->get('https://prposting.com/ru/projects/14959/publishers?page='.$pageNum)->body();
     }
 
     protected function fetchDomainRows(string $html) : array
@@ -55,10 +55,13 @@ class Prposting extends Parser
 
         $domain = new DomainDto($rowDom->filter('a.is-size-6')->text());
 
-        $domain->setStockId(intval($rowDom->filter('div[price^="$"]')->attr(':site-id')));
+        //ID в бирже
+        $domain->setStockId(intval($rowDom->filter('td.is-narrow div')->attr(':site-id')));
 
-        if ($rowDom->filter('div[price^="$"]')->count() > 0) {
-            $domain->setPrice($rowDom->filter('div[price^="$"]')->attr('price'), Currency::USD);
+        //Цена
+        if ($rowDom->filter('td.is-narrow div')->count() > 0) {
+            $price = DomainsHelper::getPriceFromString($rowDom->filter('td.is-narrow div')->attr('price'));
+            $domain->setPrice($price,Currency::UAH);
         }
 
         //Traffic SW
@@ -66,37 +69,41 @@ class Prposting extends Parser
             $domain->setTraffic($rowDom->filter('td.is-paddingless:nth-child(3) tr td:nth-child(2)')->first()->text());
         }
 
-        $niches = $rowDom->filter('td.is-paddingless tr:nth-child(2)')->text();
+        $theme = $rowDom->filter('td.is-paddingless tr:nth-child(2)')->text();
 
-        $domain->setNiches($niches);
+        $domain->setTheme($theme);
 
         return $domain;
     }
 
-    protected function upsertDomain(DomainDto $domain) : StockDomain
+    protected function upsertDomain(DomainDto $domainDto) : StockDomain
     {
-        $dBdomain = Domain::updateOrCreate(
-            ['url' => $domain->getName()],
+        $domain = Domain::updateOrCreate(
+            ['url' => $domainDto->getName()],
             //todo update траффик когда понятно какой брать
-            ['url' => $domain->getName()]
+            ['url' => $domainDto->getName()]
         );
 
-        $collaboratorDbDomain = \App\Models\Collaborator::updateOrCreate(
+        $prpostingDomain = PrpostingDomain::updateOrCreate(
             [
-                'id' => $domain->getStockId()
+                'id' => $domainDto->getStockId()
             ],
             [
-                'domain_id' => $dBdomain->id,
-                'url' => $domain->getName(),
-                'price' => $domain->getPrice(),
-                'theme' => $domain->getNiches(),
-                'traffic' => $domain->getTraffic(),
-                'updated_at' => Carbon::now()
+                'domain_id' => $domain->id,
+                'name' => $domainDto->getName(),
+                'price' => $domainDto->getPrice(),
+                'theme' => $domainDto->getTheme(),
+                'traffic' => $domainDto->getTraffic(),
+                'updated_at' => now()
             ]
         );
 
-        return $collaboratorDbDomain;
+        return $prpostingDomain;
 
     }
 
+    protected function postUpdateActions(): void
+    {
+        PrpostingDomain::query()->whereDate('updated_at', '<=', now()->subDays(2)->toDateTimeString())->delete();
+    }
 }
