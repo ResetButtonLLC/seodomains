@@ -79,9 +79,9 @@ class Prposting extends Parser
     protected function upsertDomain(DomainDto $domainDto) : StockDomain
     {
         $domain = Domain::updateOrCreate(
-            ['url' => $domainDto->getName()],
+            ['domain' => $domainDto->getName()],
             //todo update траффик когда понятно какой брать
-            ['url' => $domainDto->getName()]
+            ['domain' => $domainDto->getName()]
         );
 
         $prpostingDomain = PrpostingDomain::updateOrCreate(

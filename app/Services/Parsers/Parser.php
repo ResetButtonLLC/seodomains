@@ -74,7 +74,6 @@ abstract class Parser
     public function parse($pageNum = 1) : void
     {
 
-        $pageNum = 298;
         $this->counter = new ParserProgressCounter($this->getDomainsTotal());
 
         do {
