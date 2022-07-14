@@ -9,7 +9,6 @@ use App\Models\StockDomain;
 use App\Models\Update;
 use Illuminate\Contracts\Filesystem\Filesystem;
 use Illuminate\Http\Client\PendingRequest;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
@@ -75,6 +74,7 @@ abstract class Parser
     public function parse($pageNum = 1) : void
     {
 
+        $pageNum = 298;
         $this->counter = new ParserProgressCounter($this->getDomainsTotal());
 
         do {
@@ -91,6 +91,7 @@ abstract class Parser
 
                 //Получаем данные домена
                 $domainDto = $this->fetchDomainData($row);
+                //todo пустое имя должно вызывать ошибку
 
                 //Проверяем валидноcть спарсенных данных так как может быть "URL скрыт", нету цены и т.д.
                 if ($domainDto->isDataOk()) {

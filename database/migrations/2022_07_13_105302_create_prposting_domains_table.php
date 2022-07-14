@@ -17,7 +17,7 @@ return new class extends Migration
             $table->unsignedBigInteger('id')->unique();
             $table->unsignedInteger('domain_id')->unique();
             $table->string('name',255);
-            $table->float('price');
+            $table->decimal('price', 14, 2)->unsigned();
             $table->text('theme');
             $table->unsignedBigInteger('traffic')->nullable();
             $table->timestamps();

@@ -13,12 +13,9 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::table('collaborator', function (Blueprint $table) {
+        Schema::table('domains', function (Blueprint $table) {
             $table->renameColumn('url','domain');
-            $table->decimal('price', 14, 2)->unsigned()->change();
         });
-
-        Schema::rename('collaborator', 'collaborator_domains');
     }
 
     /**
@@ -28,11 +25,8 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::rename('collaborator_domains', 'collaborator');
-
-        Schema::table('collaborator', function (Blueprint $table) {
+        Schema::table('domains', function (Blueprint $table) {
             $table->renameColumn('domain','url');
-            $table->integer('price')->unsigned()->change();
         });
     }
 };

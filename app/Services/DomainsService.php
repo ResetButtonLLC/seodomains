@@ -17,7 +17,7 @@ class DomainsService
     {
 
         //Получаем домен
-        //$result = Domains::with('gogetlinks','miralinks','prnews','rotapost','sape')->where('url', '=',$domain)->first();
+        //$result = Domains::with('gogetlinks','miralinks','prnews','rotapost','sape')->where('domain', '=',$domain)->first();
         //Старый вариант для одного домена
 
         $dbresult = DB::table('domains')
@@ -28,21 +28,21 @@ class DomainsService
             ->leftjoin('sape', 'domains.id', '=', 'sape.domain_id')
             ->leftjoin('collaborator', 'domains.id', '=', 'collaborator.domain_id')
             ->select('domains.*', 'gogetlinks.placement_price as gogetlinks_placement_price','miralinks.placement_price as miralinks_placement_price','prnews.price as prnews_placement_price','rotapost.placement_price as rotapost_placement_price','sape.placement_price as sape_placement_price','sape.placement_price as sape_placement_price','collaborator.price as collaborator_placement_price')
-            ->whereIn('domains.url', $domains)
+            ->whereIn('domains.domain', $domains)
             //Сортировка сохраняет порядок $domains
             //Оставлю на память, но так не работает - если домена не существует, то пропуска не будет
-            //->orderByRaw('FIELD(domains.url, '.'"'.implode('","',$domains).'"'.')')
+            //->orderByRaw('FIELD(domains.domain, '.'"'.implode('","',$domains).'"'.')')
             ->get();
 
         //Необходимо сохранить сортировку переданную на вход и для каждого домена, который отсутствует в базе, установить id:0
 
         foreach ($domains as $domain) {
-            $item = $dbresult->firstWhere('url', $domain);
+            $item = $dbresult->firstWhere('domain', $domain);
             if($item) {
                 $item = (array) $item;
                 $result[$domain] = array_merge(['found' => true],$item);
             } else {
-                $result[$domain] = ['found' => false,"id" => 0, "url" => $domain];
+                $result[$domain] = ['found' => false,"id" => 0, "domain" => $domain];
             }
 
         }
@@ -55,7 +55,7 @@ class DomainsService
         $writer = new \XLSXWriter();
 
         $header = array(
-            'URL'=>'string',
+            'domain'=>'string',
             'Miralinks цена размещения'=>'integer',
             'Miralinks цена написания'=>'integer',
             'Miralinks последнее посещение владельцем'=>'string',
@@ -89,13 +89,13 @@ class DomainsService
         //set rows
         foreach ($domains as $data) {
             $writer->writeSheetRow('Sheet1', array(
-                '=HYPERLINK("http://' . $data->url . '","' . $data->url . '")',
+                '=HYPERLINK("http://' . $data->domain . '","' . $data->domain . '")',
                 (isset($data->miralinks_placement_price)) ? '=HYPERLINK("https://anonym.to/?https://www.miralinks.ru/catalog/profileView/' . $data->miralinks_site_id . '","' . $data->miralinks_placement_price . '")' : '',
                 $data->miralinks_writing_price,
                 $data->miralinks_last_placement,
                 $data->miralinks_placement_time,
                 $data->gogetlinks_placement_price,
-                (isset($data->rotapost_placement_price)) ? '=HYPERLINK("https://anonym.to/?https://www.rotapost.ru/buy/site/?' . $data->url . '","' . $data->rotapost_placement_price . '")' : '',
+                (isset($data->rotapost_placement_price)) ? '=HYPERLINK("https://anonym.to/?https://www.rotapost.ru/buy/site/?' . $data->domain . '","' . $data->rotapost_placement_price . '")' : '',
                 $data->rotapost_writing_price,
                 $data->sape_placement_price,
                 $data->prnews_placement_price,

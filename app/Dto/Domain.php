@@ -19,8 +19,7 @@ class Domain
 
     public function __construct(string $domain)
     {
-        $this->name = strtolower($domain);
-        $this->name = preg_replace('/^www\./','',$this->name);
+        $this->setName($domain);
         $this->currency = Currency::UAH;
     }
 
@@ -32,6 +31,12 @@ class Domain
         };
 
         return $domainValid;
+    }
+
+    private function setName(string $domain) : void
+    {
+        $this->name = strtolower($domain);
+        $this->name = preg_replace('/^www\./','',$this->name);
     }
 
     public function getName() : string

@@ -76,7 +76,7 @@ class Domain extends Model {
                 'collaborator_domains.price as collaborator_placement_price',
                 'collaborator_domains.id as collaborator_site_id',
                 )
-            ->where('domains.url', '<>', '')->get();
+            ->where('domains.domain', '<>', '')->get();
 
         return $domains;
     }
