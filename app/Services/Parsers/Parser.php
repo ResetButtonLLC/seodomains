@@ -86,7 +86,7 @@ abstract class Parser
             $domainRows = $this->fetchDomainRows($html);
 
             foreach ($domainRows as $row) {
-                $this->storage->put('row.html',$html);
+                $this->storage->put('row.html',$row);
 
                 //Получаем данные домена
                 $domainDto = $this->fetchDomainData($row);

@@ -12,7 +12,7 @@ class CollaboratorCommand extends Command
      *
      * @var string
      */
-    protected $signature = 'domains:collaborator';
+    protected $signature = 'domains:collaborator {page=1}';
 
     /**
      * The console command description.
@@ -28,10 +28,8 @@ class CollaboratorCommand extends Command
      */
     public function handle()
     {
-
         $parser = new Collaborator();
-
-        $parser->parse();
+        $parser->parse($this->argument('page'));
 
         return 0;
     }

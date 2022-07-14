@@ -26,7 +26,12 @@ class Domain
     public function isNameValid() : bool
     {
         $domainValid = str_contains($this->name,'.');
+
         if (Str::contains($this->name,DomainsHelper::getNonvalidZones())) {
+            $domainValid = false;
+        };
+
+        if (Str::contains($this->name,'*')) {
             $domainValid = false;
         };
 

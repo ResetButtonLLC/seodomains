@@ -13,7 +13,7 @@ class PrpostingCommand extends Command
      *
      * @var string
      */
-    protected $signature = 'domains:prposting';
+    protected $signature = 'domains:prposting {page=1}';
 
     /**
      * The console command description.
@@ -30,7 +30,7 @@ class PrpostingCommand extends Command
      */
     public function handle() {
         $parser = new Prposting();
-        $parser->parse();
+        $parser->parse($this->argument('page'));
         return 0;
     }
 }

@@ -19,9 +19,9 @@ class DomainsHelper
     {
         $nonValidZones = [
             'ru',
-            '.рф',
-            '.xn--p1ai',
-            '.рус',
+            'рф',
+            'xn--p1ai',
+            'рус',
             'xn--p1acf',
             'su',
             'moscow',
