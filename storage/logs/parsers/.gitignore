@@ -1,0 +1,4 @@
+*.log
+!/collaborator
+!/prposting
+!.gitignore
