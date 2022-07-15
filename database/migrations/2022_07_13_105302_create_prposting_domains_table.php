@@ -15,7 +15,7 @@ return new class extends Migration
     {
         Schema::create('prposting_domains', function (Blueprint $table) {
             $table->unsignedBigInteger('id')->unique();
-            $table->unsignedInteger('domain_id')->unique();
+            $table->unsignedInteger('domain_id');
             $table->string('name',255);
             $table->decimal('price', 14, 2)->unsigned();
             $table->text('theme');
