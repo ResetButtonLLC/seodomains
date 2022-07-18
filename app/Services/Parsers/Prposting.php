@@ -48,7 +48,7 @@ class Prposting extends Parser
         return $rows;
     }
 
-    protected function fetchDomainData(string $html) : DomainDto
+    public function fetchDomainData(string $html) : DomainDto
     {
 
         $rowDom = new Crawler($html);
@@ -69,9 +69,15 @@ class Prposting extends Parser
             $domain->setTraffic($rowDom->filter('td.is-paddingless:nth-child(3) tr td:nth-child(2)')->first()->text());
         }
 
-        $theme = $rowDom->filter('td.is-paddingless tr:nth-child(2)')->text();
+        //UA Traffic SW
+        if ($rowDom->filter('td.is-paddingless:nth-child(3) tr td:nth-child(2)')->count() > 0) {
+            $domain->setTraffic($rowDom->filter('td.is-paddingless:nth-child(3) tr td:nth-child(2)')->first()->text());
+        }
 
+        $theme = $rowDom->filter('td.is-paddingless tr:nth-child(2)')->text();
         $domain->setTheme($theme);
+
+        dd($domain);
 
         return $domain;
     }
@@ -86,11 +92,12 @@ class Prposting extends Parser
 
         $prpostingDomain = PrpostingDomain::updateOrCreate(
             [
-                'id' => $domainDto->getStockId()
+                //используем name, так как обнаружился домен с двойным ID
+                'name' => $domainDto->getName(),
             ],
             [
+                'id' => $domainDto->getStockId(),
                 'domain_id' => $domain->id,
-                'name' => $domainDto->getName(),
                 'price' => $domainDto->getPrice(),
                 'theme' => $domainDto->getTheme(),
                 'traffic' => $domainDto->getTraffic(),

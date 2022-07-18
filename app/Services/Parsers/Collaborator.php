@@ -72,6 +72,8 @@ class Collaborator extends Parser
             $domain->setTraffic($rowDom->filter('ul.list-traffic li')->first()->text());
         }
 
+        $domain->setDr($rowDom->filter('td:nth-child(7)')->text());
+
         $niches = $rowDom->filter('.c-t-theme__tags .tag')->each(function ($content) {
             return $content->text();
         });
@@ -98,6 +100,7 @@ class Collaborator extends Parser
                 'domain' => $domainDto->getName(),
                 'price' => $domainDto->getPrice(),
                 'theme' => $domainDto->getTheme(),
+                'dr' => $domainDto->getDr(),
                 'traffic' => $domainDto->getTraffic(),
                 'updated_at' => now()
             ]

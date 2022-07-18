@@ -8,4 +8,5 @@ abstract class StockDomain extends Model
 {
     public $timestamps = true;
     public $incrementing = false;
+    protected $guarded = [];
 }

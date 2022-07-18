@@ -19,5 +19,7 @@ Route::group(['middleware' => ['auth']], function () {
 
 Route::get('/test', function () {
     $parser = new \App\Services\Parsers\Prposting();
-    $parser->parse();
+    $html = file_get_contents(storage_path('logs/parsers/prposting/pages/row.html'));
+    $parser->fetchDomainData($html);
+
 });

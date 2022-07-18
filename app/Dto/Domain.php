@@ -13,8 +13,13 @@ class Domain
     protected string $name;
     protected float|null $price = null;
     protected int|null $traffic = null;
+    protected float|null $uaTraffic = null;
+    protected int|null $dr = null;
+    protected int|null $cf = null;
+    protected int|null $tf = null;
     protected Currency $currency;
-    protected string $theme;
+    protected string $theme = '';
+    protected string $languages = '';
     protected int $stockId = 0;
 
     public function __construct(string $domain)
@@ -94,6 +99,16 @@ class Domain
     public function setTheme(string $theme): void
     {
         $this->theme = $theme;
+    }
+
+    public function getDr(): ?int
+    {
+        return $this->dr;
+    }
+
+    public function setDr(int $dr): void
+    {
+        $this->dr = $dr;
     }
 
 }
