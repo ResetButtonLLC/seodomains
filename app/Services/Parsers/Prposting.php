@@ -9,7 +9,7 @@ use App\Models\Domain;
 use App\Models\PrpostingDomain;
 use App\Models\StockDomain;
 use Illuminate\Support\Facades\Log;
-use Symfony\Component\DomCrawler\Crawler;
+use App\Extensions\Symfony\DomCrawler\Crawler;
 
 class Prposting extends Parser
 {
@@ -48,7 +48,7 @@ class Prposting extends Parser
         return $rows;
     }
 
-    public function fetchDomainData(string $html) : DomainDto
+    protected function fetchDomainData(string $html) : DomainDto
     {
 
         $rowDom = new Crawler($html);
@@ -59,25 +59,22 @@ class Prposting extends Parser
         $domain->setStockId(intval($rowDom->filter('td.is-narrow div')->attr(':site-id')));
 
         //Цена
-        if ($rowDom->filter('td.is-narrow div')->count() > 0) {
-            $price = DomainsHelper::getPriceFromString($rowDom->filter('td.is-narrow div')->attr('price'));
-            $domain->setPrice($price,Currency::UAH);
-        }
+        $price = DomainsHelper::getPriceFromString($rowDom->filter('td.is-narrow div')->attr('price'));
+        $domain->setPrice($price,Currency::UAH);
 
-        //Traffic SW
-        if ($rowDom->filter('td.is-paddingless:nth-child(3) tr td:nth-child(2)')->count() > 0) {
-            $domain->setTraffic($rowDom->filter('td.is-paddingless:nth-child(3) tr td:nth-child(2)')->first()->text());
-        }
+        //Traffic Similarweb
+        $domain->setTraffic($rowDom->fetchOptionalText('td.is-paddingless:nth-child(3) tr td:nth-child(2)'));
 
-        //UA Traffic SW
-        if ($rowDom->filter('td.is-paddingless:nth-child(3) tr td:nth-child(2)')->count() > 0) {
-            $domain->setTraffic($rowDom->filter('td.is-paddingless:nth-child(3) tr td:nth-child(2)')->first()->text());
-        }
+        //Ahrefs DR
+        $domain->setDr($rowDom->fetchOptionalText('td.is-paddingless:nth-child(2) tr td.has-text-right'));
 
+        //Majestic CF & TF
+        $domain->setTf($rowDom->fetchOptionalText('td.is-paddingless:nth-child(5) tr td.has-text-right'));
+        $domain->setCf($rowDom->fetchOptionalText('td.is-paddingless:nth-child(5) table tr:nth-child(2) td:nth-child(2)'));
+
+        //Theme
         $theme = $rowDom->filter('td.is-paddingless tr:nth-child(2)')->text();
         $domain->setTheme($theme);
-
-        dd($domain);
 
         return $domain;
     }
@@ -101,6 +98,9 @@ class Prposting extends Parser
                 'price' => $domainDto->getPrice(),
                 'theme' => $domainDto->getTheme(),
                 'traffic' => $domainDto->getTraffic(),
+                'dr' => $domainDto->getDr(),
+                'cf' => $domainDto->getCf(),
+                'tf' => $domainDto->getTf(),
                 'updated_at' => now()
             ]
         );

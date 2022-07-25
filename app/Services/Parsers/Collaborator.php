@@ -9,7 +9,7 @@ use App\Models\Domain;
 use App\Helpers\DomainsHelper;
 use App\Models\StockDomain;
 use Illuminate\Support\Facades\Log;
-use Symfony\Component\DomCrawler\Crawler;
+use App\Extensions\Symfony\DomCrawler\Crawler;
 
 class Collaborator extends Parser
 {
@@ -61,19 +61,20 @@ class Collaborator extends Parser
 
         $domain = new DomainDto($rowDom->filter('.link')->text());
 
+        //ID в бирже
         $domain->setStockId(intval($rowDom->filter('.grid-group-checkbox')->attr('value')));
 
-        if ($rowDom->filter('.creator-price_catalog')->count() > 0) {
-            $price = DomainsHelper::getPriceFromString($rowDom->filter('.creator-price_catalog')->attr('data-publication'));
-            $domain->setPrice($price, Currency::UAH);
-        }
+        //цена
+        $price = DomainsHelper::getPriceFromString($rowDom->filter('.creator-price_catalog')->attr('data-publication'));
+        $domain->setPrice($price, Currency::UAH);
 
-        if ($rowDom->filter('ul.list-traffic li')->count() > 0) {
-            $domain->setTraffic($rowDom->filter('ul.list-traffic li')->first()->text());
-        }
+        //траффик
+        $domain->setTraffic($rowDom->fetchOptionalText('ul.list-traffic li'));
 
+        //DR
         $domain->setDr($rowDom->filter('td:nth-child(7)')->text());
 
+        //Theme
         $niches = $rowDom->filter('.c-t-theme__tags .tag')->each(function ($content) {
             return $content->text();
         });

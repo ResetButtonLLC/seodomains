@@ -14,7 +14,9 @@ return new class extends Migration
     public function up()
     {
         Schema::table('prposting_domains', function (Blueprint $table) {
-            //
+            $table->tinyInteger('cf')->unsigned()->nullable()->after('traffic');
+            $table->tinyInteger('tf')->unsigned()->nullable()->after('traffic');
+            $table->tinyInteger('dr')->unsigned()->nullable()->after('traffic');
         });
     }
 
@@ -26,7 +28,7 @@ return new class extends Migration
     public function down()
     {
         Schema::table('prposting_domains', function (Blueprint $table) {
-            //
+            $table->dropColumn(['cf','tf','dr']);
         });
     }
 };

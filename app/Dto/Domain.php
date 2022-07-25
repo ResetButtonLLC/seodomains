@@ -76,9 +76,11 @@ class Domain
         return $this->traffic;
     }
 
-    public function setTraffic(int|string $traffic): void
+    public function setTraffic(null|int|string $traffic): void
     {
-        $this->traffic = DomainsHelper::getTrafficFromString($traffic);
+        if ($traffic) {
+            $this->traffic = DomainsHelper::getTrafficFromString($traffic);
+        }
     }
 
     public function getStockId(): int
@@ -110,5 +112,32 @@ class Domain
     {
         $this->dr = $dr;
     }
+
+
+    public function getCf(): ?int
+    {
+        return $this->cf;
+    }
+
+    public function setCf(null|int $cf): void
+    {
+        if ($cf) {
+            $this->cf = $cf;
+        }
+    }
+
+    public function getTf(): ?int
+    {
+        return $this->tf;
+    }
+
+    public function setTf(null|int $tf): void
+    {
+        if ($tf) {
+            $this->tf = $tf;
+        }
+    }
+
+
 
 }
