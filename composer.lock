@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "530419f32b409b182dff0188d3beb4b6",
+    "content-hash": "e92ab44b2e318c2441659528761b7fc1",
     "packages": [
         {
             "name": "brick/math",
@@ -65,6 +65,130 @@
                 }
             ],
             "time": "2021-08-15T20:50:18+00:00"
+        },
+        {
+            "name": "chrome-php/chrome",
+            "version": "v1.6.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/chrome-php/chrome.git",
+                "reference": "f3deb4b31606309680bd587ea306499e462d0caa"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/chrome-php/chrome/zipball/f3deb4b31606309680bd587ea306499e462d0caa",
+                "reference": "f3deb4b31606309680bd587ea306499e462d0caa",
+                "shasum": ""
+            },
+            "require": {
+                "chrome-php/wrench": "^1.2",
+                "evenement/evenement": "^3.0.1",
+                "monolog/monolog": "^1.26 || ^2.2 || ^3.0",
+                "php": "^7.3 || ^8.0",
+                "psr/log": "^1.1 || ^2.0 || ^3.0",
+                "symfony/filesystem": "^4.4 || ^5.0 || ^6.0",
+                "symfony/polyfill-mbstring": "^1.23",
+                "symfony/process": "^4.4 || ^5.0 || ^6.0"
+            },
+            "require-dev": {
+                "bamarni/composer-bin-plugin": "^1.4.1",
+                "phpunit/phpunit": "^9.5.10",
+                "symfony/var-dumper": "^4.4 || ^5.0 || ^6.0"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "HeadlessChromium\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Graham Campbell",
+                    "email": "hello@gjcampbell.co.uk",
+                    "homepage": "https://github.com/GrahamCampbell"
+                },
+                {
+                    "name": "Enrico Dias",
+                    "email": "enricodias@gmail.com",
+                    "homepage": "https://github.com/enricodias"
+                }
+            ],
+            "description": "Instrument headless chrome/chromium instances from PHP",
+            "keywords": [
+                "browser",
+                "chrome",
+                "chromium",
+                "crawl",
+                "headless",
+                "pdf",
+                "puppeteer",
+                "screenshot"
+            ],
+            "support": {
+                "issues": "https://github.com/chrome-php/chrome/issues",
+                "source": "https://github.com/chrome-php/chrome/tree/v1.6.1"
+            },
+            "time": "2022-05-17T11:04:53+00:00"
+        },
+        {
+            "name": "chrome-php/wrench",
+            "version": "v1.2.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/chrome-php/wrench.git",
+                "reference": "e8a34b54df8c9cd4f6d166bdb9df475988e17ce4"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/chrome-php/wrench/zipball/e8a34b54df8c9cd4f6d166bdb9df475988e17ce4",
+                "reference": "e8a34b54df8c9cd4f6d166bdb9df475988e17ce4",
+                "shasum": ""
+            },
+            "require": {
+                "ext-sockets": "*",
+                "php": "^7.3 || ^8.0",
+                "psr/log": "^1.1 || ^2.0 || ^3.0",
+                "symfony/polyfill-php80": "^1.22"
+            },
+            "conflict": {
+                "wrench/wrench": "*"
+            },
+            "require-dev": {
+                "bamarni/composer-bin-plugin": "^1.4.1",
+                "phpunit/phpunit": "^9.5.5"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Wrench\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Graham Campbell",
+                    "email": "hello@gjcampbell.co.uk",
+                    "homepage": "https://github.com/GrahamCampbell"
+                }
+            ],
+            "description": "A simple PHP WebSocket implementation",
+            "keywords": [
+                "WebSockets",
+                "hybi",
+                "websocket"
+            ],
+            "support": {
+                "issues": "https://github.com/chrome-php/wrench/issues",
+                "source": "https://github.com/chrome-php/wrench/tree/v1.2.0"
+            },
+            "time": "2022-03-30T09:35:45+00:00"
         },
         {
             "name": "clue/stream-filter",
@@ -841,6 +965,53 @@
                 }
             ],
             "time": "2022-06-18T20:57:19+00:00"
+        },
+        {
+            "name": "evenement/evenement",
+            "version": "v3.0.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/igorw/evenement.git",
+                "reference": "531bfb9d15f8aa57454f5f0285b18bec903b8fb7"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/igorw/evenement/zipball/531bfb9d15f8aa57454f5f0285b18bec903b8fb7",
+                "reference": "531bfb9d15f8aa57454f5f0285b18bec903b8fb7",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=7.0"
+            },
+            "require-dev": {
+                "phpunit/phpunit": "^6.0"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-0": {
+                    "Evenement": "src"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Igor Wiedler",
+                    "email": "igor@wiedler.ch"
+                }
+            ],
+            "description": "Événement is a very simple event dispatching library for PHP",
+            "keywords": [
+                "event-dispatcher",
+                "event-emitter"
+            ],
+            "support": {
+                "issues": "https://github.com/igorw/evenement/issues",
+                "source": "https://github.com/igorw/evenement/tree/master"
+            },
+            "time": "2017-07-23T21:35:13+00:00"
         },
         {
             "name": "fruitcake/php-cors",
@@ -4901,6 +5072,69 @@
                 }
             ],
             "time": "2022-02-25T11:15:52+00:00"
+        },
+        {
+            "name": "symfony/filesystem",
+            "version": "v6.1.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/symfony/filesystem.git",
+                "reference": "3132d2f43ca799c2aa099f9738d98228c56baa5d"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/symfony/filesystem/zipball/3132d2f43ca799c2aa099f9738d98228c56baa5d",
+                "reference": "3132d2f43ca799c2aa099f9738d98228c56baa5d",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=8.1",
+                "symfony/polyfill-ctype": "~1.8",
+                "symfony/polyfill-mbstring": "~1.8"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Symfony\\Component\\Filesystem\\": ""
+                },
+                "exclude-from-classmap": [
+                    "/Tests/"
+                ]
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Fabien Potencier",
+                    "email": "fabien@symfony.com"
+                },
+                {
+                    "name": "Symfony Community",
+                    "homepage": "https://symfony.com/contributors"
+                }
+            ],
+            "description": "Provides basic utilities for the filesystem",
+            "homepage": "https://symfony.com",
+            "support": {
+                "source": "https://github.com/symfony/filesystem/tree/v6.1.0"
+            },
+            "funding": [
+                {
+                    "url": "https://symfony.com/sponsor",
+                    "type": "custom"
+                },
+                {
+                    "url": "https://github.com/fabpot",
+                    "type": "github"
+                },
+                {
+                    "url": "https://tidelift.com/funding/github/packagist/symfony/symfony",
+                    "type": "tidelift"
+                }
+            ],
+            "time": "2022-05-21T13:34:40+00:00"
         },
         {
             "name": "symfony/finder",

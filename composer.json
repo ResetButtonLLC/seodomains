@@ -8,6 +8,7 @@
         "php": ">=8.1",
         "ext-curl": "*",
         "ext-json": "*",
+        "chrome-php/chrome": "^1.6",
         "doctrine/dbal": "^2.9",
         "laravel/dusk": "^6.24",
         "laravel/framework": "^9.0",

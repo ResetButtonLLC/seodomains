@@ -1,9 +1,8 @@
 <?php
 
-namespace App\Models;
+namespace App\Models\Old;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Gogetlinks extends Model {
 

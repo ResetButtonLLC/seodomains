@@ -1,9 +1,8 @@
 <?php
 
-use App\Dto\Domain as DomainDto;
-use App\Services\Parsers\Collaborator;
 use Illuminate\Support\Facades\Route;
 use Promodo\LaravelAzureAuth\Azure;
+
 
 Route::get('/', 'CommonController@main')->name('main'); //Страница с формой логина
 
@@ -19,8 +18,6 @@ Route::group(['middleware' => ['auth']], function () {
 });
 
 Route::get('/test', function () {
-    $parser = new \App\Services\Parsers\Prposting();
-    $html = file_get_contents(storage_path('logs/parsers/prposting/pages/row.html'));
-
-
+    $prnews = new \App\Services\Parsers\Prnews();
+    $prnews->parse();
 });

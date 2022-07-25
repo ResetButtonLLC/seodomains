@@ -2,12 +2,8 @@
 
 namespace App\Console\Commands\LinkExchange\Obsolete;
 
-use Illuminate\Console\Command;
+use App\Models\{Domain, Old\Rotapost};
 use Log;
-use App\Models\{
-    Domain,
-    Rotapost
-};
 
 class RotapostCommand extends ParserCommand {
 

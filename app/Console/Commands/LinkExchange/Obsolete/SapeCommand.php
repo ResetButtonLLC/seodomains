@@ -2,16 +2,11 @@
 
 namespace App\Console\Commands\LinkExchange\Obsolete;
 
-use Illuminate\Console\Command;
+use App\Models\{Domain, Old\Sape};
 use Log;
-use App\Models\{
-    Domain,
-    Sape
-};
-use Carbon\Carbon;
-use PhpXmlRpc\Value;
-use PhpXmlRpc\Request;
 use PhpXmlRpc\Client;
+use PhpXmlRpc\Request;
+use PhpXmlRpc\Value;
 
 class SapeCommand extends ParserCommand {
 

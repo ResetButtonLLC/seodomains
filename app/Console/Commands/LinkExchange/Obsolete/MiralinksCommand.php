@@ -2,13 +2,8 @@
 
 namespace App\Console\Commands\LinkExchange\Obsolete;
 
-use Illuminate\Console\Command;
+use App\Models\{Domain, Old\Miralinks};
 use Illuminate\Support\Facades\DB;
-use Carbon\Carbon;
-use App\Models\{
-    Domain,
-    Miralinks
-};
 
 class MiralinksCommand extends ParserCommand {
 

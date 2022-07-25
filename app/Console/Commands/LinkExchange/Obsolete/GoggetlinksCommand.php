@@ -2,7 +2,7 @@
 
 namespace App\Console\Commands\LinkExchange\Obsolete;
 
-use App\Models\{Domain, Gogetlinks};
+use App\Models\{Domain, Old\Gogetlinks};
 use Symfony\Component\DomCrawler\Crawler;
 
 class GoggetlinksCommand extends ParserCommand {

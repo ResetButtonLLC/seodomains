@@ -2,12 +2,7 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\{
-    Model,
-    Builder,
-    Relations\HasOne
-};
-use Illuminate\Support\Facades\DB;
+use Illuminate\Database\Eloquent\{Model, Relations\HasOne};
 
 class Domain extends Model {
 
@@ -17,19 +12,19 @@ class Domain extends Model {
     protected $guarded = [];
 
     public function miralinks(): HasOne {
-        return $this->hasOne('App\Models\Miralinks', 'domain_id', 'id');
+        return $this->hasOne('App\Models\Old\Miralinks', 'domain_id', 'id');
     }
     
     public function gogetlinks(): HasOne {
-        return $this->hasOne('App\Models\Gogetlinks', 'domain_id', 'id');
+        return $this->hasOne('App\Models\Old\Gogetlinks', 'domain_id', 'id');
     }
     
     public function sape(): HasOne {
-        return $this->hasOne('App\Models\Sape', 'domain_id', 'id');
+        return $this->hasOne('App\Models\Old\Sape', 'domain_id', 'id');
     }
     
     public function rotapost(): HasOne {
-        return $this->hasOne('App\Models\Rotapost', 'domain_id', 'id');
+        return $this->hasOne('App\Models\Old\Rotapost', 'domain_id', 'id');
     }
     
     public function prnews(): HasOne {

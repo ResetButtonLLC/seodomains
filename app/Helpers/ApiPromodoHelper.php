@@ -27,10 +27,10 @@ class ApiPromodoHelper
             'Content-Type:application/json'
         ));
 
-       //Т.к сервис почему то иногда не отвечает, сделаем несколько попыток обращения к нему
+        //Т.к сервис почему то иногда не отвечает, сделаем несколько попыток обращения к нему
         do {
-           $response = curl_exec($curl);
-           $result = json_decode($response,'ASSOC');
+            $response = curl_exec($curl);
+            $result = json_decode($response,'ASSOC');
         } while (!$result && $this->retries--);
 
         return $result;
