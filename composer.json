@@ -19,7 +19,8 @@
         "phpxmlrpc/phpxmlrpc": "4.*",
         "promodo/laravel-azure-auth": "^1.0",
         "sentry/sentry-laravel": "^2.10",
-        "symfony/dom-crawler": "^5.2"
+        "symfony/dom-crawler": "^5.2",
+        "ext-http": "*"
     },
     "require-dev": {
         "filp/whoops": "~2.0",
