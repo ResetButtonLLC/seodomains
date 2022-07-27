@@ -1,5 +1,4 @@
 *
-!csv/
-!cookies/
-!public/
+!/parsers
+!/public
 !.gitignore

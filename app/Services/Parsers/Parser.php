@@ -21,7 +21,7 @@ abstract class Parser
     protected string $parserName;
     protected int $pause;
     protected LoggerInterface $logChannel;
-    protected Filesystem $storage;
+    protected Filesystem $logStorage;
     protected PendingRequest $httpClient;
     protected ParserProgressCounter $counter;
 
@@ -32,14 +32,14 @@ abstract class Parser
 
         $this->logChannel = Log::build([
             'driver' => 'daily',
-            'path' => storage_path('logs/parsers/'.$this->parserName.'/'.$this->parserName.'.log'),
+            'path' => storage_path('app/parsers/'.$this->parserName.'/logs/'.$this->parserName.'.log'),
         ]);
 
         Log::stack(['stderr', $this->logChannel])->info('Fire up parser '.$this->parserName);
 
-        $this->storage = Storage::build([
+        $this->logStorage = Storage::build([
             'driver' => 'local',
-            'root' => storage_path('logs/parsers/'.$this->parserName.'/pages'),
+            'root' => storage_path('app/parsers/'.$this->parserName.'/logs/pages/'),
         ]);
 
         $this->setupHttpClient();
@@ -79,14 +79,14 @@ abstract class Parser
         do {
              Log::stack(['stderr', $this->logChannel])->info('Parse page #'.$pageNum);
             $html = $this->fetchDomainsPage($pageNum);
-            $this->storage->put($pageNum.'.html',$html);
+            $this->logStorage->put($pageNum.'.html',$html);
             $this->checkLoggedIn($html);
 
             //Получаем блоки DOM содержащие информацию о доменах
             $domainRows = $this->fetchDomainRows($html);
 
             foreach ($domainRows as $row) {
-                $this->storage->put('row.html',$row);
+                $this->logStorage->put('row.html',$row);
 
                 //Получаем данные домена
                 $domainDto = $this->fetchDomainData($row);
@@ -125,8 +125,8 @@ abstract class Parser
 
     protected function checkCookie() : void
     {
-        if (!Storage::exists('cookies/'.$this->parserName.'.txt')) {
-            throw new ParserException($this->parserName.' : Missing parser cookie file '.Storage::path('cookies/'.$this->parserName.'.txt'), 404);
+        if (!Storage::exists('parsers/'.$this->parserName.'/cookie/'.$this->parserName.'.txt')) {
+            throw new ParserException($this->parserName.' : Missing parser cookie file '.Storage::path('parsers/'.$this->parserName.'/cookie/'.$this->parserName.'.txt'), 404);
         }
     }
 

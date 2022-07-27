@@ -19,7 +19,7 @@ class Prposting extends Parser
     protected function getDomainsTotal() : int
     {
         $html = $this->httpClient->get('https://prposting.com/ru/publishers?page=1')->body();
-        $this->storage->put('TotalCount.html',$html);
+        $this->logStorage->put('TotalCount.html',$html);
         $this->checkLoggedIn($html);
         $dom = new Crawler($html);
         if ($dom->filter('div.grid-content template')->count() > 0) {

@@ -20,7 +20,7 @@ class CookieController extends Controller
             'cookie' => 'required',
         ]);
 
-        Storage::put('cookies/'.$request->input('name') . '.txt', trim($request->input('cookie')));
+        Storage::put('parsers/'.$request->input('name').'/cookie/'.$request->input('name') . '.txt', trim($request->input('cookie')));
 
         return redirect()->back()->with('success','Cookies успешно добавлены!');
     }

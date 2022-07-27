@@ -1,4 +1,5 @@
-*.log
+*
 !/collaborator
+!/prnews
 !/prposting
 !.gitignore

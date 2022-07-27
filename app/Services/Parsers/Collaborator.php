@@ -25,7 +25,7 @@ class Collaborator extends Parser
     protected function getDomainsTotal() : int
     {
         $html = $this->httpClient->get('https://collaborator.pro/ua/catalog/creator/article')->body();
-        $this->storage->put('TotalCount.html',$html);
+        $this->logStorage->put('TotalCount.html',$html);
         $this->checkLoggedIn($html);
         $dom = new Crawler($html);
         if ($dom->filter('.filter-panel b')->count() > 0) {
@@ -72,7 +72,7 @@ class Collaborator extends Parser
         $domain->setTraffic($rowDom->fetchOptionalText('ul.list-traffic li'));
 
         //DR
-        $domain->setDr($rowDom->filter('td:nth-child(7)')->text());
+        $domain->setDr($rowDom->filter('td:nth-child(6)')->text());
 
         //Theme
         $niches = $rowDom->filter('.c-t-theme__tags .tag')->each(function ($content) {
