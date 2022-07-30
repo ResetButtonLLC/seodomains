@@ -21,6 +21,7 @@ class Domain
     protected string $theme = '';
     protected string $languages = '';
     protected int $stockId = 0;
+    protected string|null $country;
 
     public function __construct(string $domain)
     {
@@ -32,7 +33,7 @@ class Domain
     {
         $domainValid = str_contains($this->name,'.');
 
-        if (Str::contains($this->name,DomainsHelper::getNonvalidZones())) {
+        if (Str::endsWith($this->name,DomainsHelper::getNonvalidZones())) {
             $domainValid = false;
         };
 
@@ -137,5 +138,24 @@ class Domain
             $this->tf = $tf;
         }
     }
+
+    public function getCountry(): ?string
+    {
+        return $this->country;
+    }
+
+    public function setCountry(?string $country): void
+    {
+        $this->country = $country;
+    }
+
+    public function convertPrice(float $rate) : void
+    {
+        if ($this->currency->name != Currency::UAH) {
+            $this->setPrice(round($this->price * $rate,2), Currency::UAH);
+        }
+    }
+
+
 
 }
