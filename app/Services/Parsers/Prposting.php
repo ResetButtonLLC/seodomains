@@ -11,7 +11,7 @@ use App\Models\StockDomain;
 use Illuminate\Support\Facades\Log;
 use App\Extensions\Symfony\DomCrawler\Crawler;
 
-class Prposting extends Parser
+class Prposting extends DomParser
 {
     const LOGGED_IN_NEEDLE = 'https://prposting.com/ru/logout';
     const NEXT_PAGE_NEEDLE = 'rel="next">Следующая</a>';

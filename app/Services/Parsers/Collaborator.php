@@ -10,17 +10,12 @@ use App\Helpers\DomainsHelper;
 use App\Models\StockDomain;
 use Illuminate\Support\Facades\Log;
 use App\Extensions\Symfony\DomCrawler\Crawler;
+use Illuminate\Support\Str;
 
-class Collaborator extends Parser
+class Collaborator extends DomParser
 {
     const LOGGED_IN_NEEDLE = '/images/icons/logout.svg';
     const NEXT_PAGE_NEEDLE = '<li class="page-item_next"><a class="page-link"';
-
-    public function login() : bool
-    {
-        //todo сделать логин - если это возможно
-        return true;
-    }
 
     protected function getDomainsTotal() : int
     {
@@ -72,7 +67,10 @@ class Collaborator extends Parser
         $domain->setTraffic($rowDom->fetchOptionalText('ul.list-traffic li'));
 
         //DR
-        $domain->setDr($rowDom->filter('td:nth-child(6)')->text());
+        $dr = $rowDom->filter('td:nth-child(6)')->text();
+        if ($dr != "-") {
+            $domain->setDr($dr);
+        }
 
         //Theme
         $niches = $rowDom->filter('.c-t-theme__tags .tag')->each(function ($content) {

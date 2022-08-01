@@ -24,8 +24,9 @@ abstract class Parser
     protected Filesystem $logStorage;
     protected PendingRequest $httpClient;
     protected ParserProgressCounter $counter;
+    protected float $currencyRate;
 
-    final public function __construct()
+    public function __construct()
     {
         $classParts = explode('\\', get_class($this));
         $this->parserName = strtolower(array_pop($classParts));
@@ -44,7 +45,12 @@ abstract class Parser
 
         $this->setupHttpClient();
         $this->setPause();
+        $this->setCurrencyRate();
     }
+
+    //Оснвная функция парсинга "parse", зависит от типа парсера
+    abstract protected function upsertDomain(Domain $domain) : StockDomain;
+    abstract protected function postUpdateActions() : void;
 
     protected function setupHttpClient() : void
     {
@@ -71,56 +77,33 @@ abstract class Parser
 
     }
 
-    public function parse($pageNum = 1) : void
+    //Функция проверки валидности домена и занесения в БД
+    protected function processDomain(Domain $domainDto)
     {
 
-        $this->counter = new ParserProgressCounter($this->getDomainsTotal());
+        //todo пустое имя должно вызывать ошибку
+        //Проверяем валидноcть спарсенных данных так как может быть "URL скрыт", нету цены и т.д.
+        if ($domainDto->isDataOk()) {
 
-        do {
-             Log::stack(['stderr', $this->logChannel])->info('Parse page #'.$pageNum);
-            $html = $this->fetchDomainsPage($pageNum);
-            $this->logStorage->put($pageNum.'.html',$html);
-            $this->checkLoggedIn($html);
+            //Если с данными все ОК, то добавляем/обновляем домен
+            $domainDto->convertPrice($this->getCurrencyRate());
+            $stockDomain = $this->upsertDomain($domainDto);
 
-            //Получаем блоки DOM содержащие информацию о доменах
-            $domainRows = $this->fetchDomainRows($html);
+            //Сравниваем время создания и апдейта, Если время совпадает, то домен новый, если нет - то домен уже был.
+            ($stockDomain->created_at == $stockDomain->updated_at) ? $this->counter->incNew() : $this->counter->incUpdated();
+        } else {
+            //Если данные невалидны, то обновляем счетчик пропущеных
+            $this->counter->incSkipped();
+        }
 
-            foreach ($domainRows as $row) {
-                $this->logStorage->put('row.html',$row);
+        Log::stack(['stderr', $this->logChannel])->info('['.$this->counter->getCurrent().'/'.$this->counter->getTotal().'] Domain: '.$domainDto->getName().' | State: '.$this->counter->getLastAddedTo().' | Added: '.$this->counter->getNew().' | Updated: '.$this->counter->getUpdated().' | Skipped:'. $this->counter->getSkipped());
+    }
 
-                //Получаем данные домена
-                $domainDto = $this->fetchDomainData($row);
-                //todo пустое имя должно вызывать ошибку
-
-                //Проверяем валидноcть спарсенных данных так как может быть "URL скрыт", нету цены и т.д.
-                if ($domainDto->isDataOk()) {
-
-                    //Если с данными все ОК, то добавляем/обновляем домен
-                    $stockDomain = $this->upsertDomain($domainDto);
-
-                    //Сравниваем время создания и апдейта, Если время совпадает, то домен новый, если нет - то домен уже был.
-                    ($stockDomain->created_at == $stockDomain->updated_at) ? $this->counter->incNew() : $this->counter->incUpdated();
-                } else {
-                    //Если данные невалидны, то обновляем счетчик пропущеных
-                    $this->counter->incSkipped();
-                }
-
-                Log::stack(['stderr', $this->logChannel])->info('Domain: '.$domainDto->getName().' | State: '.$this->counter->getLastAddedTo().' | Progress: '.$this->counter->getCurrent().'/'.$this->counter->getTotal().' | Added: '.$this->counter->getNew().' | Updated: '.$this->counter->getUpdated().' | Skipped:'. $this->counter->getSkipped());
-
-            }
-
-            Log::stack(['stderr', $this->logChannel])->info('Sleeping '.$this->getPause().' seconds');
-            sleep($this->getPause());
-            $this->setPause();
-            $pageNum++;
-
-        } while ($this->isNextPage($html));
-
+    protected function finishActions() : void
+    {
+        $this->postUpdateActions();
         Log::stack(['stderr', $this->logChannel])->info('Finished');
         Update::setUpdatedTime($this->parserName);
-
-        $this->postUpdateActions();
-
     }
 
     protected function checkCookie() : void
@@ -145,12 +128,14 @@ abstract class Parser
         $this->pause = 5;
     }
 
-    protected function checkLoggedIn(string $html) : void
+    protected function checkLoggedIn(string $html) : bool
     {
         if (!$this->isLoggedIn($html)) {
             Log::stack(['stderr', $this->logChannel])->error('User is not authorized');
             throw new ParserException($this->parserName.' : User is not authorized (most likely cookie has expired)', 401 );
         }
+
+        return true;
     }
 
     protected function getPause() : int
@@ -158,11 +143,16 @@ abstract class Parser
         return $this->pause;
     }
 
-    abstract protected function getDomainsTotal() : int;
-    abstract protected function fetchDomainsPage(int $pageNum) : string;
-    abstract protected function fetchDomainRows(string $html) : array;
-    abstract protected function fetchDomainData(string $html) : Domain;
-    abstract protected function upsertDomain(Domain $domain) : StockDomain;
-    abstract protected function postUpdateActions() : void;
+    //По дефолту валюта UAH, поэтому курс равен 1;
+    protected function setCurrencyRate() : void
+    {
+        $this->currencyRate = 1;
+    }
+
+    protected function getCurrencyRate() : float
+    {
+        return $this->currencyRate;
+    }
+
 
 }

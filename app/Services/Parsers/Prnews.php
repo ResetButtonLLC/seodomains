@@ -4,132 +4,101 @@ namespace App\Services\Parsers;
 
 use App\Dto\Domain;
 use App\Dto\Domain as DomainDto;
-use App\Dto\ParserProgressCounter;
 use App\Enums\Currency;
 use App\Exceptions\ParserException;
 use App\Helpers\StorageHelper;
-use App\Models\CollaboratorDomain;
 use App\Models\PrnewsDomain;
 use App\Models\StockDomain;
-use App\Models\Update;
-use HeadlessChromium\Page;
-use Illuminate\Support\Arr;
-use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Storage;
 use HeadlessChromium\BrowserFactory;
-use Illuminate\Http\File;
-use Rap2hpoutre\FastExcel\FastExcel;
+use HeadlessChromium\Browser\ProcessAwareBrowser;
+use HeadlessChromium\Page;
 
-class Prnews
+class Prnews extends CsvParser
 {
-    final public function __construct()
+
+    //Функция получения курса валют переопределена, так как валюта - USD
+    protected function setCurrencyRate() : void
     {
-        $classParts = explode('\\', get_class($this));
-        $this->parserName = strtolower(array_pop($classParts));
+        Log::stack(['stderr', $this->logChannel])->info('Parse currency rate');
+        //Браузерная эмуляция может вылететь с ошибкой из за капчи, поэтому ставим 100 попыток
+        $tries = 100;
+        do {
+            $tries--;
+            $currencyRate = $this->getCurrencyRateViaChrome();
+            if (!$tries) {
+                throw new ParserException('No Chrome retries left while obtaining Currency Rate');
+            }
+        } while (!$currencyRate);
 
-        $this->logChannel = Log::build([
-            'driver' => 'daily',
-            'path' => storage_path('app/parsers/'.$this->parserName.'/logs/'.$this->parserName.'.log'),
-        ]);
-
-        Log::stack(['stderr', $this->logChannel])->info('Fire up parser '.$this->parserName);
-
-        $this->logStorage = Storage::build([
-            'driver' => 'local',
-            'root' => storage_path('app/parsers/'.$this->parserName.'/logs/pages/'),
-        ]);
-
-        $this->csvStorage = Storage::build([
-            'driver' => 'local',
-            'root' => storage_path('app/parsers/'.$this->parserName.'/csv/'),
-        ]);
-
+        $this->currencyRate = $currencyRate * 1.01;
     }
 
-    public function parse() : void
+    protected function getCurrencyRateViaChrome() : float
     {
+        $currencyRate = 0;
 
+        $browser = $this->initChrome();
+        $page = $this->prnewsLogin($browser, 'getCurrencyRate');
+
+        try {
+            Log::stack(['stderr', $this->logChannel])->info('Navigate to settings');
+            $page->navigate('https://prnews.io/account/settings/');
+            sleep(10);
+            $page->screenshot()->saveToFile($this->logStorage->path('getCurrencyRate-3-Settings.jpg'));
+
+            $currencyRateTag = $page->dom()->querySelector('input:read-only:last-child');
+            $currencyRate = $currencyRateTag->getAttribute('value');
+            Log::stack(['stderr', $this->logChannel])->info('Got currency rate => '.$currencyRate);
+
+        } catch (\Exception $e) {
+            Log::stack(['stderr', $this->logChannel])->error('Parsing Failed with error: '.$e->getMessage());
+        }
+        finally {
+            $browser->close();
+        }
+
+        //При ошибке парсинга значение будет 0;
+        $currencyRate = floatval($currencyRate);
+
+        return $currencyRate;
+    }
+
+    protected function downloadCSV() : void
+    {
+        $csvLink = $this->getCsvLink();
+        $this->downloadCSVViaChrome($csvLink);
+    }
+
+
+    private function getCsvLink() : string
+    {
+        Log::stack(['stderr', $this->logChannel])->info('Get CVS file link');
         //Бразуерная эмуляция может вылетать с ошибкой если при логине вылазит капча или прокси медленный, операцию нужно выполнять несколько раз
         $tries = 100;
         do {
-            $csvLink = $this->getCsvLink();
+            $csvLink = $this->getCsvLinkViaChrome();
+            //todo CSV link validation
             $tries--;
             if (!$tries) {
                 throw new ParserException('No Chrome retries left while obtaining CSV link');
             }
         } while (!$csvLink);
 
-        $this->downloadCSV($csvLink);
-
-        $currencyRate = $this->getCurrencyRate();
-
-        $csvDomains = (new FastExcel)->import($this->csvStorage->path($this->parserName.'.csv'));
-
-        $this->counter = new ParserProgressCounter($csvDomains->count());
-
-        foreach ($csvDomains as $row) {
-            //Получаем данные домена
-            $domainDto = $this->fetchDomainData($row);
-            //todo пустое имя должно вызывать ошибку
-
-            //Проверяем валидноcть спарсенных данных так как может быть "URL скрыт", нету цены и т.д.
-            if ($domainDto->isDataOk()) {
-
-                $domainDto->convertPrice($currencyRate);
-                //Если с данными все ОК, то добавляем/обновляем домен
-                dd($domainDto);
-                $stockDomain = $this->upsertDomain($domainDto);
-
-                //Сравниваем время создания и апдейта, Если время совпадает, то домен новый, если нет - то домен уже был.
-                ($stockDomain->created_at == $stockDomain->updated_at) ? $this->counter->incNew() : $this->counter->incUpdated();
-            } else {
-                //Если данные невалидны, то обновляем счетчик пропущеных
-                $this->counter->incSkipped();
-            }
-
-           Log::stack(['stderr', $this->logChannel])->info('Domain: '.$domainDto->getName().' | State: '.$this->counter->getLastAddedTo().' | Progress: '.$this->counter->getCurrent().'/'.$this->counter->getTotal().' | Added: '.$this->counter->getNew().' | Updated: '.$this->counter->getUpdated().' | Skipped:'. $this->counter->getSkipped());
-        }
-
-
+        return $csvLink;
     }
 
     //Логинимся в аккаунт и скачиваем CSV
-    private function getCsvLink() : string
+    private function getCsvLinkViaChrome() : string
     {
-
-        $proxy = 'p.webshare.io:'.rand(10000,11000);
-        Log::stack(['stderr', $this->logChannel])->info('Initializing chrome with proxy '.$proxy);
-
-        $browserFactory = new BrowserFactory('chromium');
-
-        // starts headless chrome
-        $browser = $browserFactory->createBrowser([
-            'connectionDelay' => 0.5,
- //           'debugLogger'     => 'php://stdout', // will enable verbose mode,
-            'noSandbox' => true,
-            'userAgent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:102.0) Gecko/20100101 Firefox/102.0',
-            'proxyServer' => $proxy
-        ]);
+        $browser = $this->initChrome();
+        $page = $this->prnewsLogin($browser, 'getCSV');
 
         try {
-            // creates a new page and navigate to an URL
-            $page = $browser->createPage();
-            Log::stack(['stderr', $this->logChannel])->info('Logging in');
-            $page->navigate('https://prnews.io/login/')->waitForNavigation();
-            $page->screenshot()->saveToFile($this->logStorage->path('1-LoginPage.jpg'));
-            $page->mouse()->find('input[name=mail]')->click();
-            $page->keyboard()->typeText(config('parsers.prnews.login'));
-            $page->mouse()->find('input[name=password]')->click();
-            $page->keyboard()->typeText(config('parsers.prnews.password'));
-            $page->mouse()->find('input[type=submit]')->click();
-            sleep(10);
-            $page->screenshot()->saveToFile($this->logStorage->path('2-AfterLoginPage.jpg'));
-
             Log::stack(['stderr', $this->logChannel])->info('Navigate to catalog');
             $page->navigate('https://prnews.io/ru/sites/');
             sleep(10);
-            $page->screenshot()->saveToFile($this->logStorage->path('3-SiteListPage.jpg'));
+            $page->screenshot()->saveToFile($this->logStorage->path('getCSV-3-SiteListPage.jpg'));
 
             Log::stack(['stderr', $this->logChannel])->info('Click download link');
             $page->mouse()->find('#pro_export')->click();
@@ -149,7 +118,7 @@ class Prnews
 
     }
 
-    protected function downloadCSV(string $csvLink) : void
+    protected function downloadCSVViaChrome(string $csvLink) : void
     {
 
         //Delete all zip files
@@ -157,14 +126,8 @@ class Prnews
 
         //Download new file
         Log::stack(['stderr', $this->logChannel])->info('Downloading File => '.$csvLink);
-        $browserFactory = new BrowserFactory('chromium');
 
-        $browser = $browserFactory->createBrowser([
-            'connectionDelay' => 0.5,
-            'debugLogger'     => Storage::path('chrome.log'), // will enable verbose mode,
-            'noSandbox' => true,
-            'userAgent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:102.0) Gecko/20100101 Firefox/102.0',
-        ]);
+        $browser = $this->initChrome(false);
 
         $page = $browser->createPage();
         $page->setDownloadPath($this->csvStorage->path(''));
@@ -226,63 +189,66 @@ class Prnews
 
     }
 
-    protected function getCurrencyRate() : float
+    private function initChrome(bool $withProxy = true) : ProcessAwareBrowser
     {
-        Log::stack(['stderr', $this->logChannel])->info('Parse currency rate');
-        $currencyRate = null;
-        $tries = 100;
-        do {
-            $tries--;
+
+        Log::stack(['stderr', $this->logChannel])->info('Initializing chrome');
+
+        $browserSettings = [
+            'connectionDelay' => 0.5,
+            //           'debugLogger'     => 'php://stdout', // will enable verbose mode,
+            'noSandbox' => true,
+            'userAgent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:102.0) Gecko/20100101 Firefox/102.0',
+
+        ];
+
+        if ($withProxy) {
             $proxy = 'p.webshare.io:'.rand(10000,11000);
-            Log::stack(['stderr', $this->logChannel])->info('Initializing chrome with proxy '.$proxy);
-
-            $browserFactory = new BrowserFactory('chromium');
-
-            // starts headless chrome
-            $browser = $browserFactory->createBrowser([
-                'connectionDelay' => 0.5,
-                //           'debugLogger'     => 'php://stdout', // will enable verbose mode,
-                'noSandbox' => true,
-                'userAgent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:102.0) Gecko/20100101 Firefox/102.0',
-                'proxyServer' => $proxy
-            ]);
-
-            try {
-                // creates a new page and navigate to an URL
-                $page = $browser->createPage();
-                Log::stack(['stderr', $this->logChannel])->info('Logging in');
-                $page->navigate('https://prnews.io/login/')->waitForNavigation();
-                $page->screenshot()->saveToFile($this->logStorage->path('1-Currency-LoginPage.jpg'));
-                $page->mouse()->find('input[name=mail]')->click();
-                $page->keyboard()->typeText(config('parsers.prnews.login'));
-                $page->mouse()->find('input[name=password]')->click();
-                $page->keyboard()->typeText(config('parsers.prnews.password'));
-                $page->mouse()->find('input[type=submit]')->click();
-                sleep(10);
-                $page->screenshot()->saveToFile($this->logStorage->path('2-Currency-AfterLoginPage.jpg'));
-
-                Log::stack(['stderr', $this->logChannel])->info('Navigate to settings');
-                $page->navigate('https://prnews.io/account/settings/');
-                sleep(10);
-                $page->screenshot()->saveToFile($this->logStorage->path('3-Currency-Settings.jpg'));
-
-                $currencyRateTag = $page->dom()->querySelector('input:read-only:last-child');
-                $currencyRate = $currencyRateTag->getAttribute('value');
-                Log::stack(['stderr', $this->logChannel])->info('Got currency rate => '.$currencyRate);
-
-            } catch (\Exception $e) {
-                Log::stack(['stderr', $this->logChannel])->error('Parsing Failed with error: '.$e->getMessage());
-            }
-            finally {
-                $browser->close();
-            }
-        } while (!$currencyRate && $tries);
-
-        if (!$tries) {
-            throw new ParserException('No Chrome retries left while obtaining Currency Rate');
+            $browserSettings['proxyServer'] = $proxy;
+            Log::stack(['stderr', $this->logChannel])->info('Bind proxy '.$proxy);
         }
 
-        return $currencyRate * 1.01;
+        $browserFactory = new BrowserFactory('chromium');
+
+        // starts headless chrome
+        $browser = $browserFactory->createBrowser($browserSettings);
+
+        return $browser;
+    }
+
+    private function prnewsLogin(ProcessAwareBrowser $browser, string $stage) : Page
+    {
+        try {
+            // creates a new page and navigate to an URL
+            $page = $browser->createPage();
+            Log::stack(['stderr', $this->logChannel])->info('Logging in');
+            $page->navigate('https://prnews.io/login/')->waitForNavigation();
+            $page->screenshot()->saveToFile($this->logStorage->path($stage.'-1-LoginPage.jpg'));
+            $page->mouse()->find('input[name=mail]')->click();
+            $page->keyboard()->typeText(config('parsers.prnews.login'));
+            $page->mouse()->find('input[name=password]')->click();
+            $page->keyboard()->typeText(config('parsers.prnews.password'));
+            $page->mouse()->find('input[type=submit]')->click();
+            sleep(10);
+            $page->screenshot()->saveToFile($this->logStorage->path($stage.'-2-AfterLoginPage.jpg'));
+        } catch (\Exception $e) {
+            Log::stack(['stderr', $this->logChannel])->error('Parsing Failed with error: '.$e->getMessage());
+            $browser->close();
+        }
+
+        return $page;
+
+    }
+
+    protected function postUpdateActions(): void
+    {
+        PrnewsDomain::query()->whereDate('updated_at', '<=', now()->subDays(1)->toDateTimeString())->delete();
+    }
+
+    //Так как парсер использует Хром, а не HTTP клиент, функция является заглушкой
+    protected function checkCookie(): void
+    {
+
     }
 
 }
