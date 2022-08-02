@@ -66,7 +66,8 @@ class Prnews extends CsvParser
 
     protected function downloadCSV() : void
     {
-        $csvLink = $this->getCsvLink();
+        //$csvLink = $this->getCsvLink();
+        $csvLink = "https://cdn01.prnews.io/tmp/q1Hu45i0h45Jl10m74gH0J1vbMs/1Er5fe7_pro_all_platforms_ru.csv.zip?1659446161";
         $this->downloadCSVViaChrome($csvLink);
     }
 
