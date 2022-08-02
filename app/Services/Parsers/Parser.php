@@ -45,7 +45,7 @@ abstract class Parser
 
         $this->setupHttpClient();
         $this->setPause();
-        $this->setCurrencyRate();
+    //    $this->setCurrencyRate();
     }
 
     //Оснвная функция парсинга "parse", зависит от типа парсера

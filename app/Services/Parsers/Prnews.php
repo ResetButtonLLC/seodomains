@@ -128,11 +128,6 @@ class Prnews extends CsvParser
         //Download new file
         Log::stack(['stderr', $this->logChannel])->info('Downloading File => '.$csvLink);
 
-        $browser = $this->initChrome();
-
-        $page = $browser->createPage();
-        $page->setDownloadPath($this->csvStorage->path(''));
-
         $tries = 100;
         do {
             $csvFile = StorageHelper::getFirstFileWithExtension($this->csvStorage->path(''),'zip');
@@ -143,21 +138,24 @@ class Prnews extends CsvParser
             }
 
             try {
+                $browser = $this->initChrome();
+                $page = $browser->createPage();
+                $page->setDownloadPath($this->csvStorage->path(''));
                 $page->navigate($csvLink);
                 while (!StorageHelper::getFirstFileWithExtension($this->csvStorage->path(''),'zip')) {
-                    sleep(1);
+                    Log::stack(['stderr', $this->logChannel])->info('Download in process');
+                    sleep(2);
                 }
             } catch (\Exception $e) {
                 Log::stack(['stderr', $this->logChannel])->error('Parsing Failed with error: '.$e->getMessage());
-            }
-            finally {
+            } finally {
                 $browser->close();
             }
 
         } while (!$csvFile);
 
         //Extract CSV and replace old one
-        Log::stack(['stderr', $this->logChannel])->info('Replace old CSV with new');
+        Log::stack(['stderr', $this->logChannel])->info('Download complete. Replace old CSV with new');
         $csvZip = StorageHelper::getFirstFileWithExtension($this->csvStorage->path(''),'zip');
         StorageHelper::extractZipToCsv($csvZip, $this->parserName);
     }
