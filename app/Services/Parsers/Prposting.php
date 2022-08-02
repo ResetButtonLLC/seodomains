@@ -66,7 +66,10 @@ class Prposting extends DomParser
         $domain->setTraffic($rowDom->fetchOptionalText('td.is-paddingless:nth-child(3) tr td:nth-child(2)'));
 
         //Ahrefs DR
-        $domain->setDr($rowDom->fetchOptionalText('td.is-paddingless:nth-child(2) tr td.has-text-right'));
+        $dr = $rowDom->fetchOptionalText('td.is-paddingless:nth-child(2) tr td.has-text-right');
+        if ($dr) {
+            $domain->setDr($rowDom->fetchOptionalText('td.is-paddingless:nth-child(2) tr td.has-text-right'));
+        }
 
         //Majestic CF & TF
         $domain->setTf($rowDom->fetchOptionalText('td.is-paddingless:nth-child(5) tr td.has-text-right'));
