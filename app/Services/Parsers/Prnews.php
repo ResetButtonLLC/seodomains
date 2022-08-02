@@ -127,16 +127,33 @@ class Prnews extends CsvParser
         //Download new file
         Log::stack(['stderr', $this->logChannel])->info('Downloading File => '.$csvLink);
 
-        $browser = $this->initChrome(false);
+        $browser = $this->initChrome();
 
         $page = $browser->createPage();
         $page->setDownloadPath($this->csvStorage->path(''));
-        try {
-            $page->navigate($csvLink);
-            sleep(10);
-        } finally {
-            $browser->close();
-        }
+
+        $tries = 100;
+        do {
+            $csvFile = StorageHelper::getFirstFileWithExtension($this->csvStorage->path(''),'zip');
+            //todo CSV link validation
+            $tries--;
+            if (!$tries) {
+                throw new ParserException('No Chrome retries left while obtaining CSV link');
+            }
+
+            try {
+                $page->navigate($csvLink);
+                while (!StorageHelper::getFirstFileWithExtension($this->csvStorage->path(''),'zip')) {
+                    sleep(1);
+                }
+            } catch (\Exception $e) {
+                Log::stack(['stderr', $this->logChannel])->error('Parsing Failed with error: '.$e->getMessage());
+            }
+            finally {
+                $browser->close();
+            }
+
+        } while (!$csvFile);
 
         //Extract CSV and replace old one
         Log::stack(['stderr', $this->logChannel])->info('Replace old CSV with new');
@@ -196,7 +213,8 @@ class Prnews extends CsvParser
 
         $browserSettings = [
             'connectionDelay' => 0.5,
-            //           'debugLogger'     => 'php://stdout', // will enable verbose mode,
+            //'debugLogger'     => 'php://stdout', // will enable verbose mode,
+            'debugLogger'     => $this->logStorage->path('chrome.log'), // will log to file
             'noSandbox' => true,
             'userAgent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:102.0) Gecko/20100101 Firefox/102.0',
 
