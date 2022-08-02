@@ -59,8 +59,12 @@ class Collaborator extends DomParser
         //ID в бирже
         $domain->setStockId(intval($rowDom->filter('.grid-group-checkbox')->attr('value')));
 
-        //цена
-        $price = DomainsHelper::getPriceFromString($rowDom->filter('.creator-price_catalog')->attr('data-publication'));
+        //цена, иногда не бывает
+        if ($rowDom->filter('.creator-price_catalog')->count() > 0) {
+            $price = DomainsHelper::getPriceFromString($rowDom->filter('.creator-price_catalog')->attr('data-publication'));
+        } else {
+            $price = 0;
+        }
         $domain->setPrice($price, Currency::UAH);
 
         //траффик

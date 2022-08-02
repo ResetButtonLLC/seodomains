@@ -29,8 +29,16 @@ class PrpostingCommand extends Command
      * @return int
      */
     public function handle() {
-        $parser = new Prposting();
-        $parser->parse($this->argument('page'));
+
+        $page = intval($this->argument('page'));
+
+        if ($page) {
+            $parser = new Prposting();
+            $parser->parse($page);
+        } else {
+            $this->info('{page} parameter is incorrect');
+        }
+
         return 0;
     }
 }

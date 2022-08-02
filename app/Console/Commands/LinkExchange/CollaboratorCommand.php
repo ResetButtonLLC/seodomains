@@ -3,6 +3,7 @@
 namespace App\Console\Commands\LinkExchange;
 
 use App\Services\Parsers\Collaborator;
+use App\Services\Parsers\Prposting;
 use Illuminate\Console\Command;
 
 class CollaboratorCommand extends Command
@@ -28,9 +29,16 @@ class CollaboratorCommand extends Command
      */
     public function handle()
     {
-        $parser = new Collaborator();
-        $parser->parse($this->argument('page'));
+        $page = intval($this->argument('page'));
+
+        if ($page) {
+            $parser = new Collaborator();
+            $parser->parse($this->argument('page'));
+        } else {
+            $this->info('{page} parameter is incorrect');
+        }
 
         return 0;
+
     }
 }
