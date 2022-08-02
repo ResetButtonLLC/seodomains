@@ -66,9 +66,20 @@ class Prnews extends CsvParser
 
     protected function downloadCSV() : void
     {
-        //$csvLink = $this->getCsvLink();
-        $csvLink = "https://cdn01.prnews.io/tmp/q1Hu45i0h45Jl10m74gH0J1vbMs/1Er5fe7_pro_all_platforms_ru.csv.zip?1659446161";
+        $csvLink = $this->getCsvLink();
+
+        //Delete all zip files in CSV folder
+        StorageHelper::deleteFilesWithExtension($this->csvStorage->path(''),'zip');
+
+        //Download new file
         $this->downloadCSVViaChrome($csvLink);
+
+        //Extract CSV and replace old one
+        Log::stack(['stderr', $this->logChannel])->info('Download complete. Replace old CSV with new');
+
+        $csvZip = StorageHelper::getFirstFileWithExtension($this->csvStorage->path(''),'zip');
+        StorageHelper::extractZipToCsv($csvZip, $this->parserName);
+
     }
 
 
@@ -122,16 +133,11 @@ class Prnews extends CsvParser
     protected function downloadCSVViaChrome(string $csvLink) : void
     {
 
-        //Delete all zip files
-        StorageHelper::deleteFilesWithExtension($this->csvStorage->path(''),'zip');
-
-        //Download new file
         Log::stack(['stderr', $this->logChannel])->info('Downloading File => '.$csvLink);
 
         $tries = 100;
         do {
             $csvFile = StorageHelper::getFirstFileWithExtension($this->csvStorage->path(''),'zip');
-            //todo CSV link validation
             $tries--;
             if (!$tries) {
                 throw new ParserException('No Chrome retries left while obtaining CSV link');
@@ -154,10 +160,6 @@ class Prnews extends CsvParser
 
         } while (!$csvFile);
 
-        //Extract CSV and replace old one
-        Log::stack(['stderr', $this->logChannel])->info('Download complete. Replace old CSV with new');
-        $csvZip = StorageHelper::getFirstFileWithExtension($this->csvStorage->path(''),'zip');
-        StorageHelper::extractZipToCsv($csvZip, $this->parserName);
     }
 
     protected function fetchDomainData(array $row) : Domain
@@ -213,7 +215,7 @@ class Prnews extends CsvParser
         $browserSettings = [
             'connectionDelay' => 0.5,
             //'debugLogger'     => 'php://stdout', // will enable verbose mode,
-            'debugLogger'     => $this->logStorage->path('chrome.log'), // will log to file
+            //'debugLogger'     => $this->logStorage->path('chrome.log'), // will log to file
             'noSandbox' => true,
             'userAgent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:102.0) Gecko/20100101 Firefox/102.0',
 
