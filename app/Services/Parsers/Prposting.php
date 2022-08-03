@@ -103,6 +103,7 @@ class Prposting extends DomParser
             ],
             [
                 'id' => $domainDto->getStockId(),
+                'name' => $domainDto->getName(),
                 'domain_id' => $domain->id,
                 'price' => $domainDto->getPrice(),
                 'theme' => $domainDto->getTheme(),
