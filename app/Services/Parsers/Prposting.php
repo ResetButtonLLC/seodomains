@@ -98,7 +98,7 @@ class Prposting extends DomParser
 
         $prpostingDomain = PrpostingDomain::updateOrCreate(
             [
-                //используем name, так как обнаружился домен с двойным ID
+                //используем stockID, так как обнаружился домен с двойным ID
                 'id' => $domainDto->getStockId(),
             ],
             [
