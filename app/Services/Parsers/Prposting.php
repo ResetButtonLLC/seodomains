@@ -67,13 +67,20 @@ class Prposting extends DomParser
 
         //Ahrefs DR
         $dr = $rowDom->fetchOptionalText('td.is-paddingless:nth-child(2) tr td.has-text-right');
-        if ($dr) {
+        if (is_numeric($dr)) {
             $domain->setDr($rowDom->fetchOptionalText('td.is-paddingless:nth-child(2) tr td.has-text-right'));
         }
 
         //Majestic CF & TF
-        $domain->setTf($rowDom->fetchOptionalText('td.is-paddingless:nth-child(5) tr td.has-text-right'));
-        $domain->setCf($rowDom->fetchOptionalText('td.is-paddingless:nth-child(5) table tr:nth-child(2) td:nth-child(2)'));
+        $tf = $rowDom->fetchOptionalText('td.is-paddingless:nth-child(5) tr td.has-text-right');
+        if (is_numeric($tf)) {
+            $domain->setTf($tf);
+        }
+
+        $cf = $rowDom->fetchOptionalText('td.is-paddingless:nth-child(5) table tr:nth-child(2) td:nth-child(2)');
+        if (is_numeric($cf)) {
+            $domain->setCf($cf);
+        }
 
         //Theme
         $theme = $rowDom->filter('td.is-paddingless tr:nth-child(2)')->text();
