@@ -93,14 +93,13 @@ class Prposting extends DomParser
     {
         $domain = Domain::updateOrCreate(
             ['domain' => $domainDto->getName()],
-            //todo update траффик когда понятно какой брать
             ['domain' => $domainDto->getName()]
         );
 
         $prpostingDomain = PrpostingDomain::updateOrCreate(
             [
                 //используем name, так как обнаружился домен с двойным ID
-                'name' => $domainDto->getName(),
+                'id' => $domainDto->getStockId(),
             ],
             [
                 'id' => $domainDto->getStockId(),
