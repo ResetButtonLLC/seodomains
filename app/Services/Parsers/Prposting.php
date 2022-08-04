@@ -102,7 +102,6 @@ class Prposting extends DomParser
                 'id' => $domainDto->getStockId(),
             ],
             [
-                'id' => $domainDto->getStockId(),
                 'name' => $domainDto->getName(),
                 'domain_id' => $domain->id,
                 'price' => $domainDto->getPrice(),
@@ -111,7 +110,8 @@ class Prposting extends DomParser
                 'dr' => $domainDto->getDr(),
                 'cf' => $domainDto->getCf(),
                 'tf' => $domainDto->getTf(),
-                'updated_at' => now()
+                'updated_at' => now(),
+                'deleted_at' => null
             ]
         );
 

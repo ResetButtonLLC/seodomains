@@ -101,11 +101,19 @@ return [
             'path' => storage_path('logs/laravel.log'),
         ],
 
-        'parser' => [
-            'driver' => 'single',
-            'path' => storage_path('logs/parsers.log'),
+        'domainProcessorLog' => [
+            'driver' => 'daily',
+            'days' => 30,
+            'path' => storage_path('logs/domain-processor.log'),
             'level' => env('LOG_LEVEL', 'debug'),
         ],
+
+        'domainProcessor' => [
+            'driver' => 'stack',
+            'channels' => ['metricsUpdaterLog','stderr'],
+            'ignore_exceptions' => false,
+        ],
+
     ],
 
 ];

@@ -8,6 +8,7 @@
 
 namespace App\Services;
 
+use App\Models\Domain;
 use Illuminate\Support\Facades\DB;
 
 class DomainsService

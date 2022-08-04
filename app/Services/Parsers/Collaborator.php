@@ -105,7 +105,8 @@ class Collaborator extends DomParser
                 'theme' => $domainDto->getTheme(),
                 'dr' => $domainDto->getDr(),
                 'traffic' => $domainDto->getTraffic(),
-                'updated_at' => now()
+                'updated_at' => now(),
+                'deleted_at' => null
             ]
         );
 

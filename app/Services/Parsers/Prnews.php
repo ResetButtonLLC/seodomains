@@ -199,7 +199,8 @@ class Prnews extends CsvParser
                 'dr' => $domainDto->getDr(),
                 'tf' => $domainDto->getTf(),
                 'cf' => $domainDto->getCf(),
-                'updated_at' => now()
+                'updated_at' => now(),
+                'deleted_at' => null
             ]
         );
 

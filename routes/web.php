@@ -18,6 +18,5 @@ Route::group(['middleware' => ['auth']], function () {
 });
 
 Route::get('/test', function () {
-    $prnews = new \App\Services\Parsers\Prnews();
-    $prnews->parse();
+    \App\Services\DomainProcessor::process();
 });

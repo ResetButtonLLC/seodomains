@@ -3,36 +3,34 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\{Model, Relations\HasOne};
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Domain extends Model {
 
+    use SoftDeletes;
+
     public $timestamps = ['created_at'];
+
     const UPDATED_AT = null;
 
     protected $guarded = [];
 
-    public function miralinks(): HasOne {
-        return $this->hasOne('App\Models\Old\Miralinks', 'domain_id', 'id');
-    }
-    
-    public function gogetlinks(): HasOne {
-        return $this->hasOne('App\Models\Old\Gogetlinks', 'domain_id', 'id');
-    }
-    
-    public function sape(): HasOne {
-        return $this->hasOne('App\Models\Old\Sape', 'domain_id', 'id');
-    }
-    
-    public function rotapost(): HasOne {
-        return $this->hasOne('App\Models\Old\Rotapost', 'domain_id', 'id');
-    }
-    
-    public function prnews(): HasOne {
-        return $this->hasOne('App\Models\Prnews', 'domain_id', 'id');
-    }
+    protected $casts = [
+        'ahrefs_updated_at' => 'datetime',
+        'majestic_updated_at' => 'datetime',
+        'traffic_updated_at' => 'datetime',
+    ];
 
     public function collaborator(): HasOne {
-        return $this->hasOne('App\Models\CollaboratorDomain', 'domain_id', 'id');
+        return $this->hasOne(CollaboratorDomain::class);
+    }
+
+    public function prnews(): HasOne {
+        return $this->hasOne(PrnewsDomain::class);
+    }
+
+    public function prposting(): HasOne {
+        return $this->hasOne(PrpostingDomain::class);
     }
 
     public static function getDomainsForExport() {
