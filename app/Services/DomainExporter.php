@@ -29,7 +29,7 @@ class DomainExporter
         $writer->writeSheetHeader('Sheet1', $header);
 
         //set styles
-        $styles = array(['color'=>'#0000FF'], ['color'=>'#0000FF'], null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null);
+        $styles = array(['color'=>'#0000FF'], null, ['color'=>'#0000FF'],['color'=>'#0000FF'], null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null);
 
         //set rows
         $row = 2;
@@ -38,7 +38,7 @@ class DomainExporter
                 '=HYPERLINK("http://' . $domain->domain . '","' . $domain->domain . '")',
                 "=AA".$row,
                 ($domain->collaborator_price) ? '=HYPERLINK("https://collaborator.pro/creator/article/view?id=' . $domain->collaborator_domain_id . '","' . $domain->collaborator_price . '")' : '',
-                ($domain->prnews_price) ? '=HYPERLINK("https://prnews.io/' . self::createPrnewsLink($domain->prnews_domain_id,$domain->prnews_domain_id) . '","' . $domain->prnews_price . '")' : '',
+                ($domain->prnews_price) ? '=HYPERLINK("https://prnews.io/ru/sites/' . self::createPrnewsLink($domain->prnews_domain_id,$domain->domain) . '","' . $domain->prnews_price . '")' : '',
                 ($domain->prposting_price) ? '=HYPERLINK("https://prposting.com/","' . $domain->prposting_price . '")' : '',
                 $domain->country,
                 $domain->theme,

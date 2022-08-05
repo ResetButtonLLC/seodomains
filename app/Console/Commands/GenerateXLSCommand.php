@@ -13,14 +13,14 @@ class GenerateXLSCommand extends Command
      *
      * @var string
      */
-    protected $signature = 'domains:generate';
+    protected $signature = 'domains:export';
 
     /**
      * The console command description.
      *
      * @var string
      */
-    protected $description = 'Create new XLS file';
+    protected $description = 'Export domains to XLS file';
 
     /**
      * Create a new command instance.
@@ -40,8 +40,9 @@ class GenerateXLSCommand extends Command
     public function handle()
     {
         $domains = Domain::getDomainsForExport();
+        DomainExporter::exportXLS($domains);
 
-        return DomainExporter::exportXLS($domains);
+        return 0;
     }
 
 }

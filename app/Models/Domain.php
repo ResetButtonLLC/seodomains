@@ -48,7 +48,9 @@ class Domain extends Model {
                 'prposting_domains.price as prposting_price',
                 'prposting_domains.id as prposting_domain_id',
                 )
-            ->whereNull('domains.deleted_at')->get()->take(50);
+            ->whereNull('domains.deleted_at')
+            ->orderBy('domain')
+            ->get();
 
         return $domains;
     }

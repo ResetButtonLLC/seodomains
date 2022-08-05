@@ -2,9 +2,16 @@
 
 namespace App\Console;
 
+use App\Models\Domain;
+use App\Services\DomainExporter;
+use App\Services\DomainProcessor;
+use App\Services\Parsers\Collaborator;
+use App\Services\Parsers\Prnews;
+use App\Services\Parsers\Prposting;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Log;
 
 class Kernel extends ConsoleKernel
 {
@@ -18,15 +25,40 @@ class Kernel extends ConsoleKernel
     protected function schedule(Schedule $schedule)
     {
 
-        $schedule->command('domains:collaborator')->weeklyOn(7, '06:00');
-//        $schedule->command('domains:prnews')->weeklyOn(7, '12:00');
+        $schedule->call(function () {
+            try {
+                (new Collaborator())->parse();
+            } catch (\Exception $exception) {
+                Log::error('Collaborator Update Failed');
+            }
 
-        /*
-        $schedule->command('domains:ahrefs',[
-            '--mode' => 'all',
-            '--days' => '45'
-        ])->weeklyOn(7, '6:00');
-        */
+            try {
+                (new Prnews())->parse();
+            } catch (\Exception $exception) {
+                Log::error('Prnews Update Failed');
+            }
+
+            try {
+                (new Prposting())->parse();
+            } catch (\Exception $exception) {
+                Log::error('Prposting Update Failed');
+            }
+
+            try {
+                DomainProcessor::process();
+            } catch (\Exception $exception) {
+                Log::error('Domains post processing Failed');
+            }
+
+            try {
+                $domains = Domain::getDomainsForExport();
+                DomainExporter::exportXLS($domains);
+            } catch (\Exception $exception) {
+                Log::error('Exposting to XLS Failed');
+            }
+
+        })->weeklyOn(5, '22:00');
+
     }
 
     /**
