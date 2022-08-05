@@ -11,7 +11,7 @@ use App\Models\{
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use App\Exceptions\ApiException;
-use App\Services\DomainsService;
+use App\Services\DomainExporter;
 
 class DomainsController extends Controller {
 
@@ -103,7 +103,7 @@ class DomainsController extends Controller {
             throw new ApiException(implode(',', $validator->errors()->all()), 422);
         }
 
-        $result = DomainsService::getDataForDomains($domains);
+        $result = DomainExporter::getDataForDomains($domains);
 
         return response()->success((array)$result);
 

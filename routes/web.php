@@ -18,5 +18,6 @@ Route::group(['middleware' => ['auth']], function () {
 });
 
 Route::get('/test', function () {
-    \App\Services\DomainProcessor::process();
+    $domains = \App\Models\Domain::getDomainsForExport();
+    \App\Services\DomainExporter::exportXLS($domains);
 });

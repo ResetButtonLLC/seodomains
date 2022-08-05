@@ -2,7 +2,6 @@
 
 namespace App\Services\Parsers;
 
-use App\Dto\Domain;
 use App\Dto\Domain as DomainDto;
 use App\Enums\Currency;
 use App\Exceptions\ParserException;
@@ -20,6 +19,7 @@ class Prnews extends CsvParser
     //Функция получения курса валют переопределена, так как валюта - USD
     protected function setCurrencyRate() : void
     {
+
         Log::stack(['stderr', $this->logChannel])->info('Parse currency rate');
         //Браузерная эмуляция может вылететь с ошибкой из за капчи, поэтому ставим 100 попыток
         $tries = 100;
@@ -162,7 +162,7 @@ class Prnews extends CsvParser
 
     }
 
-    protected function fetchDomainData(array $row) : Domain
+    protected function fetchDomainData(array $row) : DomainDto
     {
         $domain = new DomainDto(data_get($row,"Url"));
         $domain->setStockId(data_get($row,"ID"));
@@ -175,22 +175,20 @@ class Prnews extends CsvParser
         (data_get($row,"Majestic Trust Flow") != "-") ? $domain->setTf(data_get($row,"Majestic Trust Flow")) : null ;
         (data_get($row,"Ahrefs Domain Rating") != "-") ? $domain->setDr(data_get($row,"Ahrefs Domain Rating")) : null ;
 
+        //Подходят только домены с типом публикации Статья
+        $domain->isIsPublicationTypeValid(data_get($row,"Format Type") == "Статья");
+
         return $domain;
     }
 
     protected function upsertDomain(DomainDto $domainDto) : StockDomain
     {
-        $domain = \App\Models\Domain::updateOrCreate(
-            ['domain' => $domainDto->getName()],
-            ['domain' => $domainDto->getName()]
-        );
-
         $prnewsDomain = PrnewsDomain::updateOrCreate(
             [
                 'id' => $domainDto->getStockId()
             ],
             [
-                'domain_id' => $domain->id,
+                'domain_id' => $domainDto->getId(),
                 'domain' => $domainDto->getName(),
                 'price' => $domainDto->getPrice(),
                 'country' => $domainDto->getCountry(),
@@ -200,7 +198,6 @@ class Prnews extends CsvParser
                 'tf' => $domainDto->getTf(),
                 'cf' => $domainDto->getCf(),
                 'updated_at' => now(),
-                'deleted_at' => null
             ]
         );
 

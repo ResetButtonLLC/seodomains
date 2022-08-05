@@ -35,41 +35,20 @@ class Domain extends Model {
 
     public static function getDomainsForExport() {
 
-
         $domains = Domain::query()
-//            ->leftjoin('gogetlinks', 'domains.id', '=', 'gogetlinks.domain_id')
-//            ->leftjoin('miralinks', 'domains.id', '=', 'miralinks.domain_id')
-            ->leftjoin('prnews', 'domains.id', '=', 'prnews.domain_id')
-//            ->leftjoin('rotapost', 'domains.id', '=', 'rotapost.domain_id')
-//            ->leftjoin('sape', 'domains.id', '=', 'sape.domain_id')
             ->leftjoin('collaborator_domains', 'domains.id', '=', 'collaborator_domains.domain_id')
-            //->select('domains.*', 'gogetlinks.placement_price as gogetlinks_placement_price','miralinks.placement_price as miralinks_placement_price','prnews.price as prnews_placement_price','rotapost.placement_price as rotapost_placement_price','sape.placement_price as sape_placement_price')
+            ->leftjoin('prnews_domains', 'domains.id', '=', 'prnews_domains.domain_id')
+            ->leftjoin('prposting_domains', 'domains.id', '=', 'prposting_domains.domain_id')
             ->select(
                 'domains.*',
-/*
-                'gogetlinks.placement_price as gogetlinks_placement_price',
-                'gogetlinks.domain_id as gogetlinks_domain_id',
-                'miralinks.placement_price as miralinks_placement_price',
-                'miralinks.site_id as miralinks_site_id',
-                'miralinks.writing_price as miralinks_writing_price',
-                'miralinks.theme as miralinks_theme',
-                'miralinks.google_index as miralinks_google_index',
-                'miralinks.links as miralinks_links',
-                'miralinks.lang as miralinks_lang',
-                'miralinks.desc as miralinks_desc',
-                'miralinks.last_placement as miralinks_last_placement',
-                'miralinks.placement_time as miralinks_placement_time',
-                'rotapost.placement_price as rotapost_placement_price',
-                'rotapost.writing_price as rotapost_writing_price',
-                'sape.placement_price as sape_placement_price',
-                'sape.domain_id as sape_domain_id'
-*/
-                'prnews.price as prnews_placement_price',
-                'prnews.audience as prnews_audience',
-                'collaborator_domains.price as collaborator_placement_price',
-                'collaborator_domains.id as collaborator_site_id',
+                'collaborator_domains.price as collaborator_price',
+                'collaborator_domains.id as collaborator_domain_id',
+                'prnews_domains.price as prnews_price',
+                'prnews_domains.id as prnews_domain_id',
+                'prposting_domains.price as prposting_price',
+                'prposting_domains.id as prposting_domain_id',
                 )
-            ->where('domains.domain', '<>', '')->get();
+            ->whereNull('domains.deleted_at')->get()->take(50);
 
         return $domains;
     }

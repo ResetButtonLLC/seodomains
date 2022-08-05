@@ -10,7 +10,7 @@ use App\Helpers\DomainsHelper;
 use App\Models\StockDomain;
 use Illuminate\Support\Facades\Log;
 use App\Extensions\Symfony\DomCrawler\Crawler;
-use Illuminate\Support\Str;
+
 
 class Collaborator extends DomParser
 {
@@ -88,25 +88,17 @@ class Collaborator extends DomParser
 
     protected function upsertDomain(DomainDto $domainDto) : StockDomain
     {
-        $domain = Domain::updateOrCreate(
-            ['domain' => $domainDto->getName()],
-            //todo update траффик когда понятно какой брать
-            ['domain' => $domainDto->getName()]
-        );
-
         $collaboratorDomain = CollaboratorDomain::updateOrCreate(
             [
                 'id' => $domainDto->getStockId()
             ],
             [
-                'domain_id' => $domain->id,
+                'domain_id' => $domainDto->getId(),
                 'domain' => $domainDto->getName(),
                 'price' => $domainDto->getPrice(),
                 'theme' => $domainDto->getTheme(),
                 'dr' => $domainDto->getDr(),
-                'traffic' => $domainDto->getTraffic(),
-                'updated_at' => now(),
-                'deleted_at' => null
+                'traffic' => $domainDto->getTraffic()
             ]
         );
 

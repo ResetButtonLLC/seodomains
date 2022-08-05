@@ -91,11 +91,6 @@ class Prposting extends DomParser
 
     protected function upsertDomain(DomainDto $domainDto) : StockDomain
     {
-        $domain = Domain::updateOrCreate(
-            ['domain' => $domainDto->getName()],
-            ['domain' => $domainDto->getName()]
-        );
-
         $prpostingDomain = PrpostingDomain::updateOrCreate(
             [
                 //используем stockID, так как обнаружился домен с двойным ID
@@ -103,15 +98,14 @@ class Prposting extends DomParser
             ],
             [
                 'name' => $domainDto->getName(),
-                'domain_id' => $domain->id,
+                'domain_id' => $domainDto->getId(),
                 'price' => $domainDto->getPrice(),
                 'theme' => $domainDto->getTheme(),
                 'traffic' => $domainDto->getTraffic(),
                 'dr' => $domainDto->getDr(),
                 'cf' => $domainDto->getCf(),
                 'tf' => $domainDto->getTf(),
-                'updated_at' => now(),
-                'deleted_at' => null
+                'updated_at' => now()
             ]
         );
 

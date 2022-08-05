@@ -80,12 +80,16 @@ abstract class Parser
     //Функция проверки валидности домена и занесения в БД
     protected function processDomain(Domain $domainDto)
     {
-
-        //todo пустое имя должно вызывать ошибку
         //Проверяем валидноcть спарсенных данных так как может быть "URL скрыт", нету цены и т.д.
         if ($domainDto->isDataOk()) {
 
             //Если с данными все ОК, то добавляем/обновляем домен
+            $domain = \App\Models\Domain::withTrashed()->updateOrCreate(
+                ['domain' => $domainDto->getName()],
+                ['deleted_at' => null]
+            );
+
+            $domainDto->setId($domain->id);
             $domainDto->convertPrice($this->getCurrencyRate());
             $stockDomain = $this->upsertDomain($domainDto);
 

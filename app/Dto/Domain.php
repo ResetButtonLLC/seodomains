@@ -13,7 +13,6 @@ class Domain
     protected string $name;
     protected float|null $price = null;
     protected int|null $traffic = null;
-    protected float|null $uaTraffic = null;
     protected int|null $dr = null;
     protected int|null $cf = null;
     protected int|null $tf = null;
@@ -21,7 +20,9 @@ class Domain
     protected string $theme = '';
     protected string $languages = '';
     protected int $stockId = 0;
+    protected int $id = 0;
     protected string|null $country;
+    protected bool $isPublicationTypeValid = true; //Определяет подходит ли домен для публикации типа контента, например в Prnews валидны только домены с типом "статья"
 
     public function __construct(string $domain)
     {
@@ -69,7 +70,7 @@ class Domain
 
     public function isDataOk() : bool
     {
-        return ($this->isNameValid() && $this->price);
+        return ($this->isNameValid() && $this->price && $this->isPublicationTypeValid);
     }
 
     public function getTraffic(): ?int
@@ -149,11 +150,26 @@ class Domain
         $this->country = $country;
     }
 
+    public function setId(int $id)
+    {
+        $this->id = $id;
+    }
+
+    public function getId() : string
+    {
+        return $this->id;
+    }
+
     public function convertPrice(float $rate) : void
     {
         if ($this->currency->name != Currency::UAH) {
             $this->setPrice(round($this->price * $rate,2), Currency::UAH);
         }
+    }
+
+    public function isIsPublicationTypeValid(bool $isPublicationTypeValid) : void
+    {
+        $this->isPublicationTypeValid = $isPublicationTypeValid;
     }
 
 
