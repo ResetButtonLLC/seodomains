@@ -28,7 +28,7 @@ abstract class CsvParser extends Parser
 
     public function parse() : void
     {
-     //   $this->downloadCSV();
+        $this->downloadCSV();
 
         $csvDomains = (new FastExcel)->import($this->csvStorage->path($this->parserName.'.csv'));
         $this->counter = new ParserProgressCounter($csvDomains->count());
