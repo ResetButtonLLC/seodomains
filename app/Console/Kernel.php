@@ -24,40 +24,7 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule)
     {
-
-        $schedule->call(function () {
-            try {
-                (new Collaborator())->parse();
-            } catch (\Exception $exception) {
-                Log::error('Collaborator Update Failed');
-            }
-
-            try {
-                (new Prnews())->parse();
-            } catch (\Exception $exception) {
-                Log::error('Prnews Update Failed');
-            }
-
-            try {
-                (new Prposting())->parse();
-            } catch (\Exception $exception) {
-                Log::error('Prposting Update Failed');
-            }
-
-            try {
-                DomainProcessor::process();
-            } catch (\Exception $exception) {
-                Log::error('Domains post processing Failed');
-            }
-
-            try {
-                $domains = Domain::getDomainsForExport();
-                DomainExporter::exportXLS($domains);
-            } catch (\Exception $exception) {
-                Log::error('Exposting to XLS Failed');
-            }
-
-        })->weeklyOn(5, '22:00');
+        $schedule->command('domains:all')->weeklyOn(5, '22:00');;
 
     }
 
