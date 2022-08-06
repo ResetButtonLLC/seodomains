@@ -12,7 +12,7 @@ class MiralinksCommand extends ParserCommand {
      *
      * @var string
      */
-    protected $signature = 'domains:miralinks';
+    protected $signature = 'old-domains:miralinks';
 
     /**
      * The console command description.

@@ -12,7 +12,7 @@ class RotapostCommand extends ParserCommand {
      *
      * @var string
      */
-    protected $signature = 'domains:rotapost';
+    protected $signature = 'old-domains:rotapost';
 
     /**
      * The console command description.

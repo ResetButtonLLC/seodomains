@@ -12,7 +12,7 @@ class GoggetlinksCommand extends ParserCommand {
      *
      * @var string
      */
-    protected $signature = 'domains:gogetlinks';
+    protected $signature = 'old-domains:gogetlinks';
 
     /**
      * The console command description.

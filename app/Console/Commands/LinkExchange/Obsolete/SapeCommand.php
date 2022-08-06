@@ -15,7 +15,7 @@ class SapeCommand extends ParserCommand {
      *
      * @var string
      */
-    protected $signature = 'domains:sape';
+    protected $signature = 'old-domains:sape';
 
     /**
      * The console command description.

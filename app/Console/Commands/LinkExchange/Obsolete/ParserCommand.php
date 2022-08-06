@@ -13,7 +13,7 @@ class ParserCommand extends Command
      *
      * @var string
      */
-    protected $signature = 'domains:log';
+    protected $signature = 'old-domains:log';
 
     protected $message;
 
