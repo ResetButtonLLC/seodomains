@@ -53,7 +53,11 @@ class Prposting extends DomParser
 
         $rowDom = new Crawler($html);
 
-        $domain = new DomainDto($rowDom->filter('td.is-paddingless tr td a')->text());
+        $domainName = $rowDom->filter('td.is-paddingless tr td')->text();
+        //Если домен новый, то в имя попадает NEW
+        $domainName = preg_replace('/\s.*/','',$domainName);
+
+         $domain = new DomainDto($domainName);
 
         //ID в бирже
         $domain->setStockId(intval($rowDom->filter('td.is-narrow div')->attr(':site-id')));
